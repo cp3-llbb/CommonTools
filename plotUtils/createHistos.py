@@ -41,12 +41,13 @@ def main(samples, plots):
             binning = str(plots[kplot]["binning"])
             xnbin, xlow, xhigh = map(float, binning.strip().strip("()").split(","))
             chain = TChain(tree)
-            chain.Add( os.path.join(dirpath, "output*1*root") )
+            chain.Add( os.path.join(dirpath, "output*root") )
             total_cut = plot_cut
             if sample_cut == "": sample_cut = "1"
             total_cut = "(" + plot_cut + ") * event_weight * (" + sample_cut + ")"
             chain.Draw(variable + ">>h_tmp" + binning, total_cut)
             h = ROOT.gDirectory.Get("h_tmp")
+            h.Sumw2()
             h.SetName(name2)
             h.Write()
         outfile.Write()
@@ -61,23 +62,11 @@ if __name__ == '__main__':
         print "opening sample file", sample
         with open(sample) as f:
             samples.update(json.load(f))
-#    for ksample in samples:
-#        print "Now taking care of", ksample
-#        samples[ksample]["color"] = color_as_int(samples[ksample]["color"])
-#        path, norm, nevents = get_sample(samples[ksample]["db_name"])[0]
-#        samples[ksample]["path"] = str(path)
-#        try: # if norm is defined in the json, then take precedence over the database
-#            norm = samples[ksample]["norm"]
-#        except KeyError:
-#            samples[ksample]["norm"] = norm
-#        samples[ksample]["nevents"] = nevents
-#        samples[ksample]["sumweights"] = get_sumweights(path)
-#        print "\t", ksample, "nevents=", nevents, "sumweights=", samples[ksample]["sumweights"]
     print "##### Read plots to be processed"
     plots = {}
     for plot in options.plots:
         with open(plot) as f:
             plots.update(json.load(f))
-    print "##### Now plotting"
+    print "##### Now creating the histos"
     main(samples, plots)
 

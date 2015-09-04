@@ -1,0 +1,25 @@
+{
+    "muon1_relativeIsoR04_withEA": {
+    "variable": "muon_relativeIsoR04_withEA[hh_dimuons_indices.first]",
+    "plot_cut": "mumu_category",
+    "binning": "(2000, 0, 200)"
+    }
+    ,
+    "muon2_relativeIsoR04_withEA": {
+    "variable": "muon_relativeIsoR04_withEA[hh_dimuons_indices.second]",
+    "plot_cut": "mumu_category",
+    "binning": "(2000, 0, 200)"
+    }
+    ,
+    "electron1_relativeIsoR04_withEA": {
+    "variable": "electron_relativeIsoR04_withEA[hh_dielectrons_indices.first]",
+    "plot_cut": "elel_category",
+    "binning": "(2000, 0, 200)"
+    }
+    ,
+    "electron2_relativeIsoR04_withEA": {
+    "variable": "electron_relativeIsoR04_withEA[hh_dielectrons_indices.second]",
+    "plot_cut": "elel_category",
+    "binning": "(2000, 0, 200)"
+    }
+}

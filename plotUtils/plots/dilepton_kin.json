@@ -1,0 +1,14 @@
+{
+    "dimuon_mass": {
+    "variable": "hh_dimuons.M()",
+    "plot_cut": "hh_dimuons.M() > 20.",
+    "binning": "(1000, 0, 1000)"
+    }
+    ,
+    "dielectron_mass": {
+    "variable": "hh_dielectrons.M()",
+    "plot_cut": "hh_dielectrons.M() > 20.",
+    "binning": "(1000, 0, 1000)"
+    }
+    
+}

@@ -22,9 +22,14 @@ void readPlotJson(const char* plots_json, std::string& variable, std::string& pl
     if (parsingSuccessful)
     {
         // Let's extract the array contained in the root object
-        const Json::Value array = root["missing_Et"];
+        
+        //const Json::Value array = root["missing_Et"];
 
-        std::cout << "size : " << array.size() << std::endl;
+        Json::Value::Members members = root.getMemberNames();
+
+        std::cout << members.at(0) << std::endl;
+        const Json::Value array = root[members.at(0)];
+
 
         // Iterate over sequence elements and print its values
 

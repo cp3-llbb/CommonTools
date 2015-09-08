@@ -22,7 +22,7 @@ int main( int argc, char* argv[]){
         return 0;
     }
 
-    std::cout << argc <<" " << "samples : " << argv[1] << " plots : " << argv[2] << std::endl;
+    std::cout << "samples : " << argv[1] << " plots : " << argv[2] << std::endl;
 
     const char* plots_json = argv[1];
     const char* sample_json = argv[2];
@@ -52,8 +52,13 @@ int main( int argc, char* argv[]){
 
         std::cout << "running on sample : " << samples_str.at(index) << std::endl;
 
-        TChain* t = new TChain("t");
-        t->Add("output_mc.root");
+        TChain* t = new TChain(tree_name.c_str());
+
+        std::string infiles = path+"/*.root";
+
+        t->Add(infiles.c_str());
+
+        TFile* outfile = new TFile((db_name+"_histos.root").c_str(),"recreate");
 
         TMultiDrawTreePlayer* p = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
 
@@ -67,6 +72,8 @@ int main( int argc, char* argv[]){
         Json::Value::Members plots_str = plotsroot.getMemberNames();
 
         // Looping over the different plots
+        std::cout << "    plotting : ";
+
         for (unsigned int index_plot = 0; index_plot < plotsroot.size(); index_plot++){
 
              const Json::Value array = plotsroot[plots_str.at(index_plot)];
@@ -74,14 +81,22 @@ int main( int argc, char* argv[]){
              std::string plotCuts = array.get("plot_cut","ASCII").asString();
              std::string binning = array.get("binning","ASCII").asString();
 
-             std::cout << "    plotting : " << plots_str.at(index_plot) << std::endl;
-             std::string plot_var = variable+">>hist1";
+             std::cout << plots_str.at(index_plot) << " , " ;
+             std::string plot_var = variable+">>"+plots_str.at(index_plot)+binning;
              p->queueDraw(plot_var.c_str(), plotCuts.c_str());
 
         }
+        std::cout << std::endl;
 
         p->execute();
-        gDirectory->Get("hist1")->Draw();
+        for (unsigned int index_plot = 0; index_plot < plotsroot.size(); index_plot++){
+            gDirectory->Get(plots_str.at(index_plot).c_str())->Write();
+        }
+
+        outfile->Write();
+        delete outfile;
+
+
     }
 
 }

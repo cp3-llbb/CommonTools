@@ -1,0 +1,15 @@
+# ROOT stuff
+*.root
+
+# compiled stuff
+*.d
+*.o
+*.pcm
+*.exe
+
+# externals
+external/TMultiDrawTreePlayer/*
+external/include/*
+external/jsoncpp/*
+external/src/*
+

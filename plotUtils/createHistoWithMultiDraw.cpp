@@ -18,7 +18,7 @@
 int main( int argc, char* argv[]){
 
     if (argc != 3) {
-        std::cerr << "use as ./createHisto files.json plots.json\n";
+        std::cerr << "use as " << argv[0] << " plots.json files.json\n";
         return 0;
     }
 

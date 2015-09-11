@@ -1,13 +1,13 @@
 {
     "dimuon_mass": {
     "variable": "hh_dimuons.M()",
-    "plot_cut": "hh_dimuons.M() > 20. && muon_relativeIsoR04_withEA[hh_dimuons_indices.first] < .5 && muon_relativeIsoR04_withEA[hh_dimuons_indices.second] < .5",
+    "plot_cut": "(hh_dimuons.M() > 20. && muon_relativeIsoR04_withEA[hh_dimuons_indices.first] < .5 && muon_relativeIsoR04_withEA[hh_dimuons_indices.second] < .5) * event_weight",
     "binning": "(1000, 0, 1000)"
     }
     ,
     "dielectron_mass": {
     "variable": "hh_dielectrons.M()",
-    "plot_cut": "hh_dielectrons.M() > 20. && electron_relativeIsoR04_withEA[hh_dielectrons_indices.first] < .5 && electron_relativeIsoR04_withEA[hh_dielectrons_indices.second] < .5",
+    "plot_cut": "(hh_dielectrons.M() > 20. && electron_relativeIsoR04_withEA[hh_dielectrons_indices.first] < .5 && electron_relativeIsoR04_withEA[hh_dielectrons_indices.second] < .5) * event_weight",
     "binning": "(1000, 0, 1000)"
     }
     

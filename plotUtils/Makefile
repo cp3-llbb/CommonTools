@@ -17,13 +17,13 @@ DEPENDS		= $(OBJECTS:.o=.d)
 
 ###
 
-all: createHistoWithMultiDraw
+all: createHistoWithMultiDraw.exe
 
 clean:
 	@rm -f $(OBJECTS);
 	@rm -f $(DEPENDS);
 
-createHistoWithMultiDraw: $(OBJECTS)
+createHistoWithMultiDraw.exe: $(OBJECTS)
 	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)
 	@ln -sf external/TMultiDrawTreePlayer/TMultiDrawTreePlayer_dict_rdict.pcm .
 

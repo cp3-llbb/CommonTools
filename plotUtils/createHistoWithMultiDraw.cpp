@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <memory>
 
 #include <TVirtualTreePlayer.h>
 #include <TMultiDrawTreePlayer.h>
@@ -80,13 +80,13 @@ bool execute(const std::string& datasets_json, const std::vector<std::string>& p
 
         std::cout << "Running on sample '" << samples_str.at(index) << "'" << std::endl;
 
-        TChain* t = new TChain(tree_name.c_str());
+        std::unique_ptr<TChain> t(new TChain(tree_name.c_str()));
 
         std::string infiles = path+"/*.root";
 
         t->Add(infiles.c_str());
 
-        TFile* outfile = new TFile((db_name+"_histos.root").c_str(),"recreate");
+        std::unique_ptr<TFile> outfile(TFile::Open((db_name+"_histos.root").c_str(), "recreate"));
 
         TMultiDrawTreePlayer* player = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
 
@@ -103,7 +103,6 @@ bool execute(const std::string& datasets_json, const std::vector<std::string>& p
         }
 
         outfile->Write();
-        delete outfile;
     }
 
     return true;

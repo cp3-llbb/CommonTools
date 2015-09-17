@@ -14,29 +14,19 @@
 #include <TFile.h>
 #include <TDirectory.h>
 
+#include <tclap/CmdLine.h>
 
-int main( int argc, char* argv[]){
-
-    if (argc != 3) {
-        std::cerr << "use as " << argv[0] << " plots.json files.json\n";
-        return 0;
-    }
-
-    std::cout << "samples : " << argv[1] << " plots : " << argv[2] << std::endl;
-
-    const char* plots_json = argv[1];
-    const char* sample_json = argv[2];
-
+bool execute(const std::string& datasets_json, const std::string& plots_json) {
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
 
     // Getting the list of samples    
     Json::Value samplesroot;
-    std::ifstream config_doc(sample_json, std::ifstream::binary);
+    std::ifstream config_doc(datasets_json, std::ifstream::binary);
 
     Json::Reader samplesreader;
     bool parsingSuccessful = samplesreader.parse(config_doc, samplesroot, false);
-    if (!parsingSuccessful) { return 0;}
+    if (!parsingSuccessful) { return false;}
     // Let's extract the array contained in the root object
     Json::Value::Members samples_str = samplesroot.getMemberNames();
 
@@ -67,7 +57,7 @@ int main( int argc, char* argv[]){
         std::ifstream config_doc(plots_json, std::ifstream::binary);
         Json::Reader plotsreader;
         bool parsingSuccessful = plotsreader.parse(config_doc, plotsroot, false);
-        if (!parsingSuccessful) { return 0;}
+        if (!parsingSuccessful) { return false;}
         // Let's extract the array contained in the root object
         Json::Value::Members plots_str = plotsroot.getMemberNames();
 
@@ -95,9 +85,30 @@ int main( int argc, char* argv[]){
 
         outfile->Write();
         delete outfile;
-
-
     }
 
+    return true;
+}
+
+
+int main( int argc, char* argv[]) {
+
+    try {
+
+        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.1.0");
+
+        TCLAP::ValueArg<std::string> datasetArg("d", "dataset", "Input datasets", true, "", "JSON file", cmd);
+        TCLAP::UnlabeledValueArg<std::string> plotsArg("plots", "List of plots", true, "", "JSON file", cmd);
+
+        cmd.parse(argc, argv);
+
+        return (execute(datasetArg.getValue(), plotsArg.getValue()) ? 0 : 1);
+
+    } catch (TCLAP::ArgException &e) {
+        std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+        return 1;
+    }
+
+    return 0;
 }
 

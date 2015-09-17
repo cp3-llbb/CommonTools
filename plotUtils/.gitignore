@@ -8,8 +8,4 @@
 *.exe
 
 # externals
-external/TMultiDrawTreePlayer/*
-external/include/*
-external/jsoncpp/*
-external/src/*
-
+external/

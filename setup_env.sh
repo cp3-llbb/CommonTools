@@ -5,7 +5,7 @@ case $(hostname) in
         module load gcc/gcc-4.9.1-sl6_amd64
         module load python/python27_sl6_gcc49
         module load boost/1.57_sl6_gcc49
-        module load root/6.04.00-sl6_gcc49
+        module load root/6.02.05-sl6_gcc49
         ;;
 
     lxplus*) source /cvmfs/cms.cern.ch/slc6_amd64_gcc491/external/gcc/4.9.1-cms/etc/profile.d/init.sh

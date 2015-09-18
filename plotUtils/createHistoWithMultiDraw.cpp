@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <memory>
 
 #include <TVirtualTreePlayer.h>
 #include <TMultiDrawTreePlayer.h>
@@ -14,33 +14,61 @@
 #include <TFile.h>
 #include <TDirectory.h>
 
+#include <tclap/CmdLine.h>
 
-int main( int argc, char* argv[]){
+struct Plot {
+    std::string name;
+    std::string variable;
+    std::string plot_cut;
+    std::string binning;
+};
 
-    if (argc != 3) {
-        std::cerr << "use as " << argv[0] << " plots.json files.json\n";
-        return 0;
-    }
-
-    std::cout << "samples : " << argv[1] << " plots : " << argv[2] << std::endl;
-
-    const char* plots_json = argv[1];
-    const char* sample_json = argv[2];
-
+bool execute(const std::string& datasets_json, const std::vector<std::string>& plots_json) {
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
 
     // Getting the list of samples    
     Json::Value samplesroot;
-    std::ifstream config_doc(sample_json, std::ifstream::binary);
+    {
+        std::ifstream config_doc(datasets_json);
 
-    Json::Reader samplesreader;
-    bool parsingSuccessful = samplesreader.parse(config_doc, samplesroot, false);
-    if (!parsingSuccessful) { return 0;}
-    // Let's extract the array contained in the root object
-    Json::Value::Members samples_str = samplesroot.getMemberNames();
+        Json::Reader samplesreader;
+        bool parsingSuccessful = samplesreader.parse(config_doc, samplesroot, false);
+        if (!parsingSuccessful) {
+            std::cerr << "Failed to parse '" << datasets_json << "'" << std::endl;
+            return false;
+        }
+    }
+
+    // Get the list of plots to draw
+    std::vector<Plot> plots;
+    for (const auto& plot_json_file: plots_json) {
+        std::ifstream f(plot_json_file);
+
+        Json::Value root;
+        Json::Reader reader;
+        if (! reader.parse(f, root)) {
+            std::cerr << "Failed to parse '" << plot_json_file << "'." << std::endl;
+            return false;
+        }
+
+        for (auto it = root.begin(); it != root.end(); it++) {
+            Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
+            plots.push_back(p);
+        }
+    }
+
+    std::cout << "List of requested plots: ";
+    for (size_t i = 0; i < plots.size(); i++) {
+        std::cout << "'" << plots[i].name << "'";
+        if (i != plots.size() - 1)
+            std::cout << ", ";
+    }
+
+    std::cout << std::endl << std::endl;
 
     // Looping over the different samples
+    Json::Value::Members samples_str = samplesroot.getMemberNames();
     for (unsigned int index = 0; index < samplesroot.size(); index++){    
 
         const Json::Value samplearray = samplesroot[samples_str.at(index)];
@@ -50,54 +78,55 @@ int main( int argc, char* argv[]){
         std::string db_name = samplearray.get("db_name","ASCII").asString();
         std::string sample_cut = samplearray.get("sample_cut","ASCII").asString();
 
-        std::cout << "running on sample : " << samples_str.at(index) << std::endl;
+        std::cout << "Running on sample '" << samples_str.at(index) << "'" << std::endl;
 
-        TChain* t = new TChain(tree_name.c_str());
+        std::unique_ptr<TChain> t(new TChain(tree_name.c_str()));
 
         std::string infiles = path+"/*.root";
 
         t->Add(infiles.c_str());
 
-        TFile* outfile = new TFile((db_name+"_histos.root").c_str(),"recreate");
+        std::unique_ptr<TFile> outfile(TFile::Open((db_name+"_histos.root").c_str(), "recreate"));
 
-        TMultiDrawTreePlayer* p = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
-
-        // extracting the plots to draw
-        Json::Value plotsroot;
-        std::ifstream config_doc(plots_json, std::ifstream::binary);
-        Json::Reader plotsreader;
-        bool parsingSuccessful = plotsreader.parse(config_doc, plotsroot, false);
-        if (!parsingSuccessful) { return 0;}
-        // Let's extract the array contained in the root object
-        Json::Value::Members plots_str = plotsroot.getMemberNames();
+        TMultiDrawTreePlayer* player = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
 
         // Looping over the different plots
-        std::cout << "    plotting : ";
-
-        for (unsigned int index_plot = 0; index_plot < plotsroot.size(); index_plot++){
-
-             const Json::Value array = plotsroot[plots_str.at(index_plot)];
-             std::string variable = array.get("variable","ASCII").asString();
-             std::string plotCuts = array.get("plot_cut","ASCII").asString();
-             std::string binning = array.get("binning","ASCII").asString();
-
-             std::cout << plots_str.at(index_plot) << " , " ;
-             std::string plot_var = variable+">>"+plots_str.at(index_plot)+binning;
-             p->queueDraw(plot_var.c_str(), plotCuts.c_str());
-
+        for (auto& p: plots) {
+            std::string plot_var = p.variable + ">>" + p.name + p.binning;
+            player->queueDraw(plot_var.c_str(), p.plot_cut.c_str());
         }
-        std::cout << std::endl;
 
-        p->execute();
-        for (unsigned int index_plot = 0; index_plot < plotsroot.size(); index_plot++){
-            gDirectory->Get(plots_str.at(index_plot).c_str())->Write();
+        player->execute();
+
+        for (auto& p: plots) {
+            gDirectory->Get(p.name.c_str())->Write();
         }
 
         outfile->Write();
-        delete outfile;
-
-
     }
 
+    return true;
+}
+
+
+int main( int argc, char* argv[]) {
+
+    try {
+
+        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.1.0");
+
+        TCLAP::ValueArg<std::string> datasetArg("d", "dataset", "Input datasets", true, "", "JSON file", cmd);
+        TCLAP::UnlabeledMultiArg<std::string> plotsArg("plots", "List of plots", true, "JSON file", cmd);
+
+        cmd.parse(argc, argv);
+
+        return (execute(datasetArg.getValue(), plotsArg.getValue()) ? 0 : 1);
+
+    } catch (TCLAP::ArgException &e) {
+        std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+        return 1;
+    }
+
+    return 0;
 }
 

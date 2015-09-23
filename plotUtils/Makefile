@@ -27,8 +27,8 @@ all: createHistoWithMultiDraw.exe countProcessedEvents.exe
 clean:
 	@rm -f $(OBJECTSCOUNT);
 	@rm -f $(DEPENDSCOUNT);
-        @rm -f $(OBJECTSHIST);
-        @rm -f $(DEPENDSHIST);
+	@rm -f $(OBJECTSHIST);
+	@rm -f $(DEPENDSHIST);
 
 createHistoWithMultiDraw.exe: $(OBJECTSHIST)
 	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)

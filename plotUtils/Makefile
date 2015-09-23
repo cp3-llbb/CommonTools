@@ -9,23 +9,31 @@ LIBS          = $(shell root-config --libs) -lTreePlayer
 LDFLAGS		  = $(shell root-config --ldflags)
 
 #------------------------------------------------------------------------------
-SOURCES		= createHistoWithMultiDraw.cpp external/src/jsoncpp.cpp external/src/TMultiDrawTreePlayer_dict.cpp external/src/TMultiDrawTreePlayer.cpp
-OBJECTS     = $(SOURCES:.$(SrcSuf)=.$(ObjSuf))
-DEPENDS		= $(OBJECTS:.o=.d)
+SOURCESHIST	= createHistoWithMultiDraw.cpp external/src/jsoncpp.cpp external/src/TMultiDrawTreePlayer_dict.cpp external/src/TMultiDrawTreePlayer.cpp
+OBJECTSHIST    	= $(SOURCESHIST:.$(SrcSuf)=.$(ObjSuf))
+DEPENDSHIST	= $(OBJECTSHIST:.o=.d)
+
+SOURCESCOUNT     = countProcessedEvents.cpp external/src/jsoncpp.cpp external/src/TMultiDrawTreePlayer_dict.cpp external/src/TMultiDrawTreePlayer.cpp
+OBJECTSCOUNT     = $(SOURCESCOUNT:.$(SrcSuf)=.$(ObjSuf))
+DEPENDSCOUNT     = $(OBJECTSCOUNT:.o=.d)
+
 
 .SUFFIXES: .cpp .cc
 
 ###
 
-all: createHistoWithMultiDraw.exe
+all: createHistoWithMultiDraw countProcessedEvents
 
 clean:
 	@rm -f $(OBJECTS);
 	@rm -f $(DEPENDS);
 
-createHistoWithMultiDraw.exe: $(OBJECTS)
+createHistoWithMultiDraw.exe: $(OBJECTSHIST)
 	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)
 	@ln -sf external/TMultiDrawTreePlayer/TMultiDrawTreePlayer_dict_rdict.pcm .
+
+countProcessedEvents.exe: $(OBJECTSCOUNT)
+	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -36,6 +44,7 @@ createHistoWithMultiDraw.exe: $(OBJECTS)
 	@ $(CXX) $(CXXFLAGS) -MM $< | sed -e 's@^\(.*\)\.o:@src/\1.d src/\1.o:@' > $@
 
 ifneq ($(MAKECMDGOALS), clean) 
--include $(DEPENDS) 
+-include $(DEPENDSHIST)
+-include $(DEPENDSCOUNT) 
 endif
 

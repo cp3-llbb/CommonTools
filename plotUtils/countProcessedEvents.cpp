@@ -75,7 +75,7 @@ int main( int argc, char* argv[]){
                 }
             }
         }
-        std::cout << " N_events : " << sumW << std::endl;
+        std::cout << " N_weight_sum : " << sumW << std::endl;
     }
 }
 

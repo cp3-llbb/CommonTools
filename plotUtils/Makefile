@@ -25,14 +25,14 @@ DEPENDSCOUNT     = $(OBJECTSCOUNT:.o=.d)
 all: createHistoWithMultiDraw countProcessedEvents
 
 clean:
-	@rm -f $(OBJECTS);
-	@rm -f $(DEPENDS);
+	@rm -f $(OBJECTSCOUNT);
+	@rm -f $(DEPENDSCOUNT);
 
-createHistoWithMultiDraw.exe: $(OBJECTSHIST)
+createHistoWithMultiDraw: $(OBJECTSHIST)
 	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)
 	@ln -sf external/TMultiDrawTreePlayer/TMultiDrawTreePlayer_dict_rdict.pcm .
 
-countProcessedEvents.exe: $(OBJECTSCOUNT)
+countProcessedEvents: $(OBJECTSCOUNT)
 	$(LD) $(LDFLAGS) $+ -o $@ $(LIBS)
 
 %.o: %.cpp

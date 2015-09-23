@@ -76,7 +76,7 @@ bool execute(const std::string& datasets_json, const std::vector<std::string>& p
         std::string tree_name = samplearray.get("tree_name","ASCII").asString();
         std::string path = samplearray.get("path","ASCII").asString();
         std::string db_name = samplearray.get("db_name","ASCII").asString();
-        std::string sample_cut = samplearray.get("sample_cut","1").asString();
+        std::string sample_cut = samplearray.get("sample_cut","ASCII").asString();
 
         std::cout << "Running on sample '" << samples_str.at(index) << "'" << std::endl;
 

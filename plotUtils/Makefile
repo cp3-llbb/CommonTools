@@ -3,10 +3,10 @@ SrcSuf        = cpp
 
 
 CXX           = g++
-CXXFLAGS      = $(shell root-config --cflags) -Iexternal/include
+CXXFLAGS      = $(shell root-config --cflags) $(shell python-config --includes) -Iexternal/include
 LD			  = g++
-LIBS          = $(shell root-config --libs) -lTreePlayer
-LDFLAGS		  = $(shell root-config --ldflags)
+LIBS          = $(shell root-config --libs) $(shell python-config --libs) -lTreePlayer
+LDFLAGS		  = $(shell root-config --ldflags) -L$(shell python-config --prefix)/lib
 
 #------------------------------------------------------------------------------
 SOURCESHIST	= createHistoWithMultiDraw.cpp external/src/jsoncpp.cpp external/src/TMultiDrawTreePlayer_dict.cpp external/src/TMultiDrawTreePlayer.cpp

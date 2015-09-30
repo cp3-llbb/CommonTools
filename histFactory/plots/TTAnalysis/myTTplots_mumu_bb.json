@@ -1,0 +1,179 @@
+{
+    "lep1_pt_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.first].Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 20, 320)"
+    },
+    "lep1_eta_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.first].Eta()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "lep1_phi_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.first].Phi()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    "lep2_pt_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.second].Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(40, 20, 180)"
+    },
+    "lep2_eta_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.second].Eta()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "lep2_phi_mumu_bb": {
+    "variable": "muon_p4[tt_selectedLeadingMuMu.second].Phi()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    
+    "bjet1_pt_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[0]].Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 30, 380)"
+    },
+    "bjet1_eta_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[0]].Eta()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "bjet1_phi_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[0]].Phi()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    "bjet1_CSVv2_mumu_bb": {
+    "variable": "jet_pfCombinedInclusiveSecondaryVertexV2BJetTags[btags_CSVv2_mediumindices[0]]",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, 0, 1)"
+    },
+    "bjet2_pt_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[1]].Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 30, 230)"
+    },
+    "bjet2_eta_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[1]].Eta()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "bjet2_phi_mumu_bb": {
+    "variable": "jet_p4[btags_CSVv2_mediumindices[1]].Phi()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    }, 
+    "bjet2_CSVv2_mumu_bb": {
+    "variable": "jet_pfCombinedInclusiveSecondaryVertexV2BJetTags[btags_CSVv2_mediumindices[1]]",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(20, 0, 1)"
+    },
+    
+    "Mll_mumu_bb": {
+    "variable": "sqrt( (muon_p4[tt_selectedLeadingMuMu.first].E() + muon_p4[tt_selectedLeadingMuMu.second].E())^2 - (muon_p4[tt_selectedLeadingMuMu.first].Px() + muon_p4[tt_selectedLeadingMuMu.second].Px())^2 - (muon_p4[tt_selectedLeadingMuMu.first].Py() + muon_p4[tt_selectedLeadingMuMu.second].Py())^2 - (muon_p4[tt_selectedLeadingMuMu.first].Pz() + muon_p4[tt_selectedLeadingMuMu.second].Pz())^2)",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    /*"Ptll_mumu_bb": {
+    "variable": "tt_diLeptons_p4[0].Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 300)"
+    },*/
+    "DRll_mumu_bb": {
+    "variable": "sqrt( (muon_p4[tt_selectedLeadingMuMu.first].Eta() - muon_p4[tt_selectedLeadingMuMu.second].Eta())^2 + (min( abs(muon_p4[tt_selectedLeadingMuMu.first].Phi() - muon_p4[tt_selectedLeadingMuMu.second].Phi()), 2*3.14159 - abs(muon_p4[tt_selectedLeadingMuMu.first].Phi() - muon_p4[tt_selectedLeadingMuMu.second].Phi()) ))^2 )",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 6)"
+    },
+    "DPhill_mumu_bb": {
+    "variable": "abs(muon_p4[tt_selectedLeadingMuMu.first].Phi() - muon_p4[tt_selectedLeadingMuMu.second].Phi())",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 3.2)"
+    },
+    "DEtall_mumu_bb": {
+    "variable": "abs(muon_p4[tt_selectedLeadingMuMu.first].Eta() - muon_p4[tt_selectedLeadingMuMu.second].Eta())",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 5)"
+    },
+    
+    "Mbb_mumu_bb": {
+    "variable": "sqrt( (jet_p4[btags_CSVv2_mediumindices[0]].E() + jet_p4[btags_CSVv2_mediumindices[1]].E())^2 - (jet_p4[btags_CSVv2_mediumindices[0]].Px() + jet_p4[btags_CSVv2_mediumindices[1]].Px())^2 - (jet_p4[btags_CSVv2_mediumindices[0]].Py() + jet_p4[btags_CSVv2_mediumindices[1]].Py())^2 - (jet_p4[btags_CSVv2_mediumindices[0]].Pz() + jet_p4[btags_CSVv2_mediumindices[1]].Pz())^2)",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    /*"Ptbb_mumu_bb": {
+    "variable": "tt_dijet_Ptbb",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 500)"
+    },*/
+    "DRbb_mumu_bb": {
+    "variable": "sqrt( (jet_p4[btags_CSVv2_mediumindices[0]].Eta() - jet_p4[btags_CSVv2_mediumindices[1]].Eta())^2 + (min( abs(jet_p4[btags_CSVv2_mediumindices[0]].Phi() - jet_p4[btags_CSVv2_mediumindices[1]].Phi()), 2*3.14159 - abs(jet_p4[btags_CSVv2_mediumindices[0]].Phi() - jet_p4[btags_CSVv2_mediumindices[1]].Phi()) ))^2 )",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 6)"
+    },
+    "DPhibb_mumu_bb": {
+    "variable": "abs(jet_p4[btags_CSVv2_mediumindices[0]].Phi() - jet_p4[btags_CSVv2_mediumindices[1]].Phi())",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 3.2)"
+    },
+    "DEtabb_mumu_bb": {
+    "variable": "abs(jet_p4[btags_CSVv2_mediumindices[0]].Eta() - jet_p4[btags_CSVv2_mediumindices[1]].Eta())",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 5)"
+    },
+    
+    "PFMET_mumu_bb": {
+    "variable": "met_p4.Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 250)"
+    },
+    "NOHFMET_mumu_bb": {
+    "variable": "nohf_met_p4.Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(50, 0, 250)"
+    },
+    
+    "nJet_mumu_bb": {
+    "variable": "@btags_CSVv2_mediumindices.size()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(10, 0, 10)"
+    },
+    "nLoosebJet_mumu_bb": {
+    "variable": "@btags_CSVv2_looseindices.size()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    },
+    "nMediumbJet_mumu_bb": {
+    "variable": "@btags_CSVv2_mediumindices.size()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    },
+    "nTightbJet_mumu_bb": {
+    "variable": "@btags_CSVv2_tightindices.size()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    }
+    
+    /*"Mllbb_mumu_bb": {
+    "variable": "(muon_p4[0]+muon_p4[1]+jet_p4[btags_CSVv2_mediumindices[0]]+jet_p4[btags_CSVv2_mediumindices[0]]).M()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    "Mllbbmet_mumu_bb": {
+    "variable": "(muon_p4[0]+muon_p4[1]+jet_p4[btags_CSVv2_mediumindices[0]]+jet_p4[btags_CSVv2_mediumindices[0]]+nohf_met_p4).M()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    "Ptllbb_mumu_bb": {
+    "variable": "(muon_p4[0]+muon_p4[1]+jet_p4[btags_CSVv2_mediumindices[0]]+jet_p4[btags_CSVv2_mediumindices[0]]).Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(75, 0, 600)"
+    },
+    "Ptllbbmet_mumu_bb": {
+    "variable": "(muon_p4[0]+muon_p4[1]+jet_p4[btags_CSVv2_mediumindices[0]]+jet_p4[btags_CSVv2_mediumindices[0]]+nohf_met_p4).Pt()",
+    "plot_cut": "(mumu_category && mumu_ll_mass_cut && @btags_CSVv2_mediumindices.size()>=2) * event_weight",
+    "binning": "(75, 0, 600)"
+    },*/
+    
+}

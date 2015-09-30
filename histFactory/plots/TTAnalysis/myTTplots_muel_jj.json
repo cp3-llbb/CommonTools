@@ -1,0 +1,179 @@
+{
+    "lep1_pt_muel_jj": {
+    "variable": "muon_p4[tt_selectedLeadingMuEl.first].Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 20, 320)"
+    },
+    "lep1_eta_muel_jj": {
+    "variable": "muon_p4[tt_selectedLeadingMuEl.first].Eta()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "lep1_phi_muel_jj": {
+    "variable": "muon_p4[tt_selectedLeadingMuEl.first].Phi()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    "lep2_pt_muel_jj": {
+    "variable": "electron_p4[tt_selectedLeadingMuEl.second].Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(40, 20, 180)"
+    },
+    "lep2_eta_muel_jj": {
+    "variable": "electron_p4[tt_selectedLeadingMuEl.second].Eta()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "lep2_phi_muel_jj": {
+    "variable": "electron_p4[tt_selectedLeadingMuEl.second].Phi()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    
+    "jet1_pt_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[0]].Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 30, 380)"
+    },
+    "jet1_eta_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[0]].Eta()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "jet1_phi_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[0]].Phi()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    },
+    "jet1_CSVv2_muel_jj": {
+    "variable": "jet_pfCombinedInclusiveSecondaryVertexV2BJetTags[tt_selectedJets[0]]",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, 0, 1)"
+    },
+    "jet2_pt_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[1]].Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 30, 230)"
+    },
+    "jet2_eta_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[1]].Eta()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -2.5, 2.5)"
+    },
+    "jet2_phi_muel_jj": {
+    "variable": "jet_p4[tt_selectedJets[1]].Phi()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, -3.2, 3.2)"
+    }, 
+    "jet2_CSVv2_muel_jj": {
+    "variable": "jet_pfCombinedInclusiveSecondaryVertexV2BJetTags[tt_selectedJets[1]]",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(20, 0, 1)"
+    },
+    
+    "Mll_muel_jj": {
+    "variable": "sqrt( (muon_p4[tt_selectedLeadingMuEl.first].E() + electron_p4[tt_selectedLeadingMuEl.second].E())^2 - (muon_p4[tt_selectedLeadingMuEl.first].Px() + electron_p4[tt_selectedLeadingMuEl.second].Px())^2 - (muon_p4[tt_selectedLeadingMuEl.first].Py() + electron_p4[tt_selectedLeadingMuEl.second].Py())^2 - (muon_p4[tt_selectedLeadingMuEl.first].Pz() + electron_p4[tt_selectedLeadingMuEl.second].Pz())^2)",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    /*"Ptll_muel_jj": {
+    "variable": "tt_diLeptons_p4[0].Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 300)"
+    },*/
+    "DRll_muel_jj": {
+    "variable": "sqrt( (muon_p4[tt_selectedLeadingMuEl.first].Eta() - electron_p4[tt_selectedLeadingMuEl.second].Eta())^2 + (min( abs(muon_p4[tt_selectedLeadingMuEl.first].Phi() - electron_p4[tt_selectedLeadingMuEl.second].Phi()), 2*3.14159 - abs(muon_p4[tt_selectedLeadingMuEl.first].Phi() - electron_p4[tt_selectedLeadingMuEl.second].Phi()) ))^2 )",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 6)"
+    },
+    "DPhill_muel_jj": {
+    "variable": "abs(muon_p4[tt_selectedLeadingMuEl.first].Phi() - electron_p4[tt_selectedLeadingMuEl.second].Phi())",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 3.2)"
+    },
+    "DEtall_muel_jj": {
+    "variable": "abs(muon_p4[tt_selectedLeadingMuEl.first].Eta() - electron_p4[tt_selectedLeadingMuEl.second].Eta())",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 5)"
+    },
+    
+    "Mjj_muel_jj": {
+    "variable": "sqrt( (jet_p4[tt_selectedJets[0]].E() + jet_p4[tt_selectedJets[1]].E())^2 - (jet_p4[tt_selectedJets[0]].Px() + jet_p4[tt_selectedJets[1]].Px())^2 - (jet_p4[tt_selectedJets[0]].Py() + jet_p4[tt_selectedJets[1]].Py())^2 - (jet_p4[tt_selectedJets[0]].Pz() + jet_p4[tt_selectedJets[1]].Pz())^2)",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    /*"Ptjj_muel_jj": {
+    "variable": "tt_dijet_Ptjj",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 500)"
+    },*/
+    "DRjj_muel_jj": {
+    "variable": "sqrt( (jet_p4[tt_selectedJets[0]].Eta() - jet_p4[tt_selectedJets[1]].Eta())^2 + (min( abs(jet_p4[tt_selectedJets[0]].Phi() - jet_p4[tt_selectedJets[1]].Phi()), 2*3.14159 - abs(jet_p4[tt_selectedJets[0]].Phi() - jet_p4[tt_selectedJets[1]].Phi()) ))^2 )",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 6)"
+    },
+    "DPhijj_muel_jj": {
+    "variable": "abs(jet_p4[tt_selectedJets[0]].Phi() - jet_p4[tt_selectedJets[1]].Phi())",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 3.2)"
+    },
+    "DEtajj_muel_jj": {
+    "variable": "abs(jet_p4[tt_selectedJets[0]].Eta() - jet_p4[tt_selectedJets[1]].Eta())",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 5)"
+    },
+    
+    "PFMET_muel_jj": {
+    "variable": "met_p4.Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 250)"
+    },
+    "NOHFMET_muel_jj": {
+    "variable": "nohf_met_p4.Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(50, 0, 250)"
+    },
+    
+    "nJet_muel_jj": {
+    "variable": "@tt_selectedJets.size()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(10, 0, 10)"
+    },
+    "nLoosebJet_muel_jj": {
+    "variable": "@btags_CSVv2_looseindices.size()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    },
+    "nMediumbJet_muel_jj": {
+    "variable": "@btags_CSVv2_mediumindices.size()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    },
+    "nTightbJet_muel_jj": {
+    "variable": "@btags_CSVv2_tightindices.size()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(5, 0, 5)"
+    }
+    
+    /*"Mlljj_muel_jj": {
+    "variable": "(electron_p4[0]+electron_p4[1]+jet_p4[tt_selectedJets[0]]+jet_p4[tt_selectedJets[0]]).M()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    "Mlljjmet_muel_jj": {
+    "variable": "(electron_p4[0]+electron_p4[1]+jet_p4[tt_selectedJets[0]]+jet_p4[tt_selectedJets[0]]+nohf_met_p4).M()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(100, 0, 1000)"
+    },
+    "Ptlljj_muel_jj": {
+    "variable": "(electron_p4[0]+electron_p4[1]+jet_p4[tt_selectedJets[0]]+jet_p4[tt_selectedJets[0]]).Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(75, 0, 600)"
+    },
+    "Ptlljjmet_muel_jj": {
+    "variable": "(electron_p4[0]+electron_p4[1]+jet_p4[tt_selectedJets[0]]+jet_p4[tt_selectedJets[0]]+nohf_met_p4).Pt()",
+    "plot_cut": "(muel_category && @tt_selectedJets.size()>=2) * event_weight",
+    "binning": "(75, 0, 600)"
+    },*/
+    
+}

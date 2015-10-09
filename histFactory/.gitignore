@@ -9,3 +9,6 @@
 
 # externals
 external/
+
+# cmake
+build/

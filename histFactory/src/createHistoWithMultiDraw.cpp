@@ -67,6 +67,10 @@ bool execute(const std::string& datasets_json, const std::string& python) {
 
     std::vector<Plot> plots;
 
+    // When using pyROOT inside the python script, gDirectory is set to NULL when the python env is destroyed. This lead to a crash in TTree constructor which does not
+    // check if gDirectory is NULL before accessing it.
+    // As a workaround, we save the value of gDirectory before executing the script, and we restore it right after.
+    TDirectory* old_directory = gDirectory;
     Py_Initialize();
 
     const std::string PLOTS_KEY_NAME = "plots";
@@ -109,6 +113,7 @@ bool execute(const std::string& datasets_json, const std::string& python) {
     }
 
     Py_Finalize();
+    gDirectory = old_directory;
 
     if (plots.empty())
         return false;

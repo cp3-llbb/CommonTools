@@ -221,7 +221,9 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
         player->execute();
 
         for (auto& p: plots) {
-            gDirectory->Get(p.name.c_str())->Write();
+            TObject* obj = gDirectory->Get(p.name.c_str());
+            if (obj)
+                obj->Write();
         }
 
         outfile->Write();

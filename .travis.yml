@@ -1,0 +1,42 @@
+language: cpp
+
+compiler:
+  - gcc
+
+env:
+  - ROOT_VERSION=6.06.00
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - kalakris-cmake
+    packages:
+      - gcc-4.9
+      - g++-4.9
+      - git
+      - make
+      - cmake
+      - uuid-dev
+
+install:
+  - wget http://sbrochet.web.cern.ch/sbrochet/public/ROOT-${ROOT_VERSION}_Python-2.7_Ubuntu-12.04_gcc4.9.tar.xz
+  - mkdir root
+  - cd root
+  - tar xf ../ROOT-${ROOT_VERSION}_Python-2.7_Ubuntu-12.04_gcc4.9.tar.xz
+  - source bin/thisroot.sh
+  - cd ..
+
+before_script:
+  - export CXX=g++-4.9
+  - export CC=gcc-4.9
+  - export HF_BUILD_DIR=`pwd`/histFactory/build
+  - mkdir -p ${HF_BUILD_DIR} && cd ${HF_BUILD_DIR}
+  - cmake ..
+
+script:
+  - cd ${HF_BUILD_DIR}
+  - make
+
+os:
+  - linux

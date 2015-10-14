@@ -15,7 +15,7 @@
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
-#include <TDirectory.h>
+#include <TApplication.h>
 
 #include <tclap/CmdLine.h>
 
@@ -67,10 +67,7 @@ bool execute(const std::string& datasets_json, const std::string& python) {
 
     std::vector<Plot> plots;
 
-    // When using pyROOT inside the python script, gDirectory is set to NULL when the python env is destroyed. This lead to a crash in TTree constructor which does not
-    // check if gDirectory is NULL before accessing it.
-    // As a workaround, we save the value of gDirectory before executing the script, and we restore it right after.
-    TDirectory* old_directory = gDirectory;
+
     Py_Initialize();
 
     const std::string PLOTS_KEY_NAME = "plots";
@@ -79,6 +76,14 @@ bool execute(const std::string& datasets_json, const std::string& python) {
     // and global dictionary
     PyObject* main_module = PyImport_AddModule("__main__");
     PyObject* global_dict = PyModule_GetDict(main_module);
+
+    // If PyROOT is used inside the script, it performs some cleanups when the python env. is destroyed. This cleanup makes ROOT unusable afterwards.
+    // The cleanup function is registered with the `atexit` module.
+    // The solution is to not execute the cleanup function. For that, before destroying the python env, we check the list of exit functions,
+    // and delete the one from PyROOT if found
+
+    // Ensure the module is loaded
+    PyObject* atexit_module = PyImport_ImportModule("atexit");
 
     // Execute the script
     PyObject* script_result = PyRun_File(f, python.c_str(), Py_file_input, global_dict, global_dict);
@@ -112,8 +117,19 @@ bool execute(const std::string& datasets_json, const std::string& python) {
         }
     }
 
+    PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
+    for (size_t i = 0; i < PySequence_Size(atexit_exithandlers); i++) {
+        PyObject* tuple = PySequence_GetItem(atexit_exithandlers, i);
+        PyObject* f = PySequence_GetItem(tuple, 0);
+        PyObject* module = PyFunction_GetModule(f);
+
+        if (module && strcmp(PyString_AsString(module), "ROOT") == 0) {
+            PySequence_DelItem(atexit_exithandlers, i);
+            break;
+        }
+    }
+
     Py_Finalize();
-    gDirectory = old_directory;
 
     if (plots.empty())
         return false;
@@ -205,7 +221,9 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
         player->execute();
 
         for (auto& p: plots) {
-            gDirectory->Get(p.name.c_str())->Write();
+            TObject* obj = gDirectory->Get(p.name.c_str());
+            if (obj)
+                obj->Write();
         }
 
         outfile->Write();
@@ -233,9 +251,21 @@ int main( int argc, char* argv[]) {
         }
 
         bool ret = false;
-        if (python)
+        if (python) {
+            /*
+             * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
+             * because it messes with our already loaded ROOT.
+             *
+             * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplicationµ
+             * to do anything.
+             *
+             * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
+             * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
+             */
+
+            std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
             ret = execute(datasetArg.getValue(), plots[0]);
-        else
+        } else
             ret = execute(datasetArg.getValue(), plots);
 
         return (ret ? 0 : 1);

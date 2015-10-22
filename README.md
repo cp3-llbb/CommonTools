@@ -7,7 +7,7 @@ Available tools for now are:
 ## First time setup instructions
 
 ```bash
-# download the repository, do that preferably outside of CMSSW (there is no need to send your plots in every crab job...)
+# download the repository, do that inside CMSSW if you need dictionaries
 git clone -o upstream git@github.com:cp3-llbb/CommonTools.git CommonTools
 
 # setup git and its remote

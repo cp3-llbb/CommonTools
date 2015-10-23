@@ -27,6 +27,19 @@ struct Plot {
     std::string binning;
 };
 
+struct Dataset {
+    std::string name;
+    std::string db_name;
+    std::string output_name;
+    std::string tree_name;
+    std::string path;
+    std::vector<std::string> files;
+    std::string cut;
+
+    // Futur
+    std::map<std::string, std::string> options;
+};
+
 #define CHECK_AND_GET(var, obj) if (PyDict_Contains(value, obj) == 1) { \
     PyObject* item = PyDict_GetItem(value, obj); \
     if (! PyString_Check(item)) {\
@@ -57,16 +70,38 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     return true;
 }
 
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, std::string output_dir);
+bool execute(const std::vector<Dataset>& datasets, const std::vector<std::string>& config_file, bool python, std::string output_dir = "");
+bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets);
 
-bool execute(const std::string& datasets_json, const std::string& python, std::string output_dir = "") {
-    std::FILE* f = std::fopen(python.c_str(), "r");
+bool parse_json_plots(const std::vector<std::string>& json_file, std::vector<Plot>& plots) {
+    plots.clear();
+
+    for (const auto& plot_json_file: json_file) {
+        std::ifstream f(plot_json_file);
+
+        Json::Value root;
+        Json::Reader reader;
+        if (! reader.parse(f, root)) {
+            std::cerr << "Failed to parse '" << plot_json_file << "'." << std::endl;
+            return false;
+        }
+
+        for (auto it = root.begin(); it != root.end(); it++) {
+            Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
+            plots.push_back(p);
+        }
+    }
+}
+
+bool parse_python_plots(const std::string& python_file, std::vector<Plot>& plots) {
+
+    plots.clear();
+
+    std::FILE* f = std::fopen(python_file.c_str(), "r");
     if (!f) {
-        std::cerr << "Failed to open '" << python << "'" <<std::endl;
+        std::cerr << "Failed to open '" << python_file << "'" <<std::endl;
         return false;
     }
-
-    std::vector<Plot> plots;
 
 
     Py_Initialize();
@@ -87,7 +122,7 @@ bool execute(const std::string& datasets_json, const std::string& python, std::s
     PyObject* atexit_module = PyImport_ImportModule("atexit");
 
     // Execute the script
-    PyObject* script_result = PyRun_File(f, python.c_str(), Py_file_input, global_dict, global_dict);
+    PyObject* script_result = PyRun_File(f, python_file.c_str(), Py_file_input, global_dict, global_dict);
 
     if (! script_result) {
         PyErr_Print();
@@ -132,54 +167,21 @@ bool execute(const std::string& datasets_json, const std::string& python, std::s
 
     Py_Finalize();
 
-    if (plots.empty())
-        return false;
-
-    return execute(datasets_json, plots, output_dir);
+    return true;
 }
 
-// Plots are specified in JSON files
-bool execute(const std::string& datasets_json, const std::vector<std::string>& plots_json, std::string output_dir = "") {
+bool execute(const std::vector<Dataset>& datasets, const std::vector<std::string>& config_files, bool python, std::string output_dir/* = ""*/) {
 
-    // Plots are in JSON format. Parse these files
-
-    // Get the list of plots to draw
     std::vector<Plot> plots;
-    for (const auto& plot_json_file: plots_json) {
-        std::ifstream f(plot_json_file);
 
-        Json::Value root;
-        Json::Reader reader;
-        if (! reader.parse(f, root)) {
-            std::cerr << "Failed to parse '" << plot_json_file << "'." << std::endl;
-            return false;
-        }
-
-        for (auto it = root.begin(); it != root.end(); ++it) {
-            Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
-            plots.push_back(p);
-        }
+    if (python) {
+        parse_python_plots(config_files[0], plots);
+    } else {
+        parse_json_plots(config_files, plots);
     }
 
-    return execute(datasets_json, plots, output_dir);
-}
-
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, std::string output_dir = "") {
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
-
-    // Getting the list of samples    
-    Json::Value samplesroot;
-    {
-        std::ifstream config_doc(datasets_json);
-
-        Json::Reader samplesreader;
-        bool parsingSuccessful = samplesreader.parse(config_doc, samplesroot, false);
-        if (!parsingSuccessful) {
-            std::cerr << "Failed to parse '" << datasets_json << "'" << std::endl;
-            return false;
-        }
-    }
 
     std::cout << "List of requested plots: ";
     for (size_t i = 0; i < plots.size(); i++) {
@@ -190,45 +192,22 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, s
 
     std::cout << std::endl << std::endl;
 
-    // Looping over the different samples
-    Json::Value::Members samples_str = samplesroot.getMemberNames();
-    for (unsigned int index = 0; index < samplesroot.size(); index++){    
-
-        const Json::Value samplearray = samplesroot[samples_str.at(index)];
-
-        std::string tree_name = samplearray.get("tree_name","ASCII").asString();
-        std::string db_name = samplearray.get("db_name","ASCII").asString();
-        std::string sample_cut = samplearray.get("sample_cut","ASCII").asString();
-
-        std::cout << "Running on sample '" << samples_str.at(index) << "'" << std::endl;
-
-        std::unique_ptr<TChain> t(new TChain(tree_name.c_str()));
-
-        // If a path is specified in JSON, take everything we see in the folder
-        if ( samplearray.isMember("path") ){
-          std::string path = samplearray.get("path","ASCII").asString();
-          std::string infiles = path+"/*.root";
-
-          t->Add(infiles.c_str());
-        
-        // If a list of files is specified, only use those
-        } else if( samplearray.isMember("files") ){
-          Json::Value filearray = samplearray["files"];
-
-          for(auto it = filearray.begin(); it != filearray.end(); ++it){
-            t->Add( (*it).asCString() );
-          }
-        }
+    for (const Dataset& dataset: datasets) {
 
         // If an output directory is specified, use it, otherwise use the current directory
-        if ( output_dir == "" )
+        if (output_dir == "")
           output_dir = ".";
         // If an output file name is specified in the Json, use it, otherwise use the sample DB name
-        std::string output_file;
-        if ( samplearray.isMember("output_name") )
-          output_file = output_dir + "/" + samplearray.get("output_name", "ASCII").asString();
-        else
-          output_file = output_dir + "/" + db_name + "_histos.root";
+        std::string output_file = output_dir + "/" + dataset.output_name;
+
+        std::cout << "Running on sample '" << dataset.name << "'." << std::endl;
+        std::cout << "Output file: " << output_file << std::endl;
+
+        std::unique_ptr<TChain> t(new TChain(dataset.tree_name.c_str()));
+
+        for (const auto& file: dataset.files)
+            t->Add(file.c_str());
+        
         std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 
         TMultiDrawTreePlayer* player = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
@@ -253,6 +232,57 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, s
     return true;
 }
 
+bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets) {
+
+    Json::Value root;
+    {
+        std::ifstream f(json_file);
+        Json::Reader reader;
+        if (! reader.parse(f, root, false)) {
+            std::cerr << "Failed to parse '" << json_file << "'" << std::endl;
+            return false;
+        }
+    }
+
+    datasets.clear();
+
+    // Looping over the different samples
+    Json::Value::Members samples_str = root.getMemberNames();
+    for (size_t index = 0; index < root.size(); index++) {
+
+        const Json::Value& sample = root[samples_str[index]];
+        Dataset dataset;
+
+        // Mandatory fields
+        dataset.name = samples_str[index];
+        dataset.db_name = sample["db_name"].asString();
+        dataset.cut = sample.get("sample_cut", "1").asString();
+        dataset.tree_name = sample.get("tree_name", "t").asString();
+
+        //dataset.output_name
+        if (sample.isMember("output_name")) {
+            dataset.output_name = sample["output_name"].asString();
+        } else {
+            dataset.output_name = dataset.db_name + "_histos.root";
+        }
+
+        // If a list of files is specified, only use those
+        if (sample.isMember("files")) {
+            Json::Value files = sample["files"];
+
+            for(auto it = files.begin(); it != files.end(); ++it) {
+                dataset.files.push_back((*it).asString());
+            }
+        } else if (sample.isMember("path")) {
+            dataset.path = sample["path"].asString();
+            dataset.files.push_back(dataset.path + "/*.root");
+        }
+
+        datasets.push_back(dataset);
+    }
+
+    return true;
+}
 
 int main( int argc, char* argv[]) {
 
@@ -272,24 +302,33 @@ int main( int argc, char* argv[]) {
             python = true;
         }
 
+        std::vector<Dataset> datasets;
+        parse_datasets(datasetArg.getValue(), datasets);
+
+        if (datasets.empty()) {
+            std::cerr << "Error: no input datasets specified." << std::endl;
+            return 1;
+        }
+
+        std::unique_ptr<TApplication> app;
+
         bool ret = false;
         if (python) {
             /*
              * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
              * because it messes with our already loaded ROOT.
              *
-             * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplicationµ
+             * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplication`
              * to do anything.
              *
              * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
              * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
              */
 
-            std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
-            ret = execute(datasetArg.getValue(), plots[0], outputArg.getValue());
-        } else
-            ret = execute(datasetArg.getValue(), plots, outputArg.getValue());
+            app.reset(new TApplication("dummy", 0, NULL));
+        }
 
+        ret = execute(datasets, plots, python, outputArg.getValue());
         return (ret ? 0 : 1);
 
     } catch (TCLAP::ArgException &e) {

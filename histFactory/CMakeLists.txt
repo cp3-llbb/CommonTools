@@ -83,6 +83,8 @@ target_link_libraries(multidraw ${ROOT_LIBRARIES})
 target_link_libraries(multidraw ${ROOT_TREEPLAYER_LIBRARY})
 target_link_libraries(multidraw ${PYTHON_LIBRARY})
 
+target_link_libraries(multidraw "uuid")
+
 target_link_libraries(count ${ROOT_LIBRARIES})
 
 # Ensure C++11 is available

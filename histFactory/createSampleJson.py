@@ -3,6 +3,10 @@
 import os, sys
 import json
 
+# Add default ingrid storm package
+sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
+sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/MySQL_python-1.2.3-py2.7-linux-x86_64.egg')
+
 CMSSW_BASE = os.environ['CMSSW_BASE']
 SCRAM_ARCH = os.environ['SCRAM_ARCH']
 sys.path.append(os.path.join(CMSSW_BASE,'bin', SCRAM_ARCH))
@@ -15,7 +19,7 @@ def get_sample(iSample):
 
 def main():
     samples = {}
-    for isample in xrange(436, 462+1):
+    for isample in [517]:
         db_name, path,  = map(str, get_sample(isample)[0])
 #        print path, db_name
         d = {}

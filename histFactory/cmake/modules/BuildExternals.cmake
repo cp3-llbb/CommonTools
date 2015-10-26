@@ -11,7 +11,7 @@ set(JSONCPP_VERSION "1.6.5")
 set(JSONCPP_TAR "jsoncpp-${JSONCPP_VERSION}.tar.gz")
 set(JSONCPP_DIR ${EXTERNAL_DIR}/jsoncpp-${JSONCPP_VERSION})
 
-set(MD_VERSION "1.1.1")
+set(MD_VERSION "1.1.2")
 set(MD_TAR "TMultiDrawTreePlayer-${MD_VERSION}.tar.gz")
 set(MD_DIR ${EXTERNAL_DIR}/TMultiDrawTreePlayer-${MD_VERSION})
 

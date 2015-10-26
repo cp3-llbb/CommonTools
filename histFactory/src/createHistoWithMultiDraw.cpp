@@ -57,9 +57,9 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     return true;
 }
 
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots);
+bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, std::string output_dir);
 
-bool execute(const std::string& datasets_json, const std::string& python) {
+bool execute(const std::string& datasets_json, const std::string& python, std::string output_dir = "") {
     std::FILE* f = std::fopen(python.c_str(), "r");
     if (!f) {
         std::cerr << "Failed to open '" << python << "'" <<std::endl;
@@ -135,11 +135,11 @@ bool execute(const std::string& datasets_json, const std::string& python) {
     if (plots.empty())
         return false;
 
-    return execute(datasets_json, plots);
+    return execute(datasets_json, plots, output_dir);
 }
 
 // Plots are specified in JSON files
-bool execute(const std::string& datasets_json, const std::vector<std::string>& plots_json) {
+bool execute(const std::string& datasets_json, const std::vector<std::string>& plots_json, std::string output_dir = "") {
 
     // Plots are in JSON format. Parse these files
 
@@ -155,16 +155,16 @@ bool execute(const std::string& datasets_json, const std::vector<std::string>& p
             return false;
         }
 
-        for (auto it = root.begin(); it != root.end(); it++) {
+        for (auto it = root.begin(); it != root.end(); ++it) {
             Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
             plots.push_back(p);
         }
     }
 
-    return execute(datasets_json, plots);
+    return execute(datasets_json, plots, output_dir);
 }
 
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
+bool execute(const std::string& datasets_json, const std::vector<Plot>& plots, std::string output_dir = "") {
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
 
@@ -197,7 +197,6 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
         const Json::Value samplearray = samplesroot[samples_str.at(index)];
 
         std::string tree_name = samplearray.get("tree_name","ASCII").asString();
-        std::string path = samplearray.get("path","ASCII").asString();
         std::string db_name = samplearray.get("db_name","ASCII").asString();
         std::string sample_cut = samplearray.get("sample_cut","ASCII").asString();
 
@@ -205,11 +204,32 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
 
         std::unique_ptr<TChain> t(new TChain(tree_name.c_str()));
 
-        std::string infiles = path+"/*.root";
+        // If a path is specified in JSON, take everything we see in the folder
+        if ( samplearray.isMember("path") ){
+          std::string path = samplearray.get("path","ASCII").asString();
+          std::string infiles = path+"/*.root";
 
-        t->Add(infiles.c_str());
+          t->Add(infiles.c_str());
+        
+        // If a list of files is specified, only use those
+        } else if( samplearray.isMember("files") ){
+          Json::Value filearray = samplearray["files"];
 
-        std::unique_ptr<TFile> outfile(TFile::Open((db_name+"_histos.root").c_str(), "recreate"));
+          for(auto it = filearray.begin(); it != filearray.end(); ++it){
+            t->Add( (*it).asCString() );
+          }
+        }
+
+        // If an output directory is specified, use it, otherwise use the current directory
+        if ( output_dir == "" )
+          output_dir = ".";
+        // If an output file name is specified in the Json, use it, otherwise use the sample DB name
+        std::string output_file;
+        if ( samplearray.isMember("output_name") )
+          output_file = output_dir + "/" + samplearray.get("output_name", "ASCII").asString();
+        else
+          output_file = output_dir + "/" + db_name + "_histos.root";
+        std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 
         TMultiDrawTreePlayer* player = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
 
@@ -241,7 +261,8 @@ int main( int argc, char* argv[]) {
         TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.1.0");
 
         TCLAP::ValueArg<std::string> datasetArg("d", "dataset", "Input datasets", true, "", "JSON file", cmd);
-        TCLAP::UnlabeledMultiArg<std::string> plotsArg("plots", "List of plots", true, "JSON file", cmd);
+        TCLAP::ValueArg<std::string> outputArg("o", "output", "Output directory", false, "", "ROOT file", cmd);
+        TCLAP::UnlabeledMultiArg<std::string> plotsArg("plots", "List of plots", true, "JSON/Python file", cmd);
 
         cmd.parse(argc, argv);
 
@@ -265,9 +286,9 @@ int main( int argc, char* argv[]) {
              */
 
             std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
-            ret = execute(datasetArg.getValue(), plots[0]);
+            ret = execute(datasetArg.getValue(), plots[0], outputArg.getValue());
         } else
-            ret = execute(datasetArg.getValue(), plots);
+            ret = execute(datasetArg.getValue(), plots, outputArg.getValue());
 
         return (ret ? 0 : 1);
 

@@ -37,5 +37,9 @@ make
 ### Create histograms
 
 ```bash
-./createHistoWithMultiDraw.exe -d ../samples/mysamples.json ../plots/myplots.json
+./createHistoWithMultiDraw.exe -d ../samples/mysamples.json [-o outputdir] -- ../plots/myplots.json
 ```
+
+### Use condor to fill histograms
+
+See condorExample.py for usage.

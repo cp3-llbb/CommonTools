@@ -11,7 +11,7 @@ set(JSONCPP_VERSION "1.6.5")
 set(JSONCPP_TAR "jsoncpp-${JSONCPP_VERSION}.tar.gz")
 set(JSONCPP_DIR ${EXTERNAL_DIR}/jsoncpp-${JSONCPP_VERSION})
 
-set(MD_VERSION "1.0")
+set(MD_VERSION "1.1.1")
 set(MD_TAR "TMultiDrawTreePlayer-${MD_VERSION}.tar.gz")
 set(MD_DIR ${EXTERNAL_DIR}/TMultiDrawTreePlayer-${MD_VERSION})
 
@@ -46,7 +46,9 @@ if (NOT EXTERNAL_BUILT)
     execute_process(COMMAND curl -L "https://github.com/blinkseb/TMultiDrawTreePlayer/archive/v${MD_VERSION}.tar.gz" -o "${MD_TAR}" WORKING_DIRECTORY ${EXTERNAL_DIR})
     execute_process(COMMAND tar xf ${MD_TAR} WORKING_DIRECTORY ${EXTERNAL_DIR})
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${MD_DIR}/TMultiDrawTreePlayer.cxx ${EXTERNAL_SRC_DIR})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${MD_DIR}/TSelectorMultiDraw.cxx ${EXTERNAL_SRC_DIR})
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${MD_DIR}/TMultiDrawTreePlayer.h ${EXTERNAL_INCLUDE_DIR})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${MD_DIR}/TSelectorMultiDraw.h ${EXTERNAL_INCLUDE_DIR})
 
     MESSAGE(STATUS "Building TCLAP")
     execute_process(COMMAND curl -L "http://downloads.sourceforge.net/project/tclap/tclap-1.2.1.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Ftclap%2Ffiles%2F&ts=1431017326&use_mirror=freefr" -o "${TCLAP_TAR}" WORKING_DIRECTORY ${EXTERNAL_DIR})

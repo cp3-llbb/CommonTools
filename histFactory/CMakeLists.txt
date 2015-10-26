@@ -39,6 +39,7 @@ set(MULTIDRAW_SOURCES
     src/createHistoWithMultiDraw.cpp
     ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
     ${EXTERNAL_SRC_DIR}/TMultiDrawTreePlayer.cxx
+    ${EXTERNAL_SRC_DIR}/TSelectorMultiDraw.cxx
     ${MD_DICTIONARY}
     )
 

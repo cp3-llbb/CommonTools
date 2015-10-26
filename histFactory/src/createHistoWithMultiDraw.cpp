@@ -16,6 +16,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TApplication.h>
+#include <TObject.h>  // For kWriteDelete
 
 #include <tclap/CmdLine.h>
 
@@ -215,7 +216,7 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
         // Looping over the different plots
         for (auto& p: plots) {
             std::string plot_var = p.variable + ">>" + p.name + p.binning;
-            player->queueDraw(plot_var.c_str(), p.plot_cut.c_str());
+            player->queueDraw(plot_var.c_str(), p.plot_cut.c_str(), "goff");
         }
 
         player->execute();
@@ -223,10 +224,10 @@ bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
         for (auto& p: plots) {
             TObject* obj = gDirectory->Get(p.name.c_str());
             if (obj)
-                obj->Write();
+                obj->Write(nullptr, TObject::kOverwrite);
         }
 
-        outfile->Write();
+        outfile->Write(nullptr, TObject::kOverwrite);
     }
 
     return true;

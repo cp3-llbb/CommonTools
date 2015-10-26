@@ -32,18 +32,18 @@ def joinCuts(*cuts):
 
 #### The IDs/... we want to run on ####
 
-electronID = { id.first: id.second for id in TT.LepID.map if id.second != "V" }
+#electronID = { id.first: id.second for id in TT.LepID.map if id.second != "V" }
 muonID = dict(TT.LepID.map)
-#electronID = { TT.LepID.M: "M" }
-#muonID = { TT.LepID.T: "M" }
+electronID = { TT.LepID.M: "L" }
+muonID = { TT.LepID.T: "M" }
 
 electronIso = { TT.LepIso.L: "L" }
 muonIso = dict(TT.LepIso.map)
 #muonIso = { TT.LepIso.L: "L" }
 
 #myBWPs = { wp.first: wp.second for wp in TT.BWP.map }
-myBWPs = { TT.BWP.L: "L", TT.BWP.M: "M" } 
-#myBWPs = { TT.BWP.L: "L" } 
+#myBWPs = { TT.BWP.L: "L", TT.BWP.M: "M" } 
+myBWPs = { TT.BWP.L: "L" } 
 
 #myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
 myFlavours = [ "ElEl" ]

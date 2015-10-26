@@ -1,9 +1,16 @@
-#### This file is passed to histFactory       ####
-#### It generates all the plot configs        ####
-####  based on skeletons defined in basePlots ####
-####  and on info defined in plotTootls       ####
+#### This file is passed to histFactory
+#### It generates all the plot configs based on skeletons defined in basePlots
+####  and on info defined in plotTools.
 
+import inspect
+import os
+import sys
 
+#### Get directory where script is stored to handle the import correctly
+scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.append(scriptDir)
+
+#### Get dictionary definitions ####
 from plotTools import *
 
 #### Get plot skeletons from other file ####
@@ -18,25 +25,25 @@ categoryPlots = {
             "plots": basePlots.ll,
             },
         
-        # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
-        "lljjCategs": { 
-            "plots": basePlots.ll + basePlots.lljj,
-            },
-        
-        # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
-        "lljj_b_Categs": { 
-            "plots": basePlots.lljj_b,
-            },
-        
-        # ask for 2 leptons & 2 jets & 1 b-jet; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
-        "llbjCategs": { 
-            "plots": basePlots.llbj,
-            },
-        
-        # ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
-        "llbbCategs": { 
-            "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
-            },
+        ## ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
+        #"lljjCategs": { 
+        #    "plots": basePlots.ll + basePlots.lljj,
+        #    },
+        #
+        ## ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
+        #"lljj_b_Categs": { 
+        #    "plots": basePlots.lljj_b,
+        #    },
+        #
+        ## ask for 2 leptons & 2 jets & 1 b-jet; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
+        #"llbjCategs": { 
+        #    "plots": basePlots.llbj,
+        #    },
+        #
+        ## ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
+        #"llbbCategs": { 
+        #    "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
+        #    },
     
     }
 
@@ -69,9 +76,11 @@ for flav in flavourCategPlots.values():
 
                 # Iterate over the string keys defined in the sub-category
                 for key in subCateg.items():
-                    m_plot["name"] = m_plot["name"].replace(key[0], str(key[1]))
-                    m_plot["variable"] = m_plot["variable"].replace(key[0], str(key[1]))
-                    m_plot["plot_cut"] = m_plot["plot_cut"].replace(key[0], str(key[1]))
+
+                    # Update name, variable, and plot_cut field
+                    for field in m_plot.keys():
+                        if isinstance(m_plot[field], str):
+                            m_plot[field] = m_plot[field].replace(key[0], str(key[1]))
 
                 # Replace binning tuples by strings
                 m_plot["binning"] = str(m_plot["binning"])
@@ -81,7 +90,7 @@ for flav in flavourCategPlots.values():
 
                 plots.append(m_plot)
 
-                print "Plot: {}\nVariable: {}\n Cut: {}\nBinning: {}\n".format(m_plot["name"], m_plot["variable"], m_plot["plot_cut"], m_plot["binning"])
+                print "Plot: {}\nVariable: {}\nCut: {}\nBinning: {}\n".format(m_plot["name"], m_plot["variable"], m_plot["plot_cut"], m_plot["binning"])
 
 print "Generated {} plots.\n".format(len(plots))
 

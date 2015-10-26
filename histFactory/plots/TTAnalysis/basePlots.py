@@ -1,3 +1,11 @@
+import inspect
+import os
+import sys
+
+# Get directory where script is stored to handle the import correctly
+scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.append(scriptDir)
+
 from plotTools import *
 
 # Define skeleton config for plots, with stringcards which will be replaced for each category
@@ -72,7 +80,7 @@ ll = [
             'name': 'll_Eta_CAT_#CAT_TITLE#',
             'variable': 'tt_diLeptons[ tt_diLeptons_IDIso[#LEPLEP_IDISO#][0] ].p4.Eta()',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-            'binning': (50, -2.5, 2.5)
+            'binning': (50, -5, 5)
         },
         { 
             'name': 'll_Phi_CAT_#CAT_TITLE#',
@@ -206,7 +214,7 @@ lljj = [
             'name': 'jj_Eta_CAT_#CAT_TITLE#',
             'variable': 'tt_diJets[ tt_diLepDiJets[ tt_diLepDiJets_DRCut[#LEPLEP_IDISO#][0] ].diJetIdx ].p4.Eta()',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-            'binning': (50, -2.5, 2.5)
+            'binning': (50, -5, 5)
         },
         { 
             'name': 'jj_Phi_CAT_#CAT_TITLE#',
@@ -244,7 +252,7 @@ lljj = [
             'name': 'lljj_Eta_CAT_#CAT_TITLE#',
             'variable': 'tt_diLepDiJets[ tt_diLepDiJets_DRCut[#LEPLEP_IDISO#][0] ].p4.Eta()',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-            'binning': (50, -2.5, 2.5)
+            'binning': (50, -5, 5)
         },
         { 
             'name': 'lljj_Phi_CAT_#CAT_TITLE#',
@@ -393,7 +401,7 @@ llbb = [
             'name': 'bb_Eta_CAT_#CAT_TITLE#',
             'variable': 'tt_diJets[ tt_diLepDiJets[ tt_diLepDiBJets_DRCut_BWP_CSVv2Ordered[#LEPLEP_IDISO_BBWP#][0] ].diJetIdx ].p4.Eta()',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-            'binning': (25, -2.5, 2.5)
+            'binning': (25, -5, 5)
         },
         { 
             'name': 'bb_Phi_CAT_#CAT_TITLE#',
@@ -431,7 +439,7 @@ llbb = [
             'name': 'llbb_Eta_CAT_#CAT_TITLE#',
             'variable': 'tt_diLepDiJets[ tt_diLepDiBJets_DRCut_BWP_CSVv2Ordered[#LEPLEP_IDISO_BBWP#][0] ].p4.Eta()',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-            'binning': (25, -2.5, 2.5)
+            'binning': (25, -5, 5)
         },
         { 
             'name': 'llbb_Phi_CAT_#CAT_TITLE#',

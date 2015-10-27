@@ -27,7 +27,11 @@ mySub = condorSubmitter(samples, "build/createHistoWithMultiDraw.exe", "plots/TT
 mySub.setupCondorDirs()
 
 ## Write command and data files in the condor directory
-mySub.createCondorFiles()
+## Set createHadd to True to create a bash script to run when the jobs are finished,
+## to automatically hadd the output files. This is currently only supported when
+## the output file name is NOT specified in the Json skeleton, and when the multiple
+## run feature is NOT used.
+mySub.createCondorFiles(createHadd = True)
 
 ## Actually submit the jobs
 ## It is recommended to do a dry-run first without submitting to condor
@@ -41,7 +45,8 @@ mySub.createCondorFiles()
 #    "#DB_NAME#": {
 #        "tree_name": "t",
 #        "sample_cut": "1.",
-#        # Optional, but if you use it, don't forget #JOB_ID#:
+#        # Optional, but if you use it, don't forget #JOB_ID#. If you have multiple runs, be sure to include a #RUN_NAME# field
+#        # to be changed by your python plot config.
 #        "output_name": "output_#JOB_ID#.root"
 #    }
 #}

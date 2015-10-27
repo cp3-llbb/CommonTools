@@ -113,6 +113,9 @@ std::string get_uuid() {
 
     uuid_unparse(out, &uuid[0]);
 
+    // Remove null terminator
+    uuid.resize(36);
+
     return uuid;
 }
 

@@ -1,3 +1,5 @@
+#!/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/bin/python
+
 ## Example usage of condorTools
 ## Run `python condorExample.py`
 
@@ -5,7 +7,7 @@ from condorTools import condorSubmitter
 
 ## Create an instance of the submitter for
 ## - sample n.517
-## - 20 files per job
+## - 10 files per job
 ## - specifying: * path to the executable (relative to where this script is launched)
 ##               * path to the plot configuration python/JSON (relative to where this script is launched)
 ##               * folder where the inputs/outputs/logs will be stored
@@ -21,7 +23,7 @@ samples = [
         }
     ]
 
-mySub = condorSubmitter(samples, "build/createHistoWithMultiDraw.exe", "plots/TTAnalysis/generatePlots.py", "test_seb/")
+mySub = condorSubmitter(samples, "build/createHistoWithMultiDraw.exe", "plots/TTAnalysis/generatePlots.py", "test_condor/")
 
 ## Create test_condor directory and subdirs
 mySub.setupCondorDirs()
@@ -41,7 +43,9 @@ mySub.createCondorFiles()
 #    "#DB_NAME#": {
 #        "tree_name": "t",
 #        "sample_cut": "1.",
-#        # Optional, but if you use it, don't forget #JOB_ID#:
-#        "output_name": "output_#JOB_ID#.root"
+#        # Optional:
+#        # A job ID will be appended at the end of the name.
+#        # If you have multiple runs, be sure to be change the name for each run in your python plot config.
+#        "output_name": "output.root"
 #    }
 #}

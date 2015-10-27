@@ -116,30 +116,10 @@ std::string get_uuid() {
     return uuid;
 }
 
-bool execute(const std::vector<Dataset>& datasets, const std::vector<std::string>& config_file, bool python, std::string output_dir = "");
+bool execute(const std::vector<Dataset>& datasets, const std::string& config_file, std::string output_dir = "");
 bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets);
 
-bool parse_json_plots(const std::vector<std::string>& json_file, std::vector<Plot>& plots) {
-    plots.clear();
-
-    for (const auto& plot_json_file: json_file) {
-        std::ifstream f(plot_json_file);
-
-        Json::Value root;
-        Json::Reader reader;
-        if (! reader.parse(f, root)) {
-            std::cerr << "Failed to parse '" << plot_json_file << "'." << std::endl;
-            return false;
-        }
-
-        for (auto it = root.begin(); it != root.end(); it++) {
-            Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
-            plots.push_back(p);
-        }
-    }
-}
-
-bool parse_python_plots(const std::string& python_file, Run& run) {
+bool get_plots(const std::string& python_file, Run& run) {
 
     std::vector<Plot>& plots = run.plots;
 
@@ -227,26 +207,11 @@ bool parse_python_plots(const std::string& python_file, Run& run) {
     return true;
 }
 
-bool execute(std::vector<Dataset>& datasets, const std::vector<std::string>& config_files, bool python, std::string output_dir/* = ""*/) {
+bool execute(std::vector<Dataset>& datasets, const std::string& config_file, std::string output_dir/* = ""*/) {
 
     // If an output directory is specified, use it, otherwise use the current directory
     if (output_dir == "")
       output_dir = ".";
-
-    std::vector<Plot> plots;
-
-    if (!python) {
-        parse_json_plots(config_files, plots);
-
-        std::cout << std::endl << "List of requested plots: ";
-        for (size_t i = 0; i < plots.size(); i++) {
-            std::cout << "'" << plots[i].name << "'";
-            if (i != plots.size() - 1)
-                std::cout << ", ";
-        }
-
-        std::cout << std::endl;
-    } 
 
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
@@ -275,23 +240,21 @@ bool execute(std::vector<Dataset>& datasets, const std::vector<std::string>& con
 
         // Gather all plots for all runs
         for (Run& run: dataset.runs) {
-            if (python) {
-                parse_python_plots(config_files[0], run);
+            get_plots(config_file, run);
 
-                std::cout << "List of requested plots for this run: ";
-                for (size_t i = 0; i < run.plots.size(); i++) {
-                    std::cout << "'" << run.plots[i].name << "'";
-                    if (i != run.plots.size() - 1)
-                        std::cout << ", ";
-                }
-                std::cout << std::endl;
+            std::cout << "List of requested plots for this run: ";
+            for (size_t i = 0; i < run.plots.size(); i++) {
+                std::cout << "'" << run.plots[i].name << "'";
+                if (i != run.plots.size() - 1)
+                    std::cout << ", ";
+            }
+            std::cout << std::endl;
 
-                // Convert plots name to unique name to avoid collision between different runs
-                for (Plot& plot: run.plots) {
-                    std::string uuid = get_uuid();
-                    unique_names[uuid] = plot.name;
-                    plot.name = uuid;
-                }
+            // Convert plots name to unique name to avoid collision between different runs
+            for (Plot& plot: run.plots) {
+                std::string uuid = get_uuid();
+                unique_names[uuid] = plot.name;
+                plot.name = uuid;
             }
         }
 
@@ -434,19 +397,13 @@ int main( int argc, char* argv[]) {
 
     try {
 
-        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.1.0");
+        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.2.0");
 
         TCLAP::ValueArg<std::string> datasetArg("d", "dataset", "Input datasets", true, "", "JSON file", cmd);
         TCLAP::ValueArg<std::string> outputArg("o", "output", "Output directory", false, "", "ROOT file", cmd);
-        TCLAP::UnlabeledMultiArg<std::string> plotsArg("plots", "List of plots", true, "JSON/Python file", cmd);
+        TCLAP::UnlabeledValueArg<std::string> plotsArg("plots", "A python script which will be executed and should returns a list of plots", true, "", "Python script", cmd);
 
         cmd.parse(argc, argv);
-
-        bool python = false;
-        const std::vector<std::string>& plots = plotsArg.getValue();
-        if (plots.size() == 1 && plots[0].substr(plots[0].find_last_of(".") + 1) == "py") {
-            python = true;
-        }
 
         std::vector<Dataset> datasets;
         parse_datasets(datasetArg.getValue(), datasets);
@@ -456,31 +413,24 @@ int main( int argc, char* argv[]) {
             return 1;
         }
 
-        std::unique_ptr<TApplication> app;
+        /*
+         * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
+         * because it messes with our already loaded ROOT.
+         *
+         * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplication`
+         * to do anything.
+         *
+         * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
+         * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
+         */
 
-        bool ret = false;
-        if (python) {
-            /*
-             * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
-             * because it messes with our already loaded ROOT.
-             *
-             * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplication`
-             * to do anything.
-             *
-             * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
-             * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
-             */
+        std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
 
-            app.reset(new TApplication("dummy", 0, NULL));
+        Py_Initialize();
 
-            Py_Initialize();
-        }
+        bool ret = execute(datasets, plotsArg.getValue(), outputArg.getValue());
 
-        ret = execute(datasets, plots, python, outputArg.getValue());
-
-        if (python) {
-            Py_Finalize();
-        }
+        Py_Finalize();
 
         return (ret ? 0 : 1);
 

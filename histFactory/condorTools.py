@@ -156,7 +156,7 @@ popd
             for fileList in fileListList:
 
                 jsonFileName = os.path.join(self.inDir, "samples_{}.json".format(jobCount) )
-                outputFile = name + "_histos_{}".format(jobCount) + ".root"
+                outputFile = name + "_histos_{}".format(jobCount)
                 
                 dico = {}
                 dico["#JOB_ID#"] = str(jobCount)
@@ -164,7 +164,7 @@ popd
                 dico["#SAMPLE_JSON#"] = jsonFileName 
                 dico["#INDIR_PATH#"] = self.inDir
                 dico["#OUTDIR_PATH#"] = self.outDir
-                dico["#OUTPUT_FILE#"] = outputFile 
+                dico["#OUTPUT_FILE#"] = outputFile + '.root'
                 dico["#LOGDIR_RELPATH#"] = os.path.relpath(self.logDir)
                 dico["#EXEC_PATH#"] = self.execPath
                 dico["#PLOT_CFG_PATH#"] = self.plotConfig

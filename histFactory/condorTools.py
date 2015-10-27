@@ -54,11 +54,6 @@ class condorSubmitter:
                         raise Exception("Json entry should be named #DB_NAME#.")
                     if "path" in sample["json_skeleton"]["#DB_NAME#"].keys():
                         del sample["json_skeleton"]["#DB_NAME#"]["path"]
-                    if "output_name" in sample["json_skeleton"]["#DB_NAME#"].keys():
-                        if "#JOB_ID#" not in sample["json_skeleton"]["#DB_NAME#"]["output_name"]:
-                            raise Exception("If you specify an output name, it should include #JOB_ID#!")
-                        if "runs" in sample["json_skeleton"]["#DB_NAME#"].keys() and "#RUN_NAME#" not in sample["json_skeleton"]["#DB_NAME#"]["output_name"]:
-                            raise Exception("If multiple runs are done and the output name is specified, it should include a #RUN_NAME# field to be changed by the python plot config file.")
             else:
                 sample["json_skeleton"] = {
                         sample["db_name"]:
@@ -70,25 +65,19 @@ class condorSubmitter:
                         }
 
         self.baseCmd = """
-# here goes your shell script
-executable     = #INDIR_PATH#/condor_#JOB_ID#.sh
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+universe       = vanilla
+requirements   = (CMSFARM =?= TRUE)&&(Memory > 200)
 
-# here you specify where to put .log, .out and .err files
+"""
+        self.jobCmd = """
 output         = #LOGDIR_RELPATH#/condor_#JOB_ID#.out
 error          = #LOGDIR_RELPATH#/condor_#JOB_ID#.err
 log            = #LOGDIR_RELPATH#/condor_#JOB_ID#.log
-
-# the following two parameters enable the file transfer mechanism
-# and specify that the output files should be transferred back
-# to the submit machine from the remote machine where the job executes
-should_transfer_files   = YES
-when_to_transfer_output = ON_EXIT
-
-# the following two parameters are *required* for the ingrid cluster
-universe       = vanilla
-requirements   = (CMSFARM =?= TRUE)
-
+executable     = #INDIR_PATH#/condor_#JOB_ID#.sh
 queue 1
+
 """
 
         self.baseShell = """
@@ -100,7 +89,15 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 eval `scram runtime --sh`
 popd
 
-#EXEC_PATH# -d #SAMPLE_JSON# -- #PLOT_CFG_PATH# && mv *.root #OUTDIR_PATH#/
+function move_files {
+ for file in *.root; do
+   base=`basename $file .root`
+   echo "Moving $file to #OUTDIR_PATH#/${base}_#JOB_ID#.root"
+   mv $file #OUTDIR_PATH#/${base}_#JOB_ID#.root
+ done
+}
+
+#EXEC_PATH# -d #SAMPLE_JSON# -- #PLOT_CFG_PATH# && move_files
 """
 
     def getSampleFiles(self, iSample):
@@ -148,7 +145,7 @@ popd
             os.makedirs(logDir)
         self.logDir = os.path.relpath(logDir)
 
-    def createCondorFiles(self, generateHadd = False):
+    def createCondorFiles(self):
         """ Create the .sh and .cmd files for Condor."""
 
         jobCount = 0
@@ -166,18 +163,11 @@ popd
                     jsonContent = {}
                     jsonContent[name] = copy.deepcopy(sample["json_skeleton"]["#DB_NAME#"])
                     jsonContent[name]["db_name"] = name
-                   
-                    if "output_name" in jsonContent[name].keys():
-                        jsonContent[name]["output_name"].replace("#JOB_ID#", str(jobCount))
-                        
+                
                 jsonContent[name]["files"] = fileList
                 
                 if "output_name" not in jsonContent[name].keys():
-                    outputFile = name + "_histos"
-                    if "runs" in jsonContent[name].keys():
-                        outputFile += "_#RUN_NAME#"
-                    outputFile += "_{}".format(jobCount)
-                    jsonContent[name]["output_name"] = outputFile
+                    jsonContent[name]["output_name"] = name + "_histos"
 
                 with open(jsonFileName, "w") as js:
                     json.dump(jsonContent, js)
@@ -193,41 +183,53 @@ popd
                 dico["#PLOT_CFG_PATH#"] = self.plotConfig
                 dico["#CMS_PATH#"] = CMSSW_BASE
 
-                thisCmd = str(self.baseCmd)
-                thisSh = str(self.baseShell)
-
+                thisCmd = str(self.jobCmd)
                 for key in dico.items():
                     thisCmd = thisCmd.replace(key[0], key[1])
                     thisSh = thisSh.replace(key[0], key[1])
+                self.baseCmd += thisCmd
 
-                cmdFileName = os.path.join(self.inDir, "condor_{}.cmd".format(jobCount))
-                with open(cmdFileName, "w") as cmd:
-                    cmd.write(thisCmd)
-
+                thisSh = str(self.baseShell)
                 shFileName = os.path.join(self.inDir, "condor_{}.sh".format(jobCount))
                 with open(shFileName, "w") as sh:
                     sh.write(thisSh)
-                
+                perm = os.stat(shFileName)
+                os.chmod(shFileName, perm.st_mode | stat.S_IEXEC)
+
                 jobCount += 1
+           
+        cmdFileName = os.path.join(self.inDir, "condor.cmd")
+        with open(cmdFileName, "w") as cmd:
+            cmd.write(self.baseCmd)
 
         print "Created {} job command files. Caution: the jobs are not submitted yet!.".format(jobCount)
 
         self.jobCount = jobCount
         self.isCreated = True
 
-        if generateHadd is True:
-            # Generate a command to hadd all the files when the jobs are done
-            haddFile = os.path.join(self.baseDir, "hadd_histos.sh")
-            with open(haddFile, "w") as f:
-                cmd = ""
-                for sample in self.sampleCfg:
-                    basePath = self.outDir + "/" + sample["db_name"]
-                    cmd += "hadd {}_histos.root {}_histos_*.root && ".format(basePath, basePath)
-                    cmd += "if [ \"$1\" == \"-r\" ]; then rm {}_histos_*.root; fi\n".format(basePath)
-                f.write(cmd)
-            perm = os.stat(haddFile)
-            os.chmod(haddFile, perm.st_mode | stat.S_IEXEC)
-            self.haddCmd = haddFile
+        # Generate a command to hadd all the files when the jobs are done
+        haddFile = os.path.join(self.baseDir, "hadd_histos.sh")
+        with open(haddFile, "w") as f:
+            cmd = """
+#!/usr/bin/bash
+
+function do_hadd {
+ if [ ! -z "$1" ]; then
+  hadd $1.root $1_*.root && if [ "$2" == "-r" ]; then rm $1_*.root; fi
+ fi
+}
+
+base_list=`find -name "*_[0-9]*.root" -printf "%f\\n" | sed "s/_[0-9]*.root//g" | sort | uniq`
+
+pushd #OUTDIR_PATH#
+for base in $base_list; do
+ do_hadd $base $1
+done
+popd"""
+            f.write(cmd.replace("#OUTDIR_PATH#", self.outDir))
+        perm = os.stat(haddFile)
+        os.chmod(haddFile, perm.st_mode | stat.S_IEXEC)
+        self.haddCmd = haddFile
 
 
     def submitOnCondor(self):
@@ -235,15 +237,13 @@ popd
         if not self.isCreated:
             raise Exception("Job files must be created first using createCondorFiles().")
 
-        for iJob in range(self.jobCount):
-            print "Submitting condor job {}.".format(iJob)
-            os.system("condor_submit {}".format( os.path.join(self.inDir, "condor_{}.cmd".format(iJob)) ) )
+        print "Submitting {} condor jobs.".format(self.jobCount)
+        os.system("condor_submit {}".format( os.path.join(self.inDir, "condor.cmd") ) )
 
-        print "Submitting {} done.".format(self.jobCount)
+        print "Submitting {} jobs done.".format(self.jobCount)
         print "Monitor your jobs with `condor_status -submitter` or `condor_q {}`".format(self.user)
-        if self.haddCmd is not False:
-            print "When they are all done, run the following command to hadd the files: `{}`".format(self.haddCmd)
-            print "If you also want to remove the original files, add the `-r` argument."
+        print "When they are all done, run the following command to hadd the files: `{}`".format(self.haddCmd)
+        print "If you also want to remove the original files, add the `-r` argument."
 
 
 

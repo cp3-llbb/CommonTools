@@ -11,9 +11,7 @@ if 'tt_type' in options:
     tt_type = options['tt_type']
 
 # This directly change the name of the output file!
-dataset["output_name"] =  += "_" + tt_type
-# If you use condorTools, be sure to do something like:
-dataset["output_name"] = dataset["output_name"].replace("#RUN_NAME#", tt_type)
+dataset["output_name"] += "_" + tt_type
 
 # Add a plot based on the current tt decay type
 

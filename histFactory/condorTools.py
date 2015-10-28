@@ -184,12 +184,13 @@ function move_files {
                 dico["#CMS_PATH#"] = CMSSW_BASE
 
                 thisCmd = str(self.jobCmd)
+                thisSh = str(self.baseShell)
+                
                 for key in dico.items():
                     thisCmd = thisCmd.replace(key[0], key[1])
                     thisSh = thisSh.replace(key[0], key[1])
                 self.baseCmd += thisCmd
 
-                thisSh = str(self.baseShell)
                 shFileName = os.path.join(self.inDir, "condor_{}.sh".format(jobCount))
                 with open(shFileName, "w") as sh:
                     sh.write(thisSh)

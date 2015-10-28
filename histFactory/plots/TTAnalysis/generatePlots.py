@@ -25,25 +25,25 @@ categoryPlots = {
             "plots": basePlots.ll,
             },
         
-        ## ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
-        #"lljjCategs": { 
-        #    "plots": basePlots.ll + basePlots.lljj,
-        #    },
-        #
-        ## ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
-        #"lljj_b_Categs": { 
-        #    "plots": basePlots.lljj_b,
-        #    },
-        #
-        ## ask for 2 leptons & 2 jets & 1 b-jet; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
-        #"llbjCategs": { 
-        #    "plots": basePlots.llbj,
-        #    },
-        #
-        ## ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
-        #"llbbCategs": { 
-        #    "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
-        #    },
+        # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
+        "lljjCategs": { 
+            "plots": basePlots.ll + basePlots.lljj,
+            },
+        
+        # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
+        "lljj_b_Categs": { 
+            "plots": basePlots.lljj_b,
+            },
+        
+        # ask for 2 leptons & 2 jets & 1 b-jet; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and one b-tag working point
+        "llbjCategs": { 
+            "plots": basePlots.llbj,
+            },
+        
+        # ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
+        "llbbCategs": { 
+            "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
+            },
     
     }
 

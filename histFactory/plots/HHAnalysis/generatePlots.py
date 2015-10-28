@@ -1,11 +1,17 @@
 import ROOT as R
-import copy, sys, commands
+import copy, sys, os, inspect
 
 # Usage from histFactory/plots/HHAnalysis/ : ./../../build/createHistoWithMultiDraw.exe -d ../../samples.json generatePlots.py 
-sys.path.append(commands.getoutput("pwd"))
+scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.append(scriptDir)
 from basePlotter import BasePlotter
 
-R.gROOT.ProcessLine("#include <../../../../HHAnalysis/interface/Enums.h>") 
+
+pathCMS = os.getenv("CMSSW_BASE")
+if pathCMS == "":
+    raise Exception("CMS environment is not valid!")
+pathHH = os.path.join(pathCMS, "src/cp3_llbb/HHAnalysis/")
+R.gROOT.ProcessLine("#include <%s/interface/Enums.h>"%pathHH) 
  
 def getIndx_llmetjj_id_iso_btagWP_pair(lepid1, lepiso1, lepid2, lepiso2, btagWP1, btagWP2, pair): 
     bitA = R.jetPair.Count 

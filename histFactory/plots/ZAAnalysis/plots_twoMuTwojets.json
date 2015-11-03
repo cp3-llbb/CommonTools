@@ -1,0 +1,24 @@
+'plots = [{'
+        'name': 'dilep_ptOrdered[0]_p4.Pt()' ,
+        'variable': 'dilep_ptOrdered[0].p4.Pt()',
+        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        'binning': '(30, 0, 300)'
+        }]
+'plots = [{'
+        'name': 'dilep_ptOrdered[0]_p4.Eta()' ,
+        'variable': 'dilep_ptOrdered[0].p4.Eta()',
+        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        'binning': '(30, 0, 6)'
+        }]
+'plots = [{'
+        'name': 'dilep_ptOrdered[0]_p4.Phi()' ,
+        'variable': 'dilep_ptOrdered[0].p4.Phi()',
+        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        'binning': '(30, -TMath::Pi(), TMath::Pi())'
+        }]
+'plots = [{'
+        'name': 'dilep_ptOrdered[0]_isoValue' ,
+        'variable': 'dilep_ptOrdered[0].isoValue',
+        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        'binning': '(30, 0, 0.3)'
+        }]

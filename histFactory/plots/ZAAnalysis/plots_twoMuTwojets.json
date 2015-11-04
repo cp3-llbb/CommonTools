@@ -1,24 +1,67 @@
-'plots = [{'
-        'name': 'dilep_ptOrdered[0]_p4.Pt()' ,
-        'variable': 'dilep_ptOrdered[0].p4.Pt()',
-        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+plots = [
+        {
+        'name': 'za_dilep_ptOrdered0_Pt',
+        'variable': 'za_dilep_ptOrdered[0].p4.Pt()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut) * event_weight',
         'binning': '(30, 0, 300)'
-        }]
-'plots = [{'
-        'name': 'dilep_ptOrdered[0]_p4.Eta()' ,
-        'variable': 'dilep_ptOrdered[0].p4.Eta()',
-        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        },
+        {
+        'name': 'za_dilep_ptOrdered0_Eta',
+        'variable': 'za_dilep_ptOrdered[0].p4.Eta()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut) * event_weight',
         'binning': '(30, 0, 6)'
-        }]
-'plots = [{'
-        'name': 'dilep_ptOrdered[0]_p4.Phi()' ,
-        'variable': 'dilep_ptOrdered[0].p4.Phi()',
-        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
-        'binning': '(30, -TMath::Pi(), TMath::Pi())'
-        }]
-'plots = [{'
-        'name': 'dilep_ptOrdered[0]_isoValue' ,
-        'variable': 'dilep_ptOrdered[0].isoValue',
-        'plot_cut': '(elel_DileptonIsIDMM_cut * elel_Mll_cut) * event_weight'',
+        },
+        {
+        'name': 'za_dilep_ptOrdered0_Phi',
+        'variable': 'za_dilep_ptOrdered[0].p4.Phi()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut) * event_weight',
+        'binning': '(30, -3.1416, 3.1416'
+        },
+        {
+        'name': 'za_dilep_ptOrdered0_isoValue',
+        'variable': 'za_dilep_ptOrdered[0].isoValue',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut) * event_weight',
         'binning': '(30, 0, 0.3)'
+        },
+        {
+        'name': 'za_diLeptons0_Pt',
+        'variable': 'za_diLeptons[0].p4.Pt()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, 0, 300)'
+        },
+        {
+        'name': 'za_diLeptons0_Eta',
+        'variable': 'za_diLeptons[0].p4.Eta()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, 0, 6)'
+        },
+        {
+        'name': 'za_diLeptons0_Phi',
+        'variable': 'za_diLeptons[0].p4.Phi()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, -3.1416, 3.1416'
+        },
+        {
+        'name': 'za_diLeptons0_M',
+        'variable': 'za_diLeptons[0].p4.M()',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(300,0,300)'
+        },
+        {
+        'name': 'za_diLeptons0_DR',
+        'variable': 'za_diLeptons[0].DR',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, 0, 6)'
+        },
+        {
+        'name': 'za_diLeptons0_DEta',
+        'variable': 'za_diLeptons[0].DEta',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, 0, 6)'
+        },
+        {
+        'name': 'za_diLeptons0_DPhi',
+        'variable': 'za_diLeptons[0].DPhi',
+        'plot_cut': '(mumu_DileptonIsIDMM_cut * mumu_Mll_cut * mumu_DiJetBWP_MM_cut) * event_weight',
+        'binning': '(30, 0, 6)'
         }]

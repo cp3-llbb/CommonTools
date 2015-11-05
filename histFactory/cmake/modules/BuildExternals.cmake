@@ -19,6 +19,10 @@ set(TCLAP_VERSION "1.2.1")
 set(TCLAP_TAR "tclap-${TCLAP_VERSION}.tar.gz")
 set(TCLAP_DIR ${EXTERNAL_DIR}/tclap-${TCLAP_VERSION})
 
+set(CTEMPLATE_VERSION "2.3")
+set(CTEMPLATE_TAR "ctemplate-${CTEMPLATE_VERSION}.tar.gz")
+set(CTEMPLATE_DIR ${EXTERNAL_DIR}/ctemplate-ctemplate-${CTEMPLATE_VERSION})
+
 
 if (NOT EXTERNAL_BUILT)
 
@@ -56,6 +60,13 @@ if (NOT EXTERNAL_BUILT)
     execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} WORKING_DIRECTORY ${TCLAP_DIR})
     execute_process(COMMAND make -j4 WORKING_DIRECTORY ${TCLAP_DIR})
     execute_process(COMMAND make install -j4 WORKING_DIRECTORY ${TCLAP_DIR})
+
+    MESSAGE(STATUS "Building ctemplate")
+    execute_process(COMMAND curl -L "https://github.com/OlafvdSpek/ctemplate/archive/ctemplate-${CTEMPLATE_VERSION}.tar.gz" -o "${CTEMPLATE_TAR}" WORKING_DIRECTORY ${EXTERNAL_DIR})
+    execute_process(COMMAND tar xf ${CTEMPLATE_TAR} WORKING_DIRECTORY ${EXTERNAL_DIR})
+    execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} WORKING_DIRECTORY ${CTEMPLATE_DIR})
+    execute_process(COMMAND make -j10 WORKING_DIRECTORY ${CTEMPLATE_DIR})
+    execute_process(COMMAND make install -j10 WORKING_DIRECTORY ${CTEMPLATE_DIR})
 
     set(EXTERNAL_BUILT ON CACHE BOOL "Are externals already built?")
 endif()

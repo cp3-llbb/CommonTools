@@ -1,0 +1,43 @@
+#! /bin/bash
+
+# These variables are replaced by cmake
+PROJECT_DIR="@PROJECT_SOURCE_DIR@"
+EXTERNAL_DIR="@EXTERNAL_DIR@"
+TEMPLATES_DIR="@PROJECT_SOURCE_DIR@/templates"
+
+SKELETON=$1
+CONFIG=$2
+OUTPUT=$3
+
+if [ -d "$OUTPUT" ]; then
+    echo "Error: output folder $OUTPUT already exist"
+    exit 1
+fi
+
+if [ ! -e "$CONFIG" ]; then
+    echo "Error: python configuration file does not exist"
+    exit 1
+fi
+
+# Create output folder
+mkdir -p "$OUTPUT/build/external"
+
+# Copy files
+cp -r "$PROJECT_DIR/cmake" "$OUTPUT"
+cp "$TEMPLATES_DIR/CMakeLists.txt" "$OUTPUT/"
+cp "$TEMPLATES_DIR/generateHeader.sh" "$OUTPUT/"
+
+cp -r "$EXTERNAL_DIR/src" "$OUTPUT/build/external/"
+cp -r "$EXTERNAL_DIR/lib" "$OUTPUT/build/external/"
+cp -r "$EXTERNAL_DIR/include" "$OUTPUT/build/external/"
+
+# Generate C++ code
+./createPlotter.exe -i "$SKELETON" -o "$OUTPUT" $CONFIG
+
+pushd "$OUTPUT/build" &> /dev/null
+
+cmake .. && make -j4
+
+popd &> /dev/null
+
+echo "Plotter is ready in '$OUTPUT/build'"

@@ -43,3 +43,39 @@ make
 ### Use condor to fill histograms
 
 See condorExample.py for usage.
+
+### On-the-fly code generation
+
+Unfortunately, the first version of the code based on heavy usage of `TTreeFormula` is *really* (really) slow. An alternative version is described in this section, a lot more faster than the old code.
+
+Two steps are needed :
+
+ 1) First, the code for the plotter needs to be generated. For that, you need to run `createPlotter.exe`. This will create a bunch of C++ code responsible for creating all the histograms you specified. The specification of these histograms is still done in a python script, as before.
+
+ 2) Once the code is generated, it needs to be compiled in order to produce an executable. This executable will produce the plots for a given sample. The specification of the samples is still done in JSON, as before.
+
+An helper script is available to create a viable working directory for the plotter (some dependencies are needed if you want to successfully build the code). This script, `createPlotter.sh`, is created automatically in your build directory after you execute the `cmake` command. An example of usage is:
+
+```
+./createPlotter.sh <skeleton ROOT file> <python configuration file> <output directory>
+```
+
+3 arguments are needed:
+ 1) `skeleton ROOT file`: The absolute path of a ROOT file from one of your datasets. It's needed because of code creating the plotting code needs to know the structure of the tree to correctly identify what is a branch in your plot / cut strings. This can be *any* file from *any* dataset, it really does not matter: you just have to ensure that the tree structure is correct.
+
+ 2) `python configuration file`: Path to your python script generating the list of plots.
+
+ 3) `output directory`: The name of the directory where the code of the plotter will be created. This directory must not exist, otherwise the script will exit with an error message.
+
+
+In addition to generate the code, the script will also build it for you. You should now have a working executable named `plotter.exe` inside the `build` directory of the `output directory`.
+
+The last step is to create the plots. You need to run the plotter like this
+
+```
+./plotter.exe -d <JSON file>
+```
+
+where `JSON file` is a path to a JSON file describing your dataset. Multiple datasets per file are supported.
+
+*Note*: runs are currently not supported in this mode.

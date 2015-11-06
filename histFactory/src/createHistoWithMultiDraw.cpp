@@ -18,6 +18,8 @@
 #include <TApplication.h>
 #include <TObject.h>  // For kWriteDelete
 
+#include <uuid/uuid.h>
+
 #include <tclap/CmdLine.h>
 
 struct Plot {
@@ -25,6 +27,51 @@ struct Plot {
     std::string variable;
     std::string plot_cut;
     std::string binning;
+};
+
+struct Run;
+
+struct Dataset {
+    std::string name;
+    std::string db_name;
+    std::string output_name;
+    std::string tree_name;
+    std::string path;
+    std::vector<std::string> files;
+    std::string cut;
+
+    std::vector<Run> runs;
+
+    PyObject* toPyObject() {
+        PyObject* o = PyDict_New();
+
+        PyDict_SetItemString(o, "name", PyString_FromString(name.c_str()));
+        PyDict_SetItemString(o, "db_name", PyString_FromString(db_name.c_str()));
+        PyDict_SetItemString(o, "output_name", PyString_FromString(output_name.c_str()));
+        PyDict_SetItemString(o, "tree_name", PyString_FromString(tree_name.c_str()));
+        PyDict_SetItemString(o, "path", PyString_FromString(tree_name.c_str()));
+        PyDict_SetItemString(o, "cut", PyString_FromString(cut.c_str()));
+
+        return o;
+    }
+
+    void fromPyObject(PyObject* o) {
+        name = PyString_AsString(PyDict_GetItemString(o, "name"));
+        db_name = PyString_AsString(PyDict_GetItemString(o, "db_name"));
+        output_name = PyString_AsString(PyDict_GetItemString(o, "output_name"));
+        tree_name = PyString_AsString(PyDict_GetItemString(o, "tree_name"));
+        path = PyString_AsString(PyDict_GetItemString(o, "path"));
+        cut = PyString_AsString(PyDict_GetItemString(o, "cut"));
+    }
+};
+
+struct Run {
+    Dataset dataset;
+    std::map<std::string, std::string> options;
+    std::vector<Plot> plots;
+
+    // Key is unique name, value is plot name
+    std::map<std::string, std::string> unique_names;
 };
 
 #define CHECK_AND_GET(var, obj) if (PyDict_Contains(value, obj) == 1) { \
@@ -57,19 +104,35 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     return true;
 }
 
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots);
+std::string get_uuid() {
+    uuid_t out;
+    uuid_generate(out);
 
-bool execute(const std::string& datasets_json, const std::string& python) {
-    std::FILE* f = std::fopen(python.c_str(), "r");
+    std::string uuid;
+    uuid.resize(37);
+
+    uuid_unparse(out, &uuid[0]);
+
+    // Remove null terminator
+    uuid.resize(36);
+
+    return uuid;
+}
+
+bool execute(const std::vector<Dataset>& datasets, const std::string& config_file, std::string output_dir = "");
+bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets);
+
+bool get_plots(const std::string& python_file, Run& run) {
+
+    std::vector<Plot>& plots = run.plots;
+
+    plots.clear();
+
+    std::FILE* f = std::fopen(python_file.c_str(), "r");
     if (!f) {
-        std::cerr << "Failed to open '" << python << "'" <<std::endl;
+        std::cerr << "Failed to open '" << python_file << "'" <<std::endl;
         return false;
     }
-
-    std::vector<Plot> plots;
-
-
-    Py_Initialize();
 
     const std::string PLOTS_KEY_NAME = "plots";
 
@@ -77,6 +140,18 @@ bool execute(const std::string& datasets_json, const std::string& python) {
     // and global dictionary
     PyObject* main_module = PyImport_AddModule("__main__");
     PyObject* global_dict = PyModule_GetDict(main_module);
+
+    // Inject each options into an 'options' global dict
+    PyObject* options_dict = PyDict_New();
+    for (const auto& option: run.options) {
+        PyObject* value = PyString_FromString(option.second.c_str());
+        PyDict_SetItemString(options_dict, option.first.c_str(), value);
+    }
+    PyDict_SetItemString(global_dict, "options", options_dict);
+
+    // Inject the dataset into a 'dataset' global dict
+    PyObject* dataset_dict = run.dataset.toPyObject();
+    PyDict_SetItemString(global_dict, "dataset", dataset_dict);
 
     // If PyROOT is used inside the script, it performs some cleanups when the python env. is destroyed. This cleanup makes ROOT unusable afterwards.
     // The cleanup function is registered with the `atexit` module.
@@ -87,7 +162,7 @@ bool execute(const std::string& datasets_json, const std::string& python) {
     PyObject* atexit_module = PyImport_ImportModule("atexit");
 
     // Execute the script
-    PyObject* script_result = PyRun_File(f, python.c_str(), Py_file_input, global_dict, global_dict);
+    PyObject* script_result = PyRun_File(f, python_file.c_str(), Py_file_input, global_dict, global_dict);
 
     if (! script_result) {
         PyErr_Print();
@@ -116,6 +191,8 @@ bool execute(const std::string& datasets_json, const std::string& python) {
                 plots.push_back(plot);
             }
         }
+
+        run.dataset.fromPyObject(PyDict_GetItemString(global_dict, "dataset"));
     }
 
     PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
@@ -130,144 +207,233 @@ bool execute(const std::string& datasets_json, const std::string& python) {
         }
     }
 
-    Py_Finalize();
-
-    if (plots.empty())
-        return false;
-
-    return execute(datasets_json, plots);
+    return true;
 }
 
-// Plots are specified in JSON files
-bool execute(const std::string& datasets_json, const std::vector<std::string>& plots_json) {
+bool execute(std::vector<Dataset>& datasets, const std::string& config_file, std::string output_dir/* = ""*/) {
 
-    // Plots are in JSON format. Parse these files
+    // If an output directory is specified, use it, otherwise use the current directory
+    if (output_dir == "")
+      output_dir = ".";
 
-    // Get the list of plots to draw
-    std::vector<Plot> plots;
-    for (const auto& plot_json_file: plots_json) {
-        std::ifstream f(plot_json_file);
-
-        Json::Value root;
-        Json::Reader reader;
-        if (! reader.parse(f, root)) {
-            std::cerr << "Failed to parse '" << plot_json_file << "'." << std::endl;
-            return false;
-        }
-
-        for (auto it = root.begin(); it != root.end(); it++) {
-            Plot p = {it.name(), (*it)["variable"].asString(), (*it)["plot_cut"].asString(), (*it)["binning"].asString()};
-            plots.push_back(p);
-        }
-    }
-
-    return execute(datasets_json, plots);
-}
-
-bool execute(const std::string& datasets_json, const std::vector<Plot>& plots) {
     // Setting the TVirtualTreePlayer
     TVirtualTreePlayer::SetPlayer("TMultiDrawTreePlayer");
 
-    // Getting the list of samples    
-    Json::Value samplesroot;
-    {
-        std::ifstream config_doc(datasets_json);
+    TDirectory* plots_directory = gDirectory;
 
-        Json::Reader samplesreader;
-        bool parsingSuccessful = samplesreader.parse(config_doc, samplesroot, false);
-        if (!parsingSuccessful) {
-            std::cerr << "Failed to parse '" << datasets_json << "'" << std::endl;
-            return false;
+    for (Dataset& dataset: datasets) {
+
+        std::cout << std::endl;
+        std::cout << "Running on sample '" << dataset.name << "', with " << dataset.runs.size() << " run(s)." << std::endl;
+        size_t run_number = 1;
+        for (const Run& run: dataset.runs) {
+            std::cout << "    Run " << run_number << " options: ";
+            size_t index = 0;
+            for (const auto& option: run.options) {
+                std::cout << option.first << " = " << option.second;
+                if (index != run.options.size() - 1)
+                    std::cout << ", ";
+                index++;
+            }
+            std::cout << std::endl;
+            run_number++;
         }
-    }
 
-    std::cout << "List of requested plots: ";
-    for (size_t i = 0; i < plots.size(); i++) {
-        std::cout << "'" << plots[i].name << "'";
-        if (i != plots.size() - 1)
-            std::cout << ", ";
-    }
+        std::map<std::string, std::string> unique_names;
 
-    std::cout << std::endl << std::endl;
+        // Gather all plots for all runs
+        for (Run& run: dataset.runs) {
+            get_plots(config_file, run);
 
-    // Looping over the different samples
-    Json::Value::Members samples_str = samplesroot.getMemberNames();
-    for (unsigned int index = 0; index < samplesroot.size(); index++){    
+            std::cout << "List of requested plots for this run: ";
+            for (size_t i = 0; i < run.plots.size(); i++) {
+                std::cout << "'" << run.plots[i].name << "'";
+                if (i != run.plots.size() - 1)
+                    std::cout << ", ";
+            }
+            std::cout << std::endl;
 
-        const Json::Value samplearray = samplesroot[samples_str.at(index)];
+            // Convert plots name to unique name to avoid collision between different runs
+            for (Plot& plot: run.plots) {
+                std::string uuid = get_uuid();
+                unique_names[uuid] = plot.name;
+                plot.name = uuid;
+            }
+        }
 
-        std::string tree_name = samplearray.get("tree_name","ASCII").asString();
-        std::string path = samplearray.get("path","ASCII").asString();
-        std::string db_name = samplearray.get("db_name","ASCII").asString();
-        std::string sample_cut = samplearray.get("sample_cut","ASCII").asString();
+        // Check if all output names are unique, or files will be overwritten
+        for (size_t i = 0; i < dataset.runs.size(); i++) {
+            std::string& output = dataset.runs[i].dataset.output_name;
+            for (size_t j = i + 1; j < dataset.runs.size(); j++) {
+                if (output == dataset.runs[j].dataset.output_name) {
+                    output += "_run" + std::to_string(i + 1);
+                    std::cout << "Warning: output file for run " << i + 1 << " is not unique. Changing it to '" << output << "'" << std::endl;
+                    break;
+                }
+            }
+        }
 
-        std::cout << "Running on sample '" << samples_str.at(index) << "'" << std::endl;
-
-        std::unique_ptr<TChain> t(new TChain(tree_name.c_str()));
-
-        std::string infiles = path+"/*.root";
-
-        t->Add(infiles.c_str());
-
-        std::unique_ptr<TFile> outfile(TFile::Open((db_name+"_histos.root").c_str(), "recreate"));
+        std::unique_ptr<TChain> t(new TChain(dataset.tree_name.c_str()));
+        for (const auto& file: dataset.files)
+            t->Add(file.c_str());
 
         TMultiDrawTreePlayer* player = dynamic_cast<TMultiDrawTreePlayer*>(t->GetPlayer());
 
         // Looping over the different plots
-        for (auto& p: plots) {
-            std::string plot_var = p.variable + ">>" + p.name + p.binning;
-            player->queueDraw(plot_var.c_str(), p.plot_cut.c_str(), "goff");
+        for (Run& run: dataset.runs) {
+            for (auto& p: run.plots) {
+                std::string plot_var = p.variable + ">>" + p.name + p.binning;
+                player->queueDraw(plot_var.c_str(), p.plot_cut.c_str(), "goff");
+            }
         }
 
+        std::cout << "Drawing plots..." << std::endl;
         player->execute();
+        std::cout << "Done" << std::endl;
 
-        for (auto& p: plots) {
-            TObject* obj = gDirectory->Get(p.name.c_str());
-            if (obj)
-                obj->Write(nullptr, TObject::kOverwrite);
+        size_t i = 1;
+        for (const Run& run: dataset.runs) {
+
+            std::string output = output_dir + "/" + run.dataset.output_name + ".root";
+            std::cout << "Saving plots for run " << i << " in file: " << output << std::endl;
+            std::unique_ptr<TFile> outfile(TFile::Open(output.c_str(), "recreate"));
+
+            for (auto& p: run.plots) {
+                std::string original_name = unique_names[p.name];
+
+                TObject* obj = plots_directory->Get(p.name.c_str());
+                if (obj) {
+                    ((TNamed*) obj)->SetName(original_name.c_str());
+                    obj->Write(unique_names[p.name].c_str(), TObject::kOverwrite);
+                    ((TNamed*) obj)->SetName(p.name.c_str());
+                }
+            }
+
+            i++;
         }
 
-        outfile->Write(nullptr, TObject::kOverwrite);
     }
 
     return true;
 }
 
+bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets) {
+
+    Json::Value root;
+    {
+        std::ifstream f(json_file);
+        Json::Reader reader;
+        if (! reader.parse(f, root, false)) {
+            std::cerr << "Failed to parse '" << json_file << "'" << std::endl;
+            return false;
+        }
+    }
+
+    datasets.clear();
+
+    // Looping over the different samples
+    Json::Value::Members samples_str = root.getMemberNames();
+    for (size_t index = 0; index < root.size(); index++) {
+
+        const Json::Value& sample = root[samples_str[index]];
+        Dataset dataset;
+
+        // Mandatory fields
+        dataset.name = samples_str[index];
+        dataset.db_name = sample["db_name"].asString();
+        dataset.cut = sample.get("sample_cut", "1").asString();
+        dataset.tree_name = sample.get("tree_name", "t").asString();
+
+        //dataset.output_name
+        if (sample.isMember("output_name")) {
+            dataset.output_name = sample["output_name"].asString();
+        } else {
+            dataset.output_name = dataset.db_name + "_histos";
+        }
+
+        // Runs
+        if (sample.isMember("runs")) {
+
+            for (Json::Value::ArrayIndex i = 0; i < sample["runs"].size(); i++) {
+                Run run;
+                run.dataset = dataset;
+                run.dataset.runs.clear(); // Not needed
+
+                for (auto it = sample["runs"][i].begin(); it != sample["runs"][i].end(); it++) {
+                    run.options[it.name()] = it->asString();
+                }
+
+                if (run.options.empty()) {
+                    std::cout << "A run for '" << dataset.name << "' does not have any options. Dropping it." << std::endl;
+                    continue;
+                }
+                dataset.runs.push_back(run);
+            }
+        }
+
+        if (dataset.runs.empty()) {
+            // Add a default empty run if none are specified by the user
+            Run run;
+            run.dataset = dataset;
+            dataset.runs.push_back(run);
+        }
+
+        // If a list of files is specified, only use those
+        if (sample.isMember("files")) {
+            Json::Value files = sample["files"];
+
+            for(auto it = files.begin(); it != files.end(); ++it) {
+                dataset.files.push_back((*it).asString());
+            }
+        } else if (sample.isMember("path")) {
+            dataset.path = sample["path"].asString();
+            dataset.files.push_back(dataset.path + "/*.root");
+        }
+
+        datasets.push_back(dataset);
+    }
+
+    return true;
+}
 
 int main( int argc, char* argv[]) {
 
     try {
 
-        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.1.0");
+        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.2.0");
 
         TCLAP::ValueArg<std::string> datasetArg("d", "dataset", "Input datasets", true, "", "JSON file", cmd);
-        TCLAP::UnlabeledMultiArg<std::string> plotsArg("plots", "List of plots", true, "JSON file", cmd);
+        TCLAP::ValueArg<std::string> outputArg("o", "output", "Output directory", false, "", "ROOT file", cmd);
+        TCLAP::UnlabeledValueArg<std::string> plotsArg("plots", "A python script which will be executed and should returns a list of plots", true, "", "Python script", cmd);
 
         cmd.parse(argc, argv);
 
-        bool python = false;
-        const std::vector<std::string>& plots = plotsArg.getValue();
-        if (plots.size() == 1 && plots[0].substr(plots[0].find_last_of(".") + 1) == "py") {
-            python = true;
+        std::vector<Dataset> datasets;
+        parse_datasets(datasetArg.getValue(), datasets);
+
+        if (datasets.empty()) {
+            std::cerr << "Error: no input datasets specified." << std::endl;
+            return 1;
         }
 
-        bool ret = false;
-        if (python) {
-            /*
-             * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
-             * because it messes with our already loaded ROOT.
-             *
-             * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplicationµ
-             * to do anything.
-             *
-             * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
-             * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
-             */
+        /*
+         * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
+         * because it messes with our already loaded ROOT.
+         *
+         * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplication`
+         * to do anything.
+         *
+         * [1] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/ROOT.py#L476
+         * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
+         */
 
-            std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
-            ret = execute(datasetArg.getValue(), plots[0]);
-        } else
-            ret = execute(datasetArg.getValue(), plots);
+        std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
+
+        Py_Initialize();
+
+        bool ret = execute(datasets, plotsArg.getValue(), outputArg.getValue());
+
+        Py_Finalize();
 
         return (ret ? 0 : 1);
 
@@ -278,4 +444,3 @@ int main( int argc, char* argv[]) {
 
     return 0;
 }
-

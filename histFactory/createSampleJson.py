@@ -17,9 +17,9 @@ def get_sample(iSample):
     resultset = dbstore.find(Sample, Sample.sample_id == iSample)
     return list(resultset.values(Sample.name, Sample.path))
 
-def main():
+def createJson(indices, write = False):
     samples = {}
-    for isample in [517]:
+    for isample in indices:
         db_name, path,  = map(str, get_sample(isample)[0])
 #        print path, db_name
         d = {}
@@ -30,8 +30,14 @@ def main():
         samples[db_name] = d
         print isample, d
 #        print samples
-    with open('samples.json', 'w') as fp:
-        json.dump(samples, fp) 
+    if write:
+        with open('samples.json', 'w') as fp:
+            json.dump(samples, fp)
+
+    return samples
 
 if __name__ == '__main__':
-    main()
+    # Indices of the SAMADhi entries you want to run on
+    sampleIndices = [517]
+
+    createJson(sampleIndices, True)

@@ -4,7 +4,7 @@ import copy, sys, os, inspect
 # Usage from histFactory/plots/HHAnalysis/ : ./../../build/createHistoWithMultiDraw.exe -d ../../samples.json generatePlots.py 
 scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(scriptDir)
-from basePlotter import BasePlotter
+from basePlotter_Map import BasePlotter
 
 
 pathCMS = os.getenv("CMSSW_BASE")
@@ -26,32 +26,26 @@ def getIndx_llmetjj_id_iso_btagWP_pair(lepid1, lepiso1, lepid2, lepiso2, btagWP1
 plots = []
 basePlotter = BasePlotter()
 
-# Here is an example for lepton id Loose, iso Loose, with no bTag. Doing the plots only for the llmetjj candidate with leading ht
 categories = ["ElEl","MuMu","MuEl"]
-basePlotter.mapWP = getIndx_llmetjj_id_iso_btagWP_pair("L", "L", "L", "L", "no", "no", "ht")
-basePlotter.llIsoCat = "LL"
-basePlotter.llIDCat = "LL"
+basePlotter.mapWP = getIndx_llmetjj_id_iso_btagWP_pair("T", "T", "T", "T", "no", "no", "ht")
+basePlotter.llIsoCat = "TT"
+basePlotter.llIDCat = "TT"
 basePlotter.jjBtagCat = "nono"
 basePlotter.suffix = "_leadingHt"
 
 basePlotter.generatePlots(categories)
-for plot in basePlotter.plots_lep:
-    print plot
-    plots.append(plot)
-for plot in basePlotter.plots_jet:
-    print plot
-    plots.append(plot)
+plotFamilies = ["plots_lep", "plots_mu", "plots_el", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj"]
+for plotFamily in plotFamilies :
+    for plot in getattr(basePlotter, plotFamily) :
+        plots.append(plot)
 # Add plots for LL btagging
 myPlots_bb = copy.deepcopy(basePlotter) 
-myPlots_bb.mapWP = getIndx_llmetjj_id_iso_btagWP_pair("L", "L", "L", "L", "L", "L", "ht")
+myPlots_bb.mapWP = getIndx_llmetjj_id_iso_btagWP_pair("T", "T", "T", "T", "L", "L", "ht")
 myPlots_bb.jjBtagCat = "LL" 
 myPlots_bb.generatePlots(categories)
-for plot in myPlots_bb.plots_lep:                                                                  
-    print plot
-    plots.append(plot)
-for plot in myPlots_bb.plots_jet:                                                                      
-    print plot
-    plots.append(plot)
+for plotFamily in plotFamilies :
+    for plot in getattr(myPlots_bb, plotFamily) :
+        plots.append(plot)
 
 
 

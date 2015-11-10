@@ -23,24 +23,6 @@ include_directories(${ROOT_INCLUDE_DIR})
 find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
     NO_DEFAULT_PATH)
 
-# Find Python
-
-if(IN_CMSSW)
-    # Help cmake finding python inside CMSSW
-    execute_process(COMMAND scram tool tag python LIBDIR OUTPUT_VARIABLE PYTHON_LIBRARY_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND scram tool tag python LIB OUTPUT_VARIABLE PYTHON_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(PYTHON_LIBRARY "${PYTHON_LIBRARY_PATH}/lib${PYTHON_LIBRARY}.so")
-    execute_process(COMMAND scram tool tag python INCLUDE OUTPUT_VARIABLE PYTHON_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-else()
-    execute_process(COMMAND python-config --prefix OUTPUT_VARIABLE
-        PYTHON_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
-    list(APPEND CMAKE_LIBRARY_PATH "${PYTHON_PREFIX}/lib")
-    list(APPEND CMAKE_INCLUDE_PATH "${PYTHON_PREFIX}/include")
-endif()
-
-find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_PATH})
-
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 
@@ -94,7 +76,6 @@ set_target_properties(plotter PROPERTIES OUTPUT_NAME "plotter.exe")
 # Link libraries
 target_link_libraries(plotter ${ROOT_LIBRARIES})
 target_link_libraries(plotter ${ROOT_GENVECTOR_LIB})
-target_link_libraries(plotter ${PYTHON_LIBRARY})
 
 find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
     "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)

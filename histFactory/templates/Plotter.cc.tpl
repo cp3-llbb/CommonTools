@@ -5,6 +5,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <signal.h>
 
 #include <TChain.h>
 #include <TH1F.h>
@@ -13,12 +14,18 @@
 #include <json/json.h>
 #include <tclap/CmdLine.h>
 
+volatile bool MUST_STOP = false;
+
 void Plotter::plot(const std::string& output_file) {
 
 {{HISTS_DECLARATION}}
 
     size_t index = 1;
     while (tree.next()) {
+
+        if (MUST_STOP) {
+            break;
+        }
 
         if ((index - 1) % 1000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
@@ -105,7 +112,19 @@ int main(int argc, char** argv) {
         if (output_dir.empty())
             output_dir = ".";
 
+        // Register CTRL+C signal handler
+        struct sigaction sigIntHandler;
+
+        sigIntHandler.sa_handler = [](int signal) { MUST_STOP = true; };
+        sigemptyset(&sigIntHandler.sa_mask);
+        sigIntHandler.sa_flags = 0;
+
+        sigaction(SIGINT, &sigIntHandler, NULL);
+
         for (const Dataset& d: datasets) {
+            if (MUST_STOP)
+                break;
+
             std::cout << "Creating plots for dataset '" << d.name << "'" << std::endl;
             std::unique_ptr<TChain> t(new TChain(d.tree_name.c_str()));
             for (const std::string& file: d.files)

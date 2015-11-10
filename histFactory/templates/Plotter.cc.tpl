@@ -8,7 +8,6 @@
 
 #include <TChain.h>
 #include <TH1F.h>
-#include <TDirectory.h>
 #include <TFile.h>
 
 #include <json/json.h>
@@ -16,7 +15,7 @@
 
 void Plotter::plot(const std::string& output_file) {
 
-    {{HISTS_DECLARATION}}
+{{HISTS_DECLARATION}}
 
     size_t index = 1;
     while (tree.next()) {
@@ -26,15 +25,13 @@ void Plotter::plot(const std::string& output_file) {
 
         double __weight = 0;
 
-        {{PLOTS}}
+{{PLOTS}}
 
         index++;
     }
 
-    TDirectory* plots_directory = gDirectory;
-
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
-    {{SAVE_PLOTS}}
+{{SAVE_PLOTS}}
 }
 
 bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets) {

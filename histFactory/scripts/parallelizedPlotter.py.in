@@ -1,0 +1,53 @@
+#! /bin/env python
+
+"""
+Run N instances of the plotter in parallel on the datasets specified in input.
+"""
+
+import json
+import tempfile
+import subprocess
+
+def get_options():
+    """
+    Parse and return the arguments provided by the user.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Launch plotter multiple datasets.')
+
+    parser.add_argument('-j', '--cores', type=int, action='store', dest='processes', metavar='N', default='4',
+                        help='Number of core to use for parallel execution')
+
+    parser.add_argument('datasets', type=str, nargs='+', metavar='FILE',
+                        help='JSON files listings datasets to run over.')
+
+    options = parser.parse_args()
+
+    if options.datasets is None:
+        parser.error('You must specify at least one JSON file listing the datasets to run over.')
+
+    return options
+
+opt = get_options()
+
+datasets = {}
+for dataset_file in opt.datasets:
+    with open(dataset_file) as f:
+        datasets.update(json.load(f))
+
+def launch_plotter((dataset_name, dataset_data)):
+    PLOTTER_EXE = "@PROJECT_BINARY_DIR@/plotter.exe"
+
+    dataset = {dataset_name: dataset_data}
+    with tempfile.NamedTemporaryFile() as tmp:
+        json.dump(dataset, tmp)
+        tmp.flush()
+
+        cmd = [PLOTTER_EXE, '-d', tmp.name]
+        subprocess.call(cmd)
+
+
+from multiprocessing import Pool
+pool = Pool(processes=opt.processes)
+pool.map(launch_plotter, datasets.items())

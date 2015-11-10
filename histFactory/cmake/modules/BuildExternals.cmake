@@ -57,7 +57,7 @@ if (NOT EXTERNAL_BUILT)
     MESSAGE(STATUS "Building TCLAP")
     execute_process(COMMAND curl -L "http://downloads.sourceforge.net/project/tclap/tclap-1.2.1.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Ftclap%2Ffiles%2F&ts=1431017326&use_mirror=freefr" -o "${TCLAP_TAR}" WORKING_DIRECTORY ${EXTERNAL_DIR})
     execute_process(COMMAND tar xf ${TCLAP_TAR} WORKING_DIRECTORY ${EXTERNAL_DIR})
-    execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} WORKING_DIRECTORY ${TCLAP_DIR})
+    execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} --enable-doxygen=no WORKING_DIRECTORY ${TCLAP_DIR})
     execute_process(COMMAND make -j4 WORKING_DIRECTORY ${TCLAP_DIR})
     execute_process(COMMAND make install -j4 WORKING_DIRECTORY ${TCLAP_DIR})
 

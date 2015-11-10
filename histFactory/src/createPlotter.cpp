@@ -257,7 +257,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
         std::string binning = p.binning;
         binning.erase(std::remove_if(binning.begin(), binning.end(), [](char chr) { return chr == '(' || chr == ')'; }), binning.end());
-        hists_declaration += "TH1* " + p.name + " = new TH1F(\"" + p.name + "\", \"\", " + binning + ");\n";
+        hists_declaration += "    std::unique_ptr<TH1> " + p.name + "(new TH1F(\"" + p.name + "\", \"\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
 
         ctemplate::TemplateDictionary plot("plot");
         plot.SetValue("CUT", p.plot_cut);

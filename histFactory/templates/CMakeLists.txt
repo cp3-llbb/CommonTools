@@ -34,6 +34,9 @@ set(EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src")
 
 include_directories(${EXTERNAL_INCLUDE_DIR})
 
+# Create python script to parallelize the plotter
+configure_file(scripts/parallelizedPlotter.py.in parallelizedPlotter.py @ONLY NEWLINE_STYLE UNIX)
+
 set(PLOTTER_SOURCES
     Plotter.cc
     ${EXTERNAL_SRC_DIR}/jsoncpp.cpp

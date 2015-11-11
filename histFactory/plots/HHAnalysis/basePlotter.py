@@ -5,11 +5,16 @@ class BasePlotter:
         self.baseObjectName = "hh_llmetjj"# will eventually be used with index(s) from the map
         self.map = "hh_map_llmetjj_id_iso_btagWP_pair"
         self.mapWP = "0"
+        self.lepMap = "hh_map_l_id_iso"
+        self.lepMapWP = "0"
+        self.jetMap = "hh_map_j_btagWP"
+        self.jetMapWP = "0"
         self.llIsoCat = "LL"
         self.llIDCat = "LL"
         self.jjIDCat = "TT"
         self.jjBtagCat = "nono"
-        self.suffix = "_leadingHt"
+        self.order = "htOrdered"
+        self.suffix = ""
         self.llFlav = "ElEl"
         self.catCut = ""  
         self.jetCut = ""
@@ -35,6 +40,8 @@ class BasePlotter:
     def generatePlots(self, categories = ["ElEl", "MuMu", "MuEl"]):
          
         self.mapIndices = "%s[%s]"%(self.map, self.mapWP)
+        self.lepMapIndices = "%s[%s]"%(self.lepMap, self.lepMapWP)
+        self.jetMapIndices = "%s[%s]"%(self.jetMap, self.jetMapWP)
         self.baseObject = "%s[%s[0]]"%(self.baseObjectName, self.mapIndices)     # NB : make plots only for one llmetjj candidate (can be made configurable)
         self.mapCut = "Length$(%s)>0"%self.mapIndices # ensure to have an entry in the map
         self.lep1_str = "hh_leptons[%s.ilep1]"%self.baseObject
@@ -46,21 +53,24 @@ class BasePlotter:
 
         self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3"%(self.lep1_str, self.lep2_str)
 
-        self.jetCut = "%s.id_T && %s.id_T && %s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str, self.jet1_str, self.jet2_str)  # So far, jet ID is not in the map
-        self.jjIDCat = "TT"
+        self.jetCut = "%s.id_L && %s.id_L && %s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str, self.jet1_str, self.jet2_str)  # So far, jet ID is not in the map
+        self.jjIDCat = "LL"
 
         self.plots_lep = []
+        self.plots_el = []
+        self.plots_mu = []
         self.plots_jet = []
         self.plots_met = []
         self.plots_ll = []
         self.plots_jj = []
         self.plots_llmetjj = []
-        self.plots_el = []
-        self.plots_mu = []
+        self.plots_evt = []
 
+
+        zMass = 91.1876 
         dict_cat_cut =  {
-                            "ElEl" : "%s.isElEl && %s.p4.M() > 10"%(self.ll_str, self.ll_str),
-                            "MuMu" : "%s.isMuMu && %s.p4.M() > 10"%(self.ll_str, self.ll_str),
+                            "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
+                            "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
                             "MuEl" : "((%s.isElMu)||(%s.isMuEl))"%(self.ll_str, self.ll_str)
                         }
 
@@ -87,7 +97,7 @@ class BasePlotter:
                     'name':  'lep1_phi_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                     'variable': self.lep1_str+".p4.Phi()",
                     'plot_cut': self.totalCut,
-                    'binning': '(25, -3.2, 3.2)'
+                    'binning': '(25, -3.1416, 3.1416)'
                 },
                 {
                     'name':  'lep2_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -105,7 +115,7 @@ class BasePlotter:
                     'name':  'lep2_phi_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                     'variable': self.lep2_str+".p4.Phi()",
                     'plot_cut': self.totalCut,
-                    'binning': '(25, -3.2, 3.2)'
+                    'binning': '(25, -3.1416, 3.1416)'
                 }
             ])
             if cat == "ElEl" :
@@ -139,25 +149,25 @@ class BasePlotter:
                 self.plots_mu.extend([
                     {
                         'name':  'mu1_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR03_withEA[%s.idx]"%self.lep1_str,
+                        'variable': "muon_relativeIsoR04_withEA[%s.idx]"%self.lep1_str,
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 0.4)'
                     },
                     {
                         'name':  'mu1_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR03_deltaBeta[%s.idx]"%self.lep1_str,
+                        'variable': "muon_relativeIsoR04_deltaBeta[%s.idx]"%self.lep1_str,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     },
                     {
                         'name':  'mu2_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR03_withEA[%s.idx]"%self.lep2_str,
+                        'variable': "muon_relativeIsoR04_withEA[%s.idx]"%self.lep2_str,
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 0.4)'
                     },
                     {
                         'name':  'mu2_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR03_deltaBeta[%s.idx]"%self.lep2_str,
+                        'variable': "muon_relativeIsoR04_deltaBeta[%s.idx]"%self.lep2_str,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     }
@@ -180,7 +190,7 @@ class BasePlotter:
                         'name':  'jet1_phi_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jet1_str+".p4.Phi()",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, -3.2, 3.2)'
+                        'binning': '(25, -3.1416, 3.1416)'
                 },
                 {
                         'name':  'jet1_JP_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -210,7 +220,7 @@ class BasePlotter:
                         'name':  'jet2_phi_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jet2_str+".p4.Phi()",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, -3.2, 3.2)'
+                        'binning': '(25, -3.1416, 3.1416)'
                 },
                 {
                         'name':  'jet2_JP_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -237,34 +247,34 @@ class BasePlotter:
                         'name':  'met_phi_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "met_p4.Phi()",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, -3.2, 3.2)'
+                        'binning': '(25, -3.1416, 3.1416)'
                 }
             ])
 
             self.plots_ll.extend([ 
                 {
-                        'name':  'Mll_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'Mll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".p4.M()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 250)'
                 },
                 {
-                        'name':  'PTll_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'PTll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".p4.Pt()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 400)'
                 },
                 {
-                        'name':  'DRll_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'DRll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".DR_l_l",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DPhill_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'DPhill_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.ll_str+".DPhi_l_l)",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 }
             ])
 
@@ -291,11 +301,17 @@ class BasePlotter:
                         'name':  'DPhijj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.jj_str+".DPhi_j_j)",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 }
             ])
 
             self.plots_llmetjj.extend([ 
+                {
+                        'name':  'nllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': "Length$(%s)"%self.mapIndices,
+                        'plot_cut': self.totalCut,
+                        'binning': '(18, 0, 18)'
+                },
                 {
                         'name':  'PTllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".p4.Pt()",
@@ -306,61 +322,61 @@ class BasePlotter:
                         'name':  'Mllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".p4.M()",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 250)'
+                        'binning': '(50, 0, 1000)'
                 },
                 {
                         'name':  'DPhi_ll_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_ll_met)",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, 0, 3.2)'
+                        'binning': '(25, 0, 3.1416)'
                 },
                 {
                         'name':  'MinDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".minDPhi_l_met",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 },
                 {
                         'name':  'MaxDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".maxDPhi_l_met",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 },
                 {
                         'name':  'MT_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': self.baseObject+".MT",
+                        'variable': self.baseObject+".MT", # ll[ill].p4 + met[imet].p4).M()
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 1000)'
+                        'binning': '(50, 0, 600)'
                 },
                 {
                         'name':  'MTformula_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': self.baseObject+".MT_formula",
+                        'variable': self.baseObject+".MT_formula", # std::sqrt(2 * ll[ill].p4.Pt() * met[imet].p4.Pt() * (1-std::cos(dphi)));
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 1000)'
+                        'binning': '(50, 0, 500)'
                 },
                 {
                         'name':  'projMET_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".projectedMet)",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 500)'
+                        'binning': '(50, 0, 400)'
                 },
                 {
                         'name':  'DPhi_jj_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_jj_met)",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, 0, 3.2)'
+                        'binning': '(25, 0, 3.1416)'
                 },
                 {
                         'name':  'MinDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".minDPhi_j_met",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 },
                 {
                         'name':  'MaxDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".maxDPhi_j_met",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 3.2)'
+                        'binning': '(50, 0, 3.1416)'
                 },
                 {
                         'name':  'MaxDR_l_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -390,13 +406,58 @@ class BasePlotter:
                         'name':  'DPhi_ll_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_ll_jj)",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, 0, 3.2)'
+                        'binning': '(25, 0, 3.1416)'
                 },
                 {
                         'name':  'DPhi_llmet_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_llmet_jj)",
                         'plot_cut': self.totalCut,
-                        'binning': '(25, 0, 3.2)'
+                        'binning': '(25, 0, 3.1416)'
                 }
             ])
+            self.plots_evt.extend([
+                {
+                    'name':  'nLep_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "Length$(%s)"%self.lepMapIndices,
+                    'plot_cut': self.totalCut,
+                    'binning': '(4, 2, 6)'
+                },
+                {
+                    'name':  'nLepAll_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nLeptons",
+                    'plot_cut': self.totalCut,
+                    'binning': '(5, 2, 7)'
+                },
+                {
+                    'name':  'nElAll_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nElectrons",
+                    'plot_cut': self.totalCut,
+                    'binning': '(6, 0, 6)'
+                },
+                {
+                    'name':  'nMuAll_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nMuons",
+                    'plot_cut': self.totalCut,
+                    'binning': '(6, 0, 6)'
+                },
+                {
+                    'name':  'nJet_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "Length$(%s)"%self.jetMapIndices,
+                    'plot_cut': self.totalCut,
+                    'binning': '(5, 2, 7)'
+                },
+                {
+                    'name':  'nJetAll_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nJets",
+                    'plot_cut': self.totalCut,
+                    'binning': '(10, 2, 12)'
+                },
+                {
+                    'name':  'nBJetMediumCSV_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nBJets",
+                    'plot_cut': self.totalCut,
+                    'binning': '(6, 0, 6)'
+                }
+            ])
+
 

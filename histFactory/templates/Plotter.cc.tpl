@@ -134,6 +134,11 @@ int main(int argc, char** argv) {
 
             ROOT::TreeWrapper wrapped_tree(t.get());
 
+            // Set cache size to 10 MB
+            t->SetCacheSize(10 * 1024 * 1024);
+            // Learn tree structure from the first 10 entries
+            t->SetCacheLearnEntries(10);
+
             Plotter p(d, wrapped_tree);
             p.plot(output_file);
             std::cout << "Done. Output saved as '" << output_file << "'" << std::endl;

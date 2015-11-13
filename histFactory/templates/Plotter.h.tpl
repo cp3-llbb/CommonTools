@@ -10,6 +10,8 @@
 // ROOT
 #include <Rtypes.h>
 #include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
 #include <Math/Vector4D.h>
 
 // Generated automatically
@@ -89,6 +91,16 @@ class Plotter {
         template<typename T> typename std::enable_if<is_stl_container_like<T>::value, bool>::type fill(TH1* h, const T& value, double weight) {
             for (const auto& v: value)
                 h->Fill(v, weight);
+        }
+
+        // 2D
+        template<typename T, typename U> void fill(TH2* h, const T& value_x, const U& value_y, double weight) {
+            h->Fill(value_x, value_y, weight);
+        }
+
+        // 3D
+        template<typename T, typename U, typename V> void fill(TH3* h, const T& value_x, const U& value_y, const V& value_z, double weight) {
+            h->Fill(value_x, value_y, value_z, weight);
         }
 
         Dataset m_dataset;

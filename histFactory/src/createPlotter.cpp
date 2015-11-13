@@ -109,6 +109,41 @@ inline std::string getTemplate(const std::string& name) {
     return p;
 }
 
+std::vector<std::string> split(const std::string& s, const std::string& delimiters) {
+
+    std::vector<std::string> result;
+
+    size_t current;
+    size_t next = -1;
+    do
+    {
+        next = s.find_first_not_of(delimiters, next + 1);
+        if (next == std::string::npos)
+            break;
+        next -= 1;
+
+        current = next + 1;
+        next = s.find_first_of(delimiters, current);
+        result.push_back(s.substr(current, next - current));
+    }
+    while (next != std::string::npos);
+
+    return result;
+}
+
+std::string getHistogramTypeForDimension(size_t dimension) {
+    switch (dimension) {
+        case 1:
+            return "TH1F";
+        case 2:
+            return "TH2F";
+        case 3:
+            return "TH3F";
+        default:
+            throw std::invalid_argument("Invalid dimension");
+    }
+}
+
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
 bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
@@ -257,11 +292,22 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
         std::string binning = p.binning;
         binning.erase(std::remove_if(binning.begin(), binning.end(), [](char chr) { return chr == '(' || chr == ')'; }), binning.end());
-        hists_declaration += "    std::unique_ptr<TH1> " + p.name + "(new TH1F(\"" + p.name + "\", \"\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
+
+        std::vector<std::string> splitted_variables = split(p.variable, ":");
+        std::string histogram_type = getHistogramTypeForDimension(splitted_variables.size());
+
+        hists_declaration += "    std::unique_ptr<" + histogram_type + "> " + p.name + "(new " + histogram_type + "(\"" + p.name + "\", \"\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
+
+        std::string variable_string;
+        for (size_t i = 0; i < splitted_variables.size(); i++) {
+            variable_string += splitted_variables[i];
+            if (i != splitted_variables.size() - 1)
+                variable_string += ", ";
+        }
 
         ctemplate::TemplateDictionary plot("plot");
         plot.SetValue("CUT", p.plot_cut);
-        plot.SetValue("VAR", p.variable);
+        plot.SetValue("VAR", variable_string);
         plot.SetValue("HIST", p.name);
 
         ctemplate::ExpandTemplate(getTemplate("Plot"), ctemplate::DO_NOT_STRIP, &plot, &text_plots);

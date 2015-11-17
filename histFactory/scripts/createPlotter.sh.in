@@ -35,7 +35,7 @@ cp -r "$EXTERNAL_DIR/include" "$OUTPUT/build/external/"
 cp "$PROJECT_DIR/scripts/parallelizedPlotter.py.in" "$OUTPUT/scripts/"
 
 # Generate C++ code
-./createPlotter.exe -i "$SKELETON" -o "$OUTPUT" $CONFIG
+@PROJECT_BINARY_DIR@/createPlotter.exe -i "$SKELETON" -o "$OUTPUT" $CONFIG
 
 pushd "$OUTPUT/build" &> /dev/null
 

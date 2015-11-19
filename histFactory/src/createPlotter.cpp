@@ -35,6 +35,11 @@ struct Plot {
     std::string plot_cut;
     std::string binning;
 
+    std::string title;
+    std::string x_axis;
+    std::string y_axis;
+    std::string z_axis;
+
     std::shared_ptr<TTreeFormula> var;
     std::shared_ptr<TTreeFormula> selector;
 };
@@ -51,11 +56,24 @@ struct Plot {
     return false; \
 }
 
+#define GET(var, obj) if (PyDict_Contains(value, obj) == 1) { \
+    PyObject* item = PyDict_GetItem(value, obj); \
+    if (! PyString_Check(item)) {\
+        std::cerr << "Error: the '" << PyString_AsString(obj) << "' value must be a string" << std::endl; \
+        return false; \
+    } \
+    var = PyString_AsString(item); \
+}
+
 bool plot_from_PyObject(PyObject* value, Plot& plot) {
     static PyObject* PY_NAME = PyString_FromString("name");
     static PyObject* PY_VARIABLE = PyString_FromString("variable");
     static PyObject* PY_PLOT_CUT = PyString_FromString("plot_cut");
     static PyObject* PY_BINNING = PyString_FromString("binning");
+    static PyObject* PY_TITLE = PyString_FromString("title");
+    static PyObject* PY_X_AXIS = PyString_FromString("x-axis");
+    static PyObject* PY_Y_AXIS = PyString_FromString("y-axis");
+    static PyObject* PY_Z_AXIS = PyString_FromString("z-axis");
 
     if (! PyDict_Check(value)) {
         std::cerr << "Error: plots dictionnary value must be a dictionnary" << std::endl;
@@ -65,6 +83,11 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     CHECK_AND_GET(plot.variable, PY_VARIABLE);
     CHECK_AND_GET(plot.plot_cut, PY_PLOT_CUT);
     CHECK_AND_GET(plot.binning, PY_BINNING);
+
+    GET(plot.title, PY_TITLE);
+    GET(plot.x_axis, PY_X_AXIS);
+    GET(plot.y_axis, PY_Y_AXIS);
+    GET(plot.z_axis, PY_Z_AXIS);
 
     return true;
 }
@@ -107,6 +130,41 @@ inline std::string getTemplate(const std::string& name) {
     p += "/" + name + ".tpl";
 
     return p;
+}
+
+std::vector<std::string> split(const std::string& s, const std::string& delimiters) {
+
+    std::vector<std::string> result;
+
+    size_t current;
+    size_t next = -1;
+    do
+    {
+        next = s.find_first_not_of(delimiters, next + 1);
+        if (next == std::string::npos)
+            break;
+        next -= 1;
+
+        current = next + 1;
+        next = s.find_first_of(delimiters, current);
+        result.push_back(s.substr(current, next - current));
+    }
+    while (next != std::string::npos);
+
+    return result;
+}
+
+std::string getHistogramTypeForDimension(size_t dimension) {
+    switch (dimension) {
+        case 1:
+            return "TH1F";
+        case 2:
+            return "TH2F";
+        case 3:
+            return "TH3F";
+        default:
+            throw std::invalid_argument("Invalid dimension");
+    }
 }
 
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
@@ -257,11 +315,24 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
         std::string binning = p.binning;
         binning.erase(std::remove_if(binning.begin(), binning.end(), [](char chr) { return chr == '(' || chr == ')'; }), binning.end());
-        hists_declaration += "    std::unique_ptr<TH1> " + p.name + "(new TH1F(\"" + p.name + "\", \"\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
+
+        std::vector<std::string> splitted_variables = split(p.variable, ":");
+        std::string histogram_type = getHistogramTypeForDimension(splitted_variables.size());
+
+        std::string title = p.title + ";" + p.x_axis + ";" + p.y_axis + ";" + p.z_axis;
+
+        hists_declaration += "    std::unique_ptr<" + histogram_type + "> " + p.name + "(new " + histogram_type + "(\"" + p.name + "\", \"" + title + "\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
+
+        std::string variable_string;
+        for (size_t i = 0; i < splitted_variables.size(); i++) {
+            variable_string += splitted_variables[i];
+            if (i != splitted_variables.size() - 1)
+                variable_string += ", ";
+        }
 
         ctemplate::TemplateDictionary plot("plot");
         plot.SetValue("CUT", p.plot_cut);
-        plot.SetValue("VAR", p.variable);
+        plot.SetValue("VAR", variable_string);
         plot.SetValue("HIST", p.name);
 
         ctemplate::ExpandTemplate(getTemplate("Plot"), ctemplate::DO_NOT_STRIP, &plot, &text_plots);

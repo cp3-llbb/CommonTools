@@ -9,6 +9,8 @@
 
 #include <TChain.h>
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 #include <TFile.h>
 
 #include <json/json.h>
@@ -133,6 +135,11 @@ int main(int argc, char** argv) {
             std::string output_file = output_dir + "/" + d.output_name + ".root";
 
             ROOT::TreeWrapper wrapped_tree(t.get());
+
+            // Set cache size to 10 MB
+            t->SetCacheSize(10 * 1024 * 1024);
+            // Learn tree structure from the first 10 entries
+            t->SetCacheLearnEntries(10);
 
             Plotter p(d, wrapped_tree);
             p.plot(output_file);

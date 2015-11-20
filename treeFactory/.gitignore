@@ -1,0 +1,14 @@
+# ROOT stuff
+*.root
+
+# compiled stuff
+*.d
+*.o
+*.pcm
+*.exe
+
+# externals
+external/
+
+# cmake
+build/

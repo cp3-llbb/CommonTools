@@ -1,0 +1,3 @@
+#pragma once
+
+#define TEMPLATE_PATH "${PROJECT_SOURCE_DIR}/templates"

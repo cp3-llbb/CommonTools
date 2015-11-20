@@ -39,9 +39,6 @@ struct Plot {
     std::string x_axis;
     std::string y_axis;
     std::string z_axis;
-
-    std::shared_ptr<TTreeFormula> var;
-    std::shared_ptr<TTreeFormula> selector;
 };
 
 #define CHECK_AND_GET(var, obj) if (PyDict_Contains(value, obj) == 1) { \
@@ -307,19 +304,21 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::string text_plots;
     for (auto& p: plots) {
         // Create formulas
-        p.var.reset(new TTreeFormula("var", p.variable.c_str(), t.get()));
-        p.selector.reset(new TTreeFormula("selector", p.plot_cut.c_str(), t.get()));
+        std::shared_ptr<TTreeFormula> selector(new TTreeFormula("selector", p.plot_cut.c_str(), t.get()));
 
-        getBranches(p.var.get());
-        getBranches(p.selector.get());
+        getBranches(selector.get());
+
+        std::vector<std::string> splitted_variables = split(p.variable, ":");
+        for (const std::string& variable: splitted_variables) {
+            std::shared_ptr<TTreeFormula> var(new TTreeFormula("var", variable.c_str(), t.get()));
+            getBranches(var.get());
+        }
 
         std::string binning = p.binning;
         binning.erase(std::remove_if(binning.begin(), binning.end(), [](char chr) { return chr == '(' || chr == ')'; }), binning.end());
 
-        std::vector<std::string> splitted_variables = split(p.variable, ":");
-        std::string histogram_type = getHistogramTypeForDimension(splitted_variables.size());
-
         std::string title = p.title + ";" + p.x_axis + ";" + p.y_axis + ";" + p.z_axis;
+        std::string histogram_type = getHistogramTypeForDimension(splitted_variables.size());
 
         hists_declaration += "    std::unique_ptr<" + histogram_type + "> " + p.name + "(new " + histogram_type + "(\"" + p.name + "\", \"" + title + "\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
 

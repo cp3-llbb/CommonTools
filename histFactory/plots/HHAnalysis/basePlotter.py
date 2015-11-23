@@ -13,7 +13,6 @@ class BasePlotter:
         self.llIDCat = "LL"
         self.jjIDCat = "TT"
         self.jjBtagCat = "nono"
-        self.order = "htOrdered"
         self.suffix = ""
         self.llFlav = "ElEl"
         self.catCut = ""  
@@ -51,7 +50,7 @@ class BasePlotter:
         self.ll_str = "hh_ll[%s.ill]"%self.baseObject 
         self.jj_str = "hh_jj[%s.ijj]"%self.baseObject
 
-        self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3"%(self.lep1_str, self.lep2_str)
+        self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3 && (%s.charge != %s.charge)"%(self.lep1_str, self.lep2_str, self.lep1_str, self.lep2_str)
 
         self.jetCut = "%s.id_L && %s.id_L && %s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str, self.jet1_str, self.jet2_str)  # So far, jet ID is not in the map
         self.jjIDCat = "LL"
@@ -103,7 +102,7 @@ class BasePlotter:
                     'name':  'lep2_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                     'variable': self.lep2_str+".p4.Pt()",
                     'plot_cut': self.totalCut,
-                    'binning': '(50, 0, 300)'
+                    'binning': '(50, 0, 150)'
                 },
                 {
                     'name':  'lep2_eta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -413,6 +412,12 @@ class BasePlotter:
                         'variable': "abs("+self.baseObject+".DPhi_llmet_jj)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 3.1416)'
+                },
+                {
+                        'name':  'cosThetaStar_CS_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': "abs("+self.baseObject+".cosThetaStar_CS)",
+                        'plot_cut': self.totalCut,
+                        'binning': '(25, 0, 1)'
                 }
             ])
             self.plots_evt.extend([

@@ -220,7 +220,7 @@ function do_hadd {
  fi
 }
 
-base_list=`find -name "*_[0-9]*.root" -printf "%f\\n" | sed "s/_[0-9]*.root//g" | sort | uniq`
+base_list=`find -regex ".*_[0-9]*.root" -printf "%f\\n" | sed "s/_[0-9]*.root//g" | sort | uniq`
 
 pushd #OUTDIR_PATH#
 for base in $base_list; do

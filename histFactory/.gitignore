@@ -6,6 +6,7 @@
 *.o
 *.pcm
 *.exe
+*.pyc
 
 # externals
 external/

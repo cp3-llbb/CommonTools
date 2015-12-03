@@ -32,21 +32,21 @@ def joinCuts(*cuts):
 
 #### The IDs/... we want to run on ####
 
-electronID = { id.first: id.second for id in TT.LepID.map if id.second != "V" }
-muonID = dict(TT.LepID.map)
-#electronID = { TT.LepID.M: "L" }
-muonID = { TT.LepID.T: "M" }
+#electronID = { id.first: id.second for id in TT.LepID.map if id.second != "V" }
+#muonID = dict(TT.LepID.map)
+electronID = { TT.LepID.L: "L" }
+muonID = { TT.LepID.L: "L" }
 
+#muonIso = dict(TT.LepIso.map)
 electronIso = { TT.LepIso.L: "L" }
-muonIso = dict(TT.LepIso.map)
-#muonIso = { TT.LepIso.L: "L" }
+muonIso = { TT.LepIso.L: "L" }
 
 #myBWPs = { wp.first: wp.second for wp in TT.BWP.map }
-myBWPs = { TT.BWP.L: "L", TT.BWP.M: "M" } 
-#myBWPs = { TT.BWP.L: "L" } 
+#myBWPs = { TT.BWP.L: "L", TT.BWP.M: "M" } 
+myBWPs = { TT.BWP.L: "L" } 
 
-#myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
-myFlavours = [ "ElEl" ]
+myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
+#myFlavours = [ "ElEl" ]
 #myFlavours = [ "MuMu" ]
 #myFlavours = [ "ElMu", "MuEl" ]
 
@@ -69,7 +69,7 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
         lep2IDs = electronID.keys()
         lep1Isos = electronIso.keys()
         lep2Isos = electronIso.keys()
-        #doZVeto = True
+        doZVeto = True
     
     if flavourChannel == "ElMu":
         lep1IDs = electronID.keys()
@@ -88,7 +88,7 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
         lep2IDs = muonID.keys()
         lep1Isos = muonIso.keys()
         lep2Isos = muonIso.keys()
-        #doZVeto = True
+        doZVeto = True
     
 
     for id1 in lep1IDs:
@@ -187,3 +187,16 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
                                     categ["#JET_CAT_CUTS#"] = "Length$(tt_diLepDiBJets_DRCut_BWP_CSVv2Ordered[" + str(TT.LepLepIDIsoJetJetBWP(id1, iso1, id2, iso2, wp1, wp2)) + "]) >= 1"
                                 
                                 categoryStringsDico["llbbCategs"]["strings"] += llbbStrings
+
+
+                    # Duplicate everything and ask for MET if we are same-flavour
+                    
+                    if flavourChannel in ["ElEl", "MuMu"]:
+                        for categGroup in categoryStringsDico.values():
+                            metStrings = []
+                            for categ in categGroup["strings"]:
+                                thisCateg = copy.deepcopy(categ)
+                                thisCateg["#CAT_TITLE#"] += "_noHFMet"
+                                thisCateg["#JET_CAT_CUTS#"] = joinCuts(thisCateg["#JET_CAT_CUTS#"], "nohf_met_p4.Pt() > 40")
+                                metStrings.append(thisCateg)
+                            categGroup["strings"] += metStrings

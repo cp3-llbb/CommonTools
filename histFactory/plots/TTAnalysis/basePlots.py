@@ -19,6 +19,44 @@ ll = [
             'binning': (50, 0, 50)
         },
 
+        # Gen plots
+        {
+            'name': 'gen_TT_M_BeforeFSR_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_beforeFSR_p4.M()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, 300, 3000)
+        },
+        {
+            'name': 'gen_TT_Pt_BeforeFSR_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_beforeFSR_p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, 300, 3000)
+        },
+        {
+            'name': 'gen_TT_Eta_BeforeFSR_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_beforeFSR_p4.Eta()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (50, -6, 6)
+        },
+        {
+            'name': 'gen_TT_M_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_p4.M()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, 300, 3000)
+        },
+        {
+            'name': 'gen_TT_Pt_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, 300, 3000)
+        },
+        {
+            'name': 'gen_TT_Eta_CAT_#CAT_TITLE#',
+            'variable': 'tt_gen_ttbar_p4.Eta()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (50, -6, 6)
+        },
+
         # Lepton 1
         { 
             'name': 'lep1_pt_CAT_#CAT_TITLE#',
@@ -130,12 +168,18 @@ ll = [
         },
        
         # MissingET: same thing
-        #{
-        #    'name': 'PFMET_MET_CAT_#CAT_TITLE#',
-        #    'variable': 'met_p4.Pt()',
-        #    'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
-        #    'binning': (50, 0, 250)
-        #},
+        {
+            'name': 'PFMET_MET_CAT_#CAT_TITLE#',
+            'variable': 'met_p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, 0, 250)
+        },
+        {
+            'name': 'PFFMET_Phi_CAT_#CAT_TITLE#',
+            'variable': 'met_p4.Phi()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, -3.14159, 3.14159)
+        },
         {
             'name': 'noHFMET_MET_CAT_#CAT_TITLE#',
             'variable': 'nohf_met_p4.Pt()',
@@ -675,5 +719,92 @@ llbb = [
             'variable': 'abs(tt_diLepDiJetsMet[ tt_diLepDiBJetsMet_DRCut_BWP_CSVv2Ordered[#LEPLEP_IDISO_BBWP#][0] ].maxDPhi_j_Met)',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
             'binning': (50, 0, 3.14159)
+        },
+        { 
+            'name': 'llbbMet_TT_M_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.M()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 250, 3000)
+        },
+        { 
+            'name': 'llbbMet_TT_Pt_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 500)
+        },
+        { 
+            'name': 'llbbMet_TT_Eta_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.Eta()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (25, -5, 5)
+        },
+        # MTT Resolution
+        { 
+            'name': 'llbbMet_TT_M_minus_Mgen_beforeFSR_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.M() - tt_gen_ttbar_beforeFSR_p4.M()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, -1000, 1000)
+        },
+        { 
+            'name': 'llbbMet_TT_M_resolution_beforeFSR_CAT_#CAT_TITLE#',
+            'variable': '(tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.M() - tt_gen_ttbar_beforeFSR_p4.M()) / tt_gen_ttbar_beforeFSR_p4.M() ' ,
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (200, -10, 10)
+        },
+        { 
+            'name': 'llbbMet_TT_M_minus_Mgen_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.M() - tt_gen_ttbar_p4.M()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (100, -1000, 1000)
+        },
+        { 
+            'name': 'llbbMet_TT_M_resolution_CAT_#CAT_TITLE#',
+            'variable': '(tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].p4.M() - tt_gen_ttbar_p4.M()) / tt_gen_ttbar_p4.M() ' ,
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0', 'tt_gen_ttbar_decay_type > 0'),
+            'binning': (200, -10, 10)
+        },
+        # Top 1
+        { 
+            'name': 'llbbMet_T1_Pt_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].top1_p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 500)
+        },
+        { 
+            'name': 'llbbMet_T1_Eta_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].top1_p4.Eta()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (25, -5, 5)
+        },
+        # Top 2
+        { 
+            'name': 'llbbMet_T2_Pt_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].top2_p4.Pt()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 500)
+        },
+        { 
+            'name': 'llbbMet_T2_Eta_CAT_#CAT_TITLE#',
+            'variable': 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].top2_p4.Eta()',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (25, -5, 5)
+        },
+        { 
+            'name': 'llbbMet_DPhi_top1_top2_CAT_#CAT_TITLE#',
+            'variable': 'abs( tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].DPhi_tt )',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 3.14159)
+        },
+        { 
+            'name': 'llbbMet_DR_top1_top2_CAT_#CAT_TITLE#',
+            'variable': 'abs( tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].DR_tt )',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 6)
+        },
+        { 
+            'name': 'llbbMet_DEta_top1_top2_CAT_#CAT_TITLE#',
+            'variable': 'abs( tt_ttbar[#LEPLEP_IDISO_BBWP#][0][0].DEta_tt )',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_ttbar[#LEPLEP_IDISO_BBWP#][0].size() > 0'),
+            'binning': (50, 0, 6)
         },
     ]

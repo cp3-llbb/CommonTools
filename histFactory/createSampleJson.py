@@ -10,34 +10,39 @@ sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/sit
 CMSSW_BASE = os.environ['CMSSW_BASE']
 SCRAM_ARCH = os.environ['SCRAM_ARCH']
 sys.path.append(os.path.join(CMSSW_BASE,'bin', SCRAM_ARCH))
+
 from SAMADhi import Dataset, Sample, DbStore
+
+import argparse
 
 def get_sample(iSample):
     dbstore = DbStore()
     resultset = dbstore.find(Sample, Sample.sample_id == iSample)
-    return list(resultset.values(Sample.name, Sample.path))
+    return resultset.one()
 
-def createJson(indices, write = False):
+def createJson(indices, output):
     samples = {}
     for isample in indices:
-        db_name, path,  = map(str, get_sample(isample)[0])
-#        print path, db_name
+        sample = get_sample(isample)
+
         d = {}
-        d["path"] = path
-        d["db_name"] = db_name
+        d["files"] = ["/storage/data/cms" + x.lfn for x in sample.files]
+        d["db_name"] = sample.name
         d["tree_name"] = "t"
         d["sample_cut"] = "1."
-        samples[db_name] = d
-        print isample, d
-#        print samples
-    if write:
-        with open('samples.json', 'w') as fp:
-            json.dump(samples, fp)
+        samples[sample.name] = d
 
-    return samples
+    with open(output, 'w') as fp:
+        json.dump(samples, fp)
+        print("Output saved as %r" % output)
 
 if __name__ == '__main__':
-    # Indices of the SAMADhi entries you want to run on
-    sampleIndices = [517]
 
-    createJson(sampleIndices, True)
+    parser = argparse.ArgumentParser(description='Create a JSON file from a set of database id.')
+
+    parser.add_argument('ids', type=int, nargs='+', help='IDs of the samples', metavar='ID')
+    parser.add_argument('-o', '--output', dest='output', default='samples.json', help='Name of output JSON file')
+
+    options = parser.parse_args()
+
+    createJson(options.ids, options.output)

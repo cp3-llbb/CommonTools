@@ -53,8 +53,8 @@ myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
 #### UTILITY TO GENERATE ALL THE NEEDED CATEGORIES ####
 
 def generateCategoryStrings(categoryStringsDico, flavourChannel):
-    if flavourChannel not in [ "ElEl", "ElMu", "MuEl", "ElEl" ]:
-        raise Exception("Wrong flavour passed to string generator.")
+    if flavourChannel not in [ "MuMu", "ElMu", "MuEl", "ElEl" ]:
+        raise Exception("Wrong flavour passed to string generator: %r." % flavourChannel)
 
     lep1IDs = []
     lep2IDs = []

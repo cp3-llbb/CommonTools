@@ -71,6 +71,8 @@ struct Dataset {
     std::string path;
     std::vector<std::string> files;
     std::string cut;
+    double cross_section;
+    double event_weight_sum;
 };
 
 class Plotter {

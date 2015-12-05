@@ -25,11 +25,16 @@ def createJson(indices, output):
     for isample in indices:
         sample = get_sample(isample)
 
+        if sample.source_dataset.xsection == 1.0:
+            print("Warning: cross-section for dataset %r not set." % sample.source_dataset.name)
+
         d = {}
         d["files"] = ["/storage/data/cms" + x.lfn for x in sample.files]
         d["db_name"] = sample.name
         d["tree_name"] = "t"
         d["sample_cut"] = "1."
+        d["event-weight-sum"] = sample.event_weight_sum
+        d["cross-section"] = sample.source_dataset.xsection
         samples[sample.name] = d
 
     with open(output, 'w') as fp:

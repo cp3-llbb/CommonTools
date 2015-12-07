@@ -15,6 +15,7 @@ from plotTools import *
 
 #### Get plot skeletons from other file ####
 import basePlots
+import transferFunctions 
 
 #### Define the sub-categories and the corresponding plot groups ####
 
@@ -43,6 +44,7 @@ categoryPlots = {
         # ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
         "llbbCategs": { 
             "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
+            #"plots": transferFunctions.TFs,
             },
     
     }

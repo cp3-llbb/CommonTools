@@ -22,6 +22,8 @@ include_directories(${ROOT_INCLUDE_DIR})
 
 find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
     NO_DEFAULT_PATH)
+find_library(ROOT_TREEPLAYER_LIB TreePlayer PATHS ${ROOT_LIBRARY_DIR}
+    NO_DEFAULT_PATH)
 
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
@@ -79,6 +81,7 @@ set_target_properties(plotter PROPERTIES OUTPUT_NAME "plotter.exe")
 # Link libraries
 target_link_libraries(plotter ${ROOT_LIBRARIES})
 target_link_libraries(plotter ${ROOT_GENVECTOR_LIB})
+target_link_libraries(plotter ${ROOT_TREEPLAYER_LIB})
 
 find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
     "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)

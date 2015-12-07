@@ -29,6 +29,11 @@ void Plotter::plot(const std::string& output_file) {
             break;
         }
 
+        if (m_sample_cut){
+          if( !m_sample_cut->EvalInstance() )
+            continue;
+        }
+
         if ((index - 1) % 1000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
 
@@ -75,6 +80,14 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
             dataset.output_name = sample["output_name"].asString();
         } else {
             dataset.output_name = dataset.db_name + "_histos";
+            if(sample.isMember("suffix"))
+                dataset.output_name += sample.get("suffix").asString();
+        }
+        
+        if( std::binary_search(datasets.begin(), datasets.end(), dataset.output_name, [](const Dataset &d1, const Dataset &d2){ return d1.output_name == d2.output_name; }) ){
+            std::cout << "Warning: output name " << dataset.output_name << " already present.\n";
+            std::cout << "Appending \"_" << index << "\" to avoid collision." << std::endl;
+            dataset.output_name += std::to_string(index);
         }
 
         // If a list of files is specified, only use those
@@ -134,14 +147,12 @@ int main(int argc, char** argv) {
 
             std::string output_file = output_dir + "/" + d.output_name + ".root";
 
-            ROOT::TreeWrapper wrapped_tree(t.get());
-
             // Set cache size to 10 MB
             t->SetCacheSize(10 * 1024 * 1024);
             // Learn tree structure from the first 10 entries
             t->SetCacheLearnEntries(10);
 
-            Plotter p(d, wrapped_tree);
+            Plotter p(d, t.get());
             p.plot(output_file);
             std::cout << "Done. Output saved as '" << output_file << "'" << std::endl;
         }

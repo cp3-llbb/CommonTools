@@ -6,12 +6,15 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 // ROOT
 #include <Rtypes.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TTree.h>
+#include <TTreeFormula.h>
 #include <Math/Vector4D.h>
 
 // Generated automatically
@@ -75,9 +78,15 @@ struct Dataset {
 
 class Plotter {
     public:
-        Plotter(const Dataset& dataset, ROOT::TreeWrapper& tree):
-            m_dataset(dataset), tree(tree) {};
-        virtual ~Plotter() {};
+        Plotter(const Dataset& dataset, TTree* ttree):
+            m_dataset(dataset), tree(ttree), m_sample_cut(nullptr)
+            {
+                if(dataset.cut != "" && dataset.cut != "1"){
+                    m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), ttree);
+                    ttree->SetNotify(m_sample_cut);
+                }
+            };
+        virtual ~Plotter() { delete m_sample_cut; };
 
         void plot(const std::string&);
 
@@ -104,7 +113,8 @@ class Plotter {
         }
 
         Dataset m_dataset;
-        ROOT::TreeWrapper& tree;
+        ROOT::TreeWrapper tree;
+        TTreeFormula* m_sample_cut;
 
         // List of branches
         {{BRANCHES}}

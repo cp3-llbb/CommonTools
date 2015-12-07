@@ -40,6 +40,8 @@ void Plotter::plot(const std::string& output_file) {
     }
 
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
+
+    double sample_scale = m_dataset.cross_section / m_dataset.event_weight_sum;
 {{SAVE_PLOTS}}
 }
 
@@ -70,11 +72,22 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         dataset.cut = sample.get("sample_cut", "1").asString();
         dataset.tree_name = sample.get("tree_name", "t").asString();
 
-        //dataset.output_name
         if (sample.isMember("output_name")) {
             dataset.output_name = sample["output_name"].asString();
         } else {
             dataset.output_name = dataset.db_name + "_histos";
+        }
+
+        if (sample.isMember("cross-section")) {
+            dataset.cross_section = sample["cross-section"].asDouble();
+        } else {
+            dataset.cross_section = 1.;
+        }
+
+        if (sample.isMember("event-weight-sum")) {
+            dataset.event_weight_sum = sample["event-weight-sum"].asDouble();
+        } else {
+            dataset.event_weight_sum = 1.;
         }
 
         // If a list of files is specified, only use those

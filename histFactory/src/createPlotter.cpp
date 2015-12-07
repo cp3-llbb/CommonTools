@@ -164,6 +164,27 @@ std::string getHistogramTypeForDimension(size_t dimension) {
     }
 }
 
+std::string buildArrayForVariableBinning(std::string& binning, const size_t dimension, const std::string &name){
+    std::string array;
+
+    for(size_t dim_index = 0; dim_index < dimension; ++dim_index){
+      array += "float ";
+    
+      size_t brace_start = binning.find_first_of("{");
+      size_t brace_end = binning.find_first_of("}");
+
+      if(brace_start == std::string::npos || brace_end == std::string::npos || brace_end < brace_start)
+        continue;
+
+      std::string array_name = name + "_" + std::to_string(dim_index);
+      array += array_name + "[] " + binning.substr(brace_start, brace_end - brace_start + 1) + ";\n";
+
+      binning.replace(brace_start, brace_end - brace_start + 1, std::string("&(") + array_name + "[0])");
+  }
+
+  return array;
+}
+
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
 bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
@@ -317,11 +338,17 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         std::string binning = p.binning;
         binning.erase(std::remove_if(binning.begin(), binning.end(), [](char chr) { return chr == '(' || chr == ')'; }), binning.end());
 
+        // If a variable bin size is specified, declare array that will be passed as array to histogram constructor
+        if(binning.find("{") != std::string::npos){
+          std::string arrayString = buildArrayForVariableBinning(binning, splitted_variables.size(), p.name);
+          hists_declaration += arrayString;
+        }
+
         std::string title = p.title + ";" + p.x_axis + ";" + p.y_axis + ";" + p.z_axis;
         std::string histogram_type = getHistogramTypeForDimension(splitted_variables.size());
 
         hists_declaration += "    std::unique_ptr<" + histogram_type + "> " + p.name + "(new " + histogram_type + "(\"" + p.name + "\", \"" + title + "\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
-
+ 
         std::string variable_string;
         for (size_t i = 0; i < splitted_variables.size(); i++) {
             variable_string += splitted_variables[i];

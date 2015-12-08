@@ -52,6 +52,8 @@ categoryPlots = {
 # Initialize maps needed later
 for categ in categoryPlots.values():
     categ["strings"] = []
+    categ["weights"] = []
+
 
 flavourCategPlots = { flav: copy.deepcopy(categoryPlots) for flav in myFlavours }
 
@@ -88,11 +90,13 @@ for flav in flavourCategPlots.values():
     for categ in flav.values():
 
         # Iterate over each sub-category
-        for subCateg in categ["strings"]:
+        for subCateg_index, subCateg in enumerate(categ["strings"]):
 
             # Iterate over every plot skeleton defined for the current category group
             for plot in categ["plots"]:
                 m_plot = copy.deepcopy(plot)
+                if not 'scale-factors' in m_plot:
+                    m_plot['scale-factors'] = True
 
                 # Iterate over the string keys defined in the sub-category
                 for key in subCateg.items():
@@ -109,12 +113,14 @@ for flav in flavourCategPlots.values():
                 #if tt_cut is not None:
                 #    m_plot["plot_cut"] = joinCuts(m_plot["plot_cut"], tt_cut)
 
-                # Don't forget the event_weight:
-                m_plot["plot_cut"] = "(" + m_plot["plot_cut"] + ")*event_pu_weight*event_weight"
+                # Plot weights
+                m_plot["weight"] = "event_pu_weight * event_weight"
+                if len(categ["weights"][subCateg_index]) > 0 and m_plot['scale-factors']:
+                    m_plot["weight"] += " * " + " * ".join(categ["weights"][subCateg_index])
 
                 plots.append(m_plot)
 
-                print "Plot: {}\nVariable: {}\nCut: {}\nBinning: {}\n".format(m_plot["name"], m_plot["variable"], m_plot["plot_cut"], m_plot["binning"])
+                print "Plot: {}\nVariable: {}\nCut: {}\nWeight: {}\nBinning: {}\n".format(m_plot["name"], m_plot["variable"], m_plot["plot_cut"], m_plot["weight"], m_plot["binning"])
 
 print "Generated {} plots.\n".format(len(plots))
 

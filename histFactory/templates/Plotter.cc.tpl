@@ -37,6 +37,7 @@ void Plotter::plot(const std::string& output_file) {
         if ((index - 1) % 1000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
 
+        bool __cut = false;
         double __weight = 0;
 
 {{PLOTS}}

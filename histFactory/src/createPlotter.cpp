@@ -9,6 +9,7 @@
 #include <fstream>
 #include <memory>
 #include <cstdio>
+#include <regex>
 
 #include <TChain.h>
 #include <TApplication.h>
@@ -32,7 +33,8 @@ struct Branch {
 struct Plot {
     std::string name;
     std::string variable;
-    std::string plot_cut;
+    std::string cut;
+    std::string weight;
     std::string binning;
 
     std::string title;
@@ -66,6 +68,7 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     static PyObject* PY_NAME = PyString_FromString("name");
     static PyObject* PY_VARIABLE = PyString_FromString("variable");
     static PyObject* PY_PLOT_CUT = PyString_FromString("plot_cut");
+    static PyObject* PY_WEIGHT = PyString_FromString("weight");
     static PyObject* PY_BINNING = PyString_FromString("binning");
     static PyObject* PY_TITLE = PyString_FromString("title");
     static PyObject* PY_X_AXIS = PyString_FromString("x-axis");
@@ -78,8 +81,11 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
 
     CHECK_AND_GET(plot.name, PY_NAME);
     CHECK_AND_GET(plot.variable, PY_VARIABLE);
-    CHECK_AND_GET(plot.plot_cut, PY_PLOT_CUT);
+    CHECK_AND_GET(plot.cut, PY_PLOT_CUT);
     CHECK_AND_GET(plot.binning, PY_BINNING);
+
+    plot.weight = "1.";
+    GET(plot.weight, PY_WEIGHT);
 
     GET(plot.title, PY_TITLE);
     GET(plot.x_axis, PY_X_AXIS);
@@ -129,26 +135,13 @@ inline std::string getTemplate(const std::string& name) {
     return p;
 }
 
-std::vector<std::string> split(const std::string& s, const std::string& delimiters) {
+std::vector<std::string> split(const std::string& input, const std::string& regex) {
+    std::regex re(regex);
+    std::sregex_token_iterator
+        first(input.begin(), input.end(), re, -1),
+        last;
 
-    std::vector<std::string> result;
-
-    size_t current;
-    size_t next = -1;
-    do
-    {
-        next = s.find_first_not_of(delimiters, next + 1);
-        if (next == std::string::npos)
-            break;
-        next -= 1;
-
-        current = next + 1;
-        next = s.find_first_of(delimiters, current);
-        result.push_back(s.substr(current, next - current));
-    }
-    while (next != std::string::npos);
-
-    return result;
+    return {first, last};
 }
 
 std::string getHistogramTypeForDimension(size_t dimension) {
@@ -325,11 +318,13 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::string text_plots;
     for (auto& p: plots) {
         // Create formulas
-        std::shared_ptr<TTreeFormula> selector(new TTreeFormula("selector", p.plot_cut.c_str(), t.get()));
+        std::shared_ptr<TTreeFormula> selector(new TTreeFormula("selector", p.cut.c_str(), t.get()));
+        std::shared_ptr<TTreeFormula> weight(new TTreeFormula("weight", p.weight.c_str(), t.get()));
 
         getBranches(selector.get());
+        getBranches(weight.get());
 
-        std::vector<std::string> splitted_variables = split(p.variable, ":");
+        std::vector<std::string> splitted_variables = split(p.variable, ":::");
         for (const std::string& variable: splitted_variables) {
             std::shared_ptr<TTreeFormula> var(new TTreeFormula("var", variable.c_str(), t.get()));
             getBranches(var.get());
@@ -357,7 +352,8 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         }
 
         ctemplate::TemplateDictionary plot("plot");
-        plot.SetValue("CUT", p.plot_cut);
+        plot.SetValue("CUT", p.cut);
+        plot.SetValue("WEIGHT", p.weight);
         plot.SetValue("VAR", variable_string);
         plot.SetValue("HIST", p.name);
 

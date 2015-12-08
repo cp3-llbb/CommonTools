@@ -1,5 +1,6 @@
-        __weight = ({{CUT}});
-        if (__weight != 0) {
+        __cut = ({{CUT}});
+        if (__cut) {
+            __weight = ({{WEIGHT}});
             fill({{HIST}}.get(), {{VAR}}, __weight);
         }
 

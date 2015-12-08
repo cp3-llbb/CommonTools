@@ -82,13 +82,13 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         } else {
             dataset.output_name = dataset.db_name + "_histos";
             if(sample.isMember("suffix"))
-                dataset.output_name += sample.get("suffix").asString();
+                dataset.output_name += sample["suffix"].asString();
         }
         
-        if( std::binary_search(datasets.begin(), datasets.end(), dataset.output_name, [](const Dataset &d1, const Dataset &d2){ return d1.output_name == d2.output_name; }) ){
+        if( std::find_if(datasets.begin(), datasets.end(), [&](const Dataset &d){ return d.output_name == dataset.output_name; }) != datasets.end() ){
             std::cout << "Warning: output name " << dataset.output_name << " already present.\n";
             std::cout << "Appending \"_" << index << "\" to avoid collision." << std::endl;
-            dataset.output_name += std::to_string(index);
+            dataset.output_name += "_" + std::to_string(index);
         }
 
         if (sample.isMember("cross-section")) {

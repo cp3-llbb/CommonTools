@@ -168,14 +168,14 @@ std::string buildArrayForVariableBinning(std::string& binning, const size_t dime
     std::string array;
 
     for(size_t dim_index = 0; dim_index < dimension; ++dim_index){
-      array += "float ";
-    
       size_t brace_start = binning.find_first_of("{");
       size_t brace_end = binning.find_first_of("}");
 
       if(brace_start == std::string::npos || brace_end == std::string::npos || brace_end < brace_start)
         continue;
 
+      array += "double ";
+    
       std::string array_name = name + "_" + std::to_string(dim_index);
       array += array_name + "[] " + binning.substr(brace_start, brace_end - brace_start + 1) + ";\n";
 

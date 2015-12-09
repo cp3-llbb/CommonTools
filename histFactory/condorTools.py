@@ -8,6 +8,7 @@ import sys
 import json
 import stat
 import copy
+import subprocess
 
 # Add default ingrid storm package
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
@@ -69,15 +70,22 @@ should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 universe       = vanilla
 requirements   = (CMSFARM =?= TRUE)&&(Memory > 200)
+executable     = #INDIR_PATH#/condor.sh
 
 """
         self.jobCmd = """
-output         = #LOGDIR_RELPATH#/condor_#JOB_ID#.out
-error          = #LOGDIR_RELPATH#/condor_#JOB_ID#.err
-log            = #LOGDIR_RELPATH#/condor_#JOB_ID#.log
-executable     = #INDIR_PATH#/condor_#JOB_ID#.sh
-queue 1
+arguments      = $(Process)
+output         = #LOGDIR_RELPATH#/condor_$(Process).out
+error          = #LOGDIR_RELPATH#/condor_$(Process).err
+log            = #LOGDIR_RELPATH#/condor_$(Process).log
+queue #N_JOBS#
 
+"""
+
+        self.wrapperShell = """
+#!/usr/bin/bash
+
+#INDIR_PATH#/condor_$1.sh
 """
 
         self.baseShell = """
@@ -143,12 +151,20 @@ function move_files {
         logDir = os.path.join(self.baseDir, "logs")
         if not os.path.isdir(logDir):
             os.makedirs(logDir)
-        self.logDir = os.path.relpath(logDir)
+        self.logDir = logDir
 
     def createCondorFiles(self):
         """ Create the .sh and .cmd files for Condor."""
 
         jobCount = 0
+
+        dico = {}
+        dico["#INDIR_PATH#"] = self.inDir
+        dico["#OUTDIR_PATH#"] = self.outDir
+        dico["#LOGDIR_RELPATH#"] = os.path.relpath(self.logDir)
+        dico["#EXEC_PATH#"] = self.execPath
+        dico["#PLOT_CFG_PATH#"] = self.plotConfig
+        dico["#CMS_PATH#"] = CMSSW_BASE
 
         for sample in self.sampleCfg:
             name = sample["db_name"]
@@ -172,24 +188,15 @@ function move_files {
                 with open(jsonFileName, "w") as js:
                     json.dump(jsonContent, js)
 
-                dico = {}
-                dico["#JOB_ID#"] = str(jobCount)
-                dico["#SAMPLE_NAME#"] = name
-                dico["#SAMPLE_JSON#"] = jsonFileName 
-                dico["#INDIR_PATH#"] = self.inDir
-                dico["#OUTDIR_PATH#"] = self.outDir
-                dico["#LOGDIR_RELPATH#"] = os.path.relpath(self.logDir)
-                dico["#EXEC_PATH#"] = self.execPath
-                dico["#PLOT_CFG_PATH#"] = self.plotConfig
-                dico["#CMS_PATH#"] = CMSSW_BASE
+                local_dico = copy.deepcopy(dico)
+                local_dico["#JOB_ID#"] = str(jobCount)
+                local_dico["#SAMPLE_NAME#"] = name
+                local_dico["#SAMPLE_JSON#"] = jsonFileName 
 
-                thisCmd = str(self.jobCmd)
                 thisSh = str(self.baseShell)
                 
-                for key in dico.items():
-                    thisCmd = thisCmd.replace(key[0], key[1])
+                for key in local_dico.items():
                     thisSh = thisSh.replace(key[0], key[1])
-                self.baseCmd += thisCmd
 
                 shFileName = os.path.join(self.inDir, "condor_{}.sh".format(jobCount))
                 with open(shFileName, "w") as sh:
@@ -199,6 +206,22 @@ function move_files {
 
                 jobCount += 1
            
+        dico["#N_JOBS#"] = str(jobCount)
+
+        thisWrapper = str(self.wrapperShell)
+
+        self.baseCmd += self.jobCmd
+        for key in dico.items():
+            self.baseCmd = self.baseCmd.replace(key[0], key[1])
+            thisWrapper = thisWrapper.replace(key[0], key[1])
+
+        # Shell wrapper
+        shFileName = os.path.join(self.inDir, "condor.sh")
+        with open(shFileName, "w") as sh:
+            sh.write(thisWrapper)
+        perm = os.stat(shFileName)
+        os.chmod(shFileName, perm.st_mode | stat.S_IEXEC)
+
         cmdFileName = os.path.join(self.inDir, "condor.cmd")
         with open(cmdFileName, "w") as cmd:
             cmd.write(self.baseCmd)
@@ -214,11 +237,34 @@ function move_files {
             cmd = """
 #!/usr/bin/bash
 
+function check_success {
+  should_exit=false
+  find #LOGDIR_PATH# -name "*.err" -not -size 0 |
+  {
+    while read f; do
+      [[ $f =~ condor_([0-9]+) ]]
+      id=${BASH_REMATCH[1]}
+      echo "Error: job #${id} failed."
+      should_exit=true
+    done
+
+    if [ "${should_exit}" == true ]; then
+      exit 1
+    fi
+  }
+
+  if [ $? -eq 1 ]; then
+    exit 1
+  fi
+}
+
 function do_hadd {
  if [ ! -z "$1" ]; then
   hadd $1.root $1_*.root && if [ "$2" == "-r" ]; then rm $1_*.root; fi
  fi
 }
+
+check_success
 
 base_list=`find -regex ".*_[0-9]*.root" -printf "%f\\n" | sed "s/_[0-9]*.root//g" | sort | uniq`
 
@@ -227,7 +273,8 @@ for base in $base_list; do
  do_hadd $base $1
 done
 popd"""
-            f.write(cmd.replace("#OUTDIR_PATH#", self.outDir))
+            f.write(cmd.replace("#OUTDIR_PATH#", self.outDir)
+                       .replace("#LOGDIR_PATH#", self.logDir))
         perm = os.stat(haddFile)
         os.chmod(haddFile, perm.st_mode | stat.S_IEXEC)
         self.haddCmd = haddFile
@@ -239,10 +286,21 @@ popd"""
             raise Exception("Job files must be created first using createCondorFiles().")
 
         print "Submitting {} condor jobs.".format(self.jobCount)
-        os.system("condor_submit {}".format( os.path.join(self.inDir, "condor.cmd") ) )
+        result = subprocess.check_output(["condor_submit", os.path.join(self.inDir, "condor.cmd")])
+        print result
 
-        print "Submitting {} jobs done.".format(self.jobCount)
-        print "Monitor your jobs with `condor_status -submitter` or `condor_q {}`".format(self.user)
+        # Get cluster id from condor_submit output
+        import re
+        r = re.compile("\d+ job\(s\) submitted to cluster (\d+)\.")
+        g = r.search(result)
+
+        clusterId = int(g.group(1))
+
+        with open(os.path.join(self.inDir, 'cluster_id'), 'w') as f:
+            f.write(str(clusterId))
+
+        print "Submitting {} jobs done. Job id is {}.".format(self.jobCount, clusterId)
+        print "Monitor your jobs with `condor_status -submitter` or `condor_q {}`".format(clusterId)
         print "When they are all done, run the following command to hadd the files: `{}`".format(self.haddCmd)
         print "If you also want to remove the original files, add the `-r` argument."
 

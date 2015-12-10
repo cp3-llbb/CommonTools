@@ -56,7 +56,6 @@ ll = [
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#', 'tt_gen_ttbar_decay_type > 0'),
             'binning': (50, -6, 6)
         },
-
         # Lepton 1
         { 
             'name': 'lep1_pt_CAT_#CAT_TITLE#',
@@ -81,6 +80,13 @@ ll = [
             'variable': 'tt_leptons[ tt_diLeptons[ tt_diLeptons_IDIso[#LEPLEP_IDISO#][0] ].lidxs.first ].isoValue',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
             'binning': (50, 0, 0.2)
+        },
+        { 
+            'name': 'lep1_SF_CAT_#CAT_TITLE#',
+            'variable': '#LEP1_SF#',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, 0, 1.5),
+            'scale-factors': False
         },
         
         # Lepton 2
@@ -107,6 +113,13 @@ ll = [
             'variable': 'tt_leptons[ tt_diLeptons[ tt_diLeptons_IDIso[#LEPLEP_IDISO#][0] ].lidxs.second ].isoValue',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
             'binning': (50, 0, 0.2)
+        },
+        { 
+            'name': 'lep2_SF_CAT_#CAT_TITLE#',
+            'variable': '#LEP2_SF#',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, 0, 1.5),
+            'scale-factors': False
         },
         
         # DiLepton
@@ -502,6 +515,13 @@ llbb = [
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
             'binning': (25, 0, 1)
         },
+        { 
+            'name': 'bjet1_SF_CAT_#CAT_TITLE#',
+            'variable': '#BJET1_SF#',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, 0, 1.5),
+            'scale-factors': False
+        },
         
         # BJet 2
         { 
@@ -533,6 +553,13 @@ llbb = [
             'variable': 'tt_selJets[ tt_diJets[ tt_diLepDiJets[ tt_diLepDiBJets_DRCut_BWP_CSVv2Ordered[#LEPLEP_IDISO_BBWP#][0] ].diJetIdx ].jidxs.second ].CSVv2',
             'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
             'binning': (25, 0, 1)
+        },
+        { 
+            'name': 'bjet2_SF_CAT_#CAT_TITLE#',
+            'variable': '#BJET2_SF#',
+            'plot_cut': joinCuts('#LEPLEP_CAT_CUTS#', '#JET_CAT_CUTS#'),
+            'binning': (50, 0, 1.5),
+            'scale-factors': False
         },
         
         # DiBJet

@@ -156,8 +156,15 @@ int main(int argc, char** argv) {
 
             std::cout << "Creating plots for dataset '" << d.name << "'" << std::endl;
             std::unique_ptr<TChain> t(new TChain(d.tree_name.c_str()));
+            bool fail_if_open_error = d.path.length() == 0;
+            size_t n_files = 0;
             for (const std::string& file: d.files)
-                t->Add(file.c_str());
+                n_files += t->Add(file.c_str(), 0);
+
+            if ((fail_if_open_error) && (n_files != d.files.size())) {
+                std::cerr << "Error: some files failed to open" << std::endl;
+                return 2;
+            }
 
             std::string output_file = output_dir + "/" + d.output_name + ".root";
 

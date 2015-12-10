@@ -202,25 +202,24 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
                                     categ["#CAT_TITLE#"] += "_bb_" + TT.JetJetBWPStr(wp1, wp2)
                                     categ["#LEPLEP_IDISO_BBWP#"] = TT.LepLepIDIsoJetJetBWP(id1, iso1, id2, iso2, wp1, wp2)
                                     categ["#JET_CAT_CUTS#"] = "Length$(tt_diLepDiBJets_DRCut_BWP_CSVv2Ordered[" + str(TT.LepLepIDIsoJetJetBWP(id1, iso1, id2, iso2, wp1, wp2)) + "]) >= 1"
-                                    categ["#BJET1_SF#"] = get_at_least_two_b_SF_first_b_for_dijet(0, wp1, wp2, id1, id2, iso1, iso2)
-                                    categ["#BJET2_SF#"] = get_at_least_two_b_SF_second_b_for_dijet(0, wp1, wp2, id1, id2, iso1, iso2)
+                                    categ["#BJET1_SF#"] = get_at_least_two_b_SF_one_b_for_dijet(0, 0, wp1, wp2, id1, id2, iso1, iso2)
+                                    categ["#BJET2_SF#"] = get_at_least_two_b_SF_one_b_for_dijet(1, 0, wp1, wp2, id1, id2, iso1, iso2)
                                     weights += [llbbSFs]
                                 
                                 categoryStringsDico["llbbCategs"]["strings"] += llbbStrings
                                 categoryStringsDico["llbbCategs"]["weights"] += weights
 
 
-                    # Duplicate everything and ask for MET if we are same-flavour
-                    
-                    if flavourChannel in ["ElEl", "MuMu"]:
-                        for categName, categGroup in categoryStringsDico.items():
-                            metStrings = []
-                            weights = []
-                            for index, categ in enumerate(categGroup["strings"]):
-                                thisCateg = copy.deepcopy(categ)
-                                thisCateg["#CAT_TITLE#"] += "_noHFMet"
-                                thisCateg["#JET_CAT_CUTS#"] = joinCuts(thisCateg["#JET_CAT_CUTS#"], "nohf_met_p4.Pt() > 40")
-                                metStrings.append(thisCateg)
-                                weights.append(categGroup["weights"][index])
-                            categGroup["strings"] += metStrings
-                            categGroup["weights"] += weights
+    # Duplicate everything and ask for MET if we are same-flavour
+    if flavourChannel in ["ElEl", "MuMu"]:
+        for categName, categGroup in categoryStringsDico.items():
+            metStrings = []
+            weights = []
+            for index, categ in enumerate(categGroup["strings"]):
+                thisCateg = copy.deepcopy(categ)
+                thisCateg["#CAT_TITLE#"] += "_Met"
+                thisCateg["#JET_CAT_CUTS#"] = joinCuts(thisCateg["#JET_CAT_CUTS#"], "met_p4.Pt() > 40")
+                metStrings.append(thisCateg)
+                weights.append(categGroup["weights"][index])
+            categGroup["strings"] += metStrings
+            categGroup["weights"] += weights

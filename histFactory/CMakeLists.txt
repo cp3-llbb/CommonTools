@@ -28,12 +28,21 @@ if(IN_CMSSW)
     execute_process(COMMAND scram tool tag python LIB OUTPUT_VARIABLE PYTHON_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
     set(PYTHON_LIBRARY "${PYTHON_LIBRARY_PATH}/lib${PYTHON_LIBRARY}.so")
     execute_process(COMMAND scram tool tag python INCLUDE OUTPUT_VARIABLE PYTHON_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    # Boost
+    execute_process(COMMAND scram tool tag boost BOOST_BASE OUTPUT_VARIABLE
+        BOOST_ROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(Boost_NO_SYSTEM_PATHS ON)
 else()
     execute_process(COMMAND python-config --prefix OUTPUT_VARIABLE
         PYTHON_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
     list(APPEND CMAKE_LIBRARY_PATH "${PYTHON_PREFIX}/lib")
     list(APPEND CMAKE_INCLUDE_PATH "${PYTHON_PREFIX}/include")
 endif()
+
+set(Boost_NO_BOOST_CMAKE ON)
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})

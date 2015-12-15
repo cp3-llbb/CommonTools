@@ -11,7 +11,7 @@ include(CMSSW)
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++0x -g")
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
@@ -47,6 +47,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
+include_directories(src)
+
 # Configure external
 
 include(BuildExternals)
@@ -61,7 +63,7 @@ configure_file(scripts/createPlotter.sh.in createPlotter.sh @ONLY NEWLINE_STYLE 
 # plotter sources
 set(PLOTTER_SOURCES
     src/createPlotter.cpp
-    ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
+    src/formula_parser.cpp
     )
 
 # Multidraw sources
@@ -112,7 +114,6 @@ set_target_properties(count PROPERTIES OUTPUT_NAME "createProcessedEvents.exe")
 
 # Link libraries
 target_link_libraries(plotter ${ROOT_LIBRARIES})
-target_link_libraries(plotter ${ROOT_TREEPLAYER_LIBRARY})
 target_link_libraries(plotter ${PYTHON_LIBRARY})
 
 target_link_libraries(plotter "uuid")

@@ -1,0 +1,13 @@
+# Compiled stuff
+*.exe
+*.pyc
+
+# TMVA output
+*.root
+*.class.C
+*.xml
+
+# Plots
+*.eps
+*.png
+*.pdf

@@ -1,25 +1,29 @@
+import copy
 
 class BasePlotter:
     def __init__(self):
         # This list shows what are the free parameters to generate the plots
         self.baseObjectName = "hh_llmetjj"# will eventually be used with index(s) from the map
         self.map = "hh_map_llmetjj_id_iso_btagWP_pair"
-        self.mapWP = "0"
         self.lepMap = "hh_map_l_id_iso"
-        self.lepMapWP = "0"
         self.jetMap = "hh_map_j_btagWP"
+        # The following will be redefined in generatePlots.py according to the chosen WP
+        self.mapWP = "0"
+        self.lepMapWP = "0"
         self.jetMapWP = "0"
         self.llIsoCat = "LL"
         self.llIDCat = "LL"
-        self.jjIDCat = "TT"
+        self.jjIDCat = "LL"
         self.jjBtagCat = "nono"
         self.suffix = ""
-        self.llFlav = "ElEl"
+        # The following will be instantiated in generatePlots.py
+        self.llFlav = ""
         self.catCut = ""  
         self.jetCut = ""
         self.lepCut = ""     
         self.extraCut = ""
         self.totalCut = ""
+        self.evtWeight = "event_weight"
 
     def joinCuts(self, *cuts):
         if len(cuts) == 0: 
@@ -51,18 +55,17 @@ class BasePlotter:
         self.jj_str = "hh_jj[%s.ijj]"%self.baseObject
 
         self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3 && (%s.charge != %s.charge)"%(self.lep1_str, self.lep2_str, self.lep1_str, self.lep2_str)
+        self.jetCut = "%s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str) 
 
-        self.jetCut = "%s.id_L && %s.id_L && %s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str, self.jet1_str, self.jet2_str)  # So far, jet ID is not in the map
-        self.jjIDCat = "LL"
-
-        self.plots_lep = []
         self.plots_el = []
         self.plots_mu = []
+        self.plots_lep = []
         self.plots_jet = []
         self.plots_met = []
         self.plots_ll = []
         self.plots_jj = []
         self.plots_llmetjj = []
+        self.plots_gen = []
         self.plots_evt = []
 
 
@@ -70,13 +73,13 @@ class BasePlotter:
         dict_cat_cut =  {
                             "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
                             "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
-                            "MuEl" : "((%s.isElMu)||(%s.isMuEl))"%(self.ll_str, self.ll_str)
+                            "MuEl" : "((%s.isElMu)||(%s.isMuEl)) && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str, self.ll_str)
                         }
 
         for cat in categories :
 
             self.catCut = dict_cat_cut[cat]
-            self.totalCut = self.joinCuts(self.mapCut, self.catCut, self.jetCut, self.lepCut, self.extraCut) + "*event_weight"
+            self.totalCut = self.joinCuts(self.mapCut, self.catCut, self.jetCut, self.lepCut, self.extraCut)
             self.llFlav = cat
 
             self.plots_lep.extend([
@@ -282,7 +285,7 @@ class BasePlotter:
                         'name':  'Mjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jj_str+".p4.M()",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 1000)'
+                        'binning': '(50, 0, 600)'
                 },
                 {
                         'name':  'PTjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -420,6 +423,12 @@ class BasePlotter:
                         'binning': '(25, 0, 1)'
                 }
             ])
+            for elt in self.plots_jj : 
+                tempPlot = copy.deepcopy(elt)
+                if "p4" in tempPlot["variable"] :
+                    tempPlot["variable"] = tempPlot["variable"].replace(self.jj_str,"hh_gen_BB")
+                    tempPlot["name"] = "gen"+tempPlot["name"]
+                    self.plots_gen.append(tempPlot)
             self.plots_evt.extend([
                 {
                     'name':  'nLep_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),

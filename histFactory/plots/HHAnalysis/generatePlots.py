@@ -6,21 +6,25 @@ scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 sys.path.append(scriptDir)
 from basePlotter import BasePlotter
 from mapFacilities import getIndx_llmetjj_id_iso_btagWP_pair, getIndx_ll_id_iso, getIndx_l_id_iso, getIndx_j_bTagWP
+# NB: llmetjj map is lepid1, lepiso1, lepid2, lepiso2, jetid1, jetid2, btagWP1, btagWP2, pair
 
 plots = []
 basePlotter = BasePlotter()
 
 categories = ["ElEl","MuMu","MuEl"]
 
-dict_WPnames_wps = { "zVeto_nono": ["L","L","L","L","no","no","ht"], "zVeto_LL": ["L","L","L","L","L","L","ht"], "zVeto_MM": ["L","L","L","L","M","M","ht"],  "zVeto_csv_nono": ["L","L","L","L","no","no","csv"], "zVeto_csv_LL": ["L","L","L","L","L","L","csv"], "zVeto_csv_MM": ["L","L","L","L","M","M","csv"] }
-for WPname in dict_WPnames_wps.keys() :
-    lepid1 = dict_WPnames_wps[WPname][0]
-    lepiso1 = dict_WPnames_wps[WPname][1]
-    lepid2 = dict_WPnames_wps[WPname][2]
-    lepiso2 = dict_WPnames_wps[WPname][3]
-    btagWP1 = dict_WPnames_wps[WPname][4]
-    btagWP2 = dict_WPnames_wps[WPname][5]
-    pair = dict_WPnames_wps[WPname][6]
+#workingPoints = {"zVeto_csv_LL": ["T","T","T","T","no","no","csv"], "zVeto_pt_LL": ["T","T","T","T","no","no","pt"], "zVeto_ht_LL": ["T","T","T","T","no","no","ht"], "zVeto_mh_LL": ["T","T","T","T","no","no","mh"], "zVeto_ptOverM_LL": ["T","T","T","T","no","no","ptOverM"]}
+workingPoints = [ ["T","T","T","T","L","L","no","no","csv"], ["T","T","T","T","L","L","L","L","csv"] ]
+for WP in workingPoints :
+    lepid1 = WP[0]
+    lepiso1 = WP[1]
+    lepid2 = WP[2]
+    lepiso2 = WP[3]
+    jetid1 = WP[4]
+    jetid2 = WP[5]
+    btagWP1 = WP[6]
+    btagWP2 = WP[7]
+    pair = WP[8]
     basePlotter.mapWP = getIndx_llmetjj_id_iso_btagWP_pair(lepid1, lepiso1, lepid2, lepiso2, btagWP1, btagWP2, pair)
     basePlotter.jetMapWP = getIndx_j_bTagWP(btagWP1)
     basePlotter.lepMapWP = getIndx_l_id_iso(lepid1, lepiso1)

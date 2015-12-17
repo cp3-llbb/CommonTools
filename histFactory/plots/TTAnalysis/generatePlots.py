@@ -21,10 +21,10 @@ import transferFunctions
 
 categoryPlots = {
         
-        # ask for 2 leptons; vary over lepton ID & iso for two leptons
-        "llCategs": { 
-            "plots": basePlots.ll,
-            },
+        ## ask for 2 leptons; vary over lepton ID & iso for two leptons
+        #"llCategs": { 
+            #"plots": basePlots.ll,
+            #},
         
         # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
         "lljjCategs": { 

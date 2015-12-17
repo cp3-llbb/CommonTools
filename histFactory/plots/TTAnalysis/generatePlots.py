@@ -116,7 +116,7 @@ for flav in flavourCategPlots.values():
                 # Plot weights
                 m_plot["weight"] = "event_pu_weight * event_weight"
                 if len(categ["weights"][subCateg_index]) > 0 and m_plot['scale-factors']:
-                    m_plot["weight"] += " * " + " * ".join(categ["weights"][subCateg_index])
+                    m_plot["weight"] += " * " + "({})".format(") * (".join(categ["weights"][subCateg_index]))
 
                 plots.append(m_plot)
 

@@ -21,10 +21,10 @@ import transferFunctions
 
 categoryPlots = {
         
-        # ask for 2 leptons; vary over lepton ID & iso for two leptons
-        "llCategs": { 
-            "plots": basePlots.ll,
-            },
+        ## ask for 2 leptons; vary over lepton ID & iso for two leptons
+        #"llCategs": { 
+            #"plots": basePlots.ll,
+            #},
         
         # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
         "lljjCategs": { 
@@ -116,7 +116,7 @@ for flav in flavourCategPlots.values():
                 # Plot weights
                 m_plot["weight"] = "event_pu_weight * event_weight"
                 if len(categ["weights"][subCateg_index]) > 0 and m_plot['scale-factors']:
-                    m_plot["weight"] += " * " + " * ".join(categ["weights"][subCateg_index])
+                    m_plot["weight"] += " * " + "({})".format(") * (".join(categ["weights"][subCateg_index]))
 
                 plots.append(m_plot)
 

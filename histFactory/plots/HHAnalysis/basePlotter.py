@@ -55,7 +55,7 @@ class BasePlotter:
         self.jj_str = "hh_jj[%s.ijj]"%self.baseObject
 
         self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3 && (%s.charge != %s.charge)"%(self.lep1_str, self.lep2_str, self.lep1_str, self.lep2_str)
-        self.jetCut = "%s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str) 
+        self.jetCut = ""#"%s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str) 
 
         self.plots_el = []
         self.plots_mu = []
@@ -201,7 +201,7 @@ class BasePlotter:
                         'binning': '(50, 0, 3.5)'
                 },
                 {
-                        'name':  'jet1_csv_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jet1_CSV_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jet1_str+".CSV",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 1)'
@@ -231,7 +231,7 @@ class BasePlotter:
                         'binning': '(50, 0, 3.5)'
                 },
                 {
-                        'name':  'jet2_csv_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jet2_CSV_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jet2_str+".CSV",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 1)'
@@ -255,25 +255,25 @@ class BasePlotter:
 
             self.plots_ll.extend([ 
                 {
-                        'name':  'Mll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'll_M_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".p4.M()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 250)'
                 },
                 {
-                        'name':  'PTll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'll_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".p4.Pt()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 400)'
                 },
                 {
-                        'name':  'DRll_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'll_DR_l_l_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.ll_str+".DR_l_l",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DPhill_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'll_DPhi_l_l_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.ll_str+".DPhi_l_l)",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
@@ -282,25 +282,25 @@ class BasePlotter:
 
             self.plots_jj.extend([ 
                 {
-                        'name':  'Mjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jj_M_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jj_str+".p4.M()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 600)'
                 },
                 {
-                        'name':  'PTjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jj_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jj_str+".p4.Pt()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 400)'
                 },
                 {
-                        'name':  'DRjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jj_DR_j_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.jj_str+".DR_j_j",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DPhijj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'jj_DPhi_j_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.jj_str+".DPhi_j_j)",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
@@ -309,118 +309,130 @@ class BasePlotter:
 
             self.plots_llmetjj.extend([ 
                 {
-                        'name':  'nllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_n_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "Length$(%s)"%self.mapIndices,
                         'plot_cut': self.totalCut,
                         'binning': '(18, 0, 18)'
                 },
                 {
-                        'name':  'PTllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".p4.Pt()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 250)'
                 },
                 {
-                        'name':  'Mllmetjj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_M_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".p4.M()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 1000)'
                 },
                 {
-                        'name':  'DPhi_ll_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DPhi_ll_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_ll_met)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 3.1416)'
                 },
                 {
-                        'name':  'MinDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_minDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".minDPhi_l_met",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
                 },
                 {
-                        'name':  'MaxDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_maxDPhi_l_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".maxDPhi_l_met",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
                 },
                 {
-                        'name':  'MT_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_MT_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".MT", # ll[ill].p4 + met[imet].p4).M()
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 600)'
                 },
                 {
-                        'name':  'MTformula_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_MTformula_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".MT_formula", # std::sqrt(2 * ll[ill].p4.Pt() * met[imet].p4.Pt() * (1-std::cos(dphi)));
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 500)'
                 },
                 {
-                        'name':  'projMET_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_projMET_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".projectedMet)",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 400)'
                 },
                 {
-                        'name':  'DPhi_jj_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DPhi_jj_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_jj_met)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 3.1416)'
                 },
                 {
-                        'name':  'MinDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_minDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".minDPhi_j_met",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
                 },
                 {
-                        'name':  'MaxDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_maxDPhi_j_met_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".maxDPhi_j_met",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
                 },
                 {
-                        'name':  'MaxDR_l_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_maxDR_l_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".maxDR_l_j",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'MinDR_l_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_minDR_l_j_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".minDR_l_j",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DR_ll_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DR_ll_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".DR_ll_jj",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DR_llmet_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DR_llmet_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': self.baseObject+".DR_llmet_jj",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 6)'
                 },
                 {
-                        'name':  'DPhi_ll_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DPhi_ll_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_ll_jj)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 3.1416)'
                 },
                 {
-                        'name':  'DPhi_llmet_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_DPhi_llmet_jj_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".DPhi_llmet_jj)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 3.1416)'
                 },
                 {
-                        'name':  'cosThetaStar_CS_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'name':  'llmetjj_cosThetaStar_CS_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                         'variable': "abs("+self.baseObject+".cosThetaStar_CS)",
                         'plot_cut': self.totalCut,
                         'binning': '(25, 0, 1)'
+                },
+                {
+                        'name':  'lljj_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': self.baseObject+".lljj_p4.Pt()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 500)'
+                },
+                {
+                        'name':  'lljj_M_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': self.baseObject+".lljj_p4.M()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(75, 0, 1000)'
                 }
             ])
             for elt in self.plots_jj : 
@@ -467,8 +479,8 @@ class BasePlotter:
                     'binning': '(10, 2, 12)'
                 },
                 {
-                    'name':  'nBJetMediumCSV_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
-                    'variable': "hh_nBJets",
+                    'name':  'nBJetLooseCSV_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "hh_nBJetsL",
                     'plot_cut': self.totalCut,
                     'binning': '(6, 0, 6)'
                 }

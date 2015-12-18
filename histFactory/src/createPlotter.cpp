@@ -8,16 +8,15 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
-#include <cstdio>
 #include <regex>
+#include <unordered_map>
 
 #include <TChain.h>
+#include <TBranch.h>
+#include <TLeaf.h>
 #include <TApplication.h>
 
-// Ugly hack to access list of leaves in the formula
-#define protected public
-#include <TTreeFormula.h>
-#undef protected
+#include <formula_parser.h>
 
 #include <uuid/uuid.h>
 
@@ -278,56 +277,54 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         plot.name = uuid;
     }
 
+    parser::parser parser;
+
     std::unique_ptr<TChain> t(new TChain("t"));
     t->Add(skeleton.c_str());
 
-    std::vector<Branch> branches;
-    std::function<void(TTreeFormula*)> getBranches = [&branches, &getBranches](TTreeFormula* f) {
-        if (!f)
-            return;
+    // Get list of all branches
+    std::unordered_map<std::string, Branch> tree_branches;
+    TObjArray* root_tree_branches = t->GetListOfBranches();
+    for (size_t i = 0; i < static_cast<size_t>(root_tree_branches->GetEntries()); i++) {
+        TBranch* b = static_cast<TBranch*>(root_tree_branches->UncheckedAt(i));
 
-        for (size_t i = 0; i < f->GetNcodes(); i++) {
-            TLeaf* leaf = f->GetLeaf(i);
-            if (! leaf)
+        Branch branch;
+        branch.name = b->GetName();
+        branch.type = b->GetClassName();
+
+        if (branch.type.empty()) {
+            TLeaf* leaf = b->GetLeaf(branch.name.c_str());
+            if (! leaf) {
+                std::cerr << "Error: can't deduce type for branch '" << branch.name << "'" << std::endl;
                 continue;
-
-            TBranch* p_branch = getTopBranch(leaf->GetBranch());
-
-            Branch branch;
-            branch.name = p_branch->GetName();
-            if (std::find_if(branches.begin(), branches.end(), [&branch](const Branch& b) {  return b.name == branch.name;  }) == branches.end()) {
-                branch.type = p_branch->GetClassName();
-                if (branch.type.empty())
-                    branch.type = leaf->GetTypeName();
-
-                branches.push_back(branch);
             }
-
-            for (size_t j = 0; j < f->fNdimensions[i]; j++) {
-                if (f->fVarIndexes[i][j])
-                    getBranches(f->fVarIndexes[i][j]);
-            }
+            branch.type = leaf->GetTypeName();
         }
 
-        for (size_t i = 0; i < f->fAliases.GetEntriesFast(); i++) {
-            getBranches((TTreeFormula*) f->fAliases.UncheckedAt(i));
-        }
-    };
+        tree_branches.emplace(branch.name, branch);
+    }
 
     std::string hists_declaration;
     std::string text_plots;
+    std::set<std::string> identifiers;
+    size_t index = 0;
     for (auto& p: plots) {
-        // Create formulas
-        std::shared_ptr<TTreeFormula> selector(new TTreeFormula("selector", p.cut.c_str(), t.get()));
-        std::shared_ptr<TTreeFormula> weight(new TTreeFormula("weight", p.weight.c_str(), t.get()));
 
-        getBranches(selector.get());
-        getBranches(weight.get());
+        if ((index % 200) == 0)
+            std::cout << "Parsing plot #" << index << " / " << plots.size() << std::endl;
+
+        index++;
+
+        // Create formulas
+        if (! parser.parse(p.cut, identifiers))
+            std::cerr << "Warning: " << p.cut << " failed to parse." << std::endl;
+        if (! parser.parse(p.weight, identifiers))
+            std::cerr << "Warning: " << p.weight << " failed to parse." << std::endl;
 
         std::vector<std::string> splitted_variables = split(p.variable, ":::");
         for (const std::string& variable: splitted_variables) {
-            std::shared_ptr<TTreeFormula> var(new TTreeFormula("var", variable.c_str(), t.get()));
-            getBranches(var.get());
+            if (!parser.parse(variable, identifiers))
+                std::cerr << "Warning: " << variable << " failed to parse." << std::endl;
         }
 
         std::string binning = p.binning;
@@ -360,10 +357,15 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         ctemplate::ExpandTemplate(getTemplate("Plot"), ctemplate::DO_NOT_STRIP, &plot, &text_plots);
     }
 
-    // Sort alphabetically
-    std::sort(branches.begin(), branches.end(), [](const Branch& a, const Branch& b) {
-            return a.name < b.name;
-            });
+    // Everything is parsed. Collect the list of branches used by the formula
+    std::vector<Branch> branches;
+    for (const auto& id: identifiers) {
+        auto branch = tree_branches.find(id);
+        if (branch == tree_branches.end())
+            continue;
+
+        branches.push_back(branch->second);
+    }
 
     std::string text_branches;
     for (const auto& branch: branches)  {

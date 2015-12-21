@@ -30,9 +30,11 @@ if(IN_CMSSW)
     execute_process(COMMAND scram tool tag python INCLUDE OUTPUT_VARIABLE PYTHON_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # Boost
+    set(Boost_NO_SYSTEM_PATHS ON)
     execute_process(COMMAND scram tool tag boost BOOST_BASE OUTPUT_VARIABLE
         BOOST_ROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(Boost_NO_SYSTEM_PATHS ON)
+    execute_process(COMMAND scram tool tag boost LIBDIR OUTPUT_VARIABLE
+        BOOST_LIBRARYDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 else()
     execute_process(COMMAND python-config --prefix OUTPUT_VARIABLE
         PYTHON_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -41,7 +43,8 @@ else()
 endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost REQUIRED)
+#find_package(Boost REQUIRED)
+find_package(Boost 1.57.0 REQUIRED COMPONENTS system filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(PythonLibs REQUIRED)
@@ -115,6 +118,8 @@ set_target_properties(count PROPERTIES OUTPUT_NAME "createProcessedEvents.exe")
 # Link libraries
 target_link_libraries(plotter ${ROOT_LIBRARIES})
 target_link_libraries(plotter ${PYTHON_LIBRARY})
+target_link_libraries(plotter ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})
 
 target_link_libraries(plotter "uuid")
 

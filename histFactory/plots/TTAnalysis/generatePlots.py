@@ -10,6 +10,8 @@ import sys
 scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(scriptDir)
 
+from TTAnalysis import pathCMS
+
 #### Get dictionary definitions ####
 from plotTools import *
 
@@ -23,8 +25,8 @@ categoryPlots = {
         
         ## ask for 2 leptons; vary over lepton ID & iso for two leptons
         #"llCategs": { 
-            #"plots": basePlots.ll,
-            #},
+        #    "plots": basePlots.ll,
+        #    },
         
         # ask for 2 leptons & 2 jets; vary over lepton ID & iso for two leptons(take loosest ones for jet minDRjl cut)
         "lljjCategs": { 
@@ -44,7 +46,7 @@ categoryPlots = {
         # ask for 2 leptons & 2 b-jets; vary over lepton ID & iso for two leptons (take loosest ones for jet minDRjl cut), and two b-tag working point
         "llbbCategs": { 
             "plots": basePlots.ll + basePlots.lljj + basePlots.llbb,
-            #"plots": transferFunctions.TFs,
+            #"plots": transferFunctions.matchedBTFs,
             },
     
     }
@@ -61,25 +63,6 @@ for flav in flavourCategPlots.items():
     generateCategoryStrings(flav[1], flav[0])
 
 #### Generate all the plots ####
-
-#tt_cut = None
-#try:
-#    if "tt_type" in options:
-#        dataset["output_name"] += "_" + tt_type
-#    
-#        tt_cut = ""
-#        
-#        if options["tt_type"] == "hadronic":
-#            tt_cut = "tt_gen_ttbar_decay_type == " + str(TT.Hadronic)
-#        elif options["tt_type"] == "leptonic":
-#            tt_cut = "tt_gen_ttbar_decay_type == " + str(TT.Semileptonic_e) + " || tt_gen_ttbar_decay_type == " + str(TT.Semileptonic_mu) 
-#        elif options["tt_type"] == "dileptonic":
-#            tt_cut = "tt_gen_ttbar_decay_type >= " + str(TT.Dileptonic_mumu) + " && tt_gen_ttbar_decay_type <= " + str(TT.Dileptonic.mue)
-#        else:
-#            tt_cut = "tt_gen_ttbar_decay_type == " + str(TT.UnknownTT) + " || tt_gen_ttbar_decay_type >= " + str(TT.Semileptonic_tau)
-#except NameError:
-#    pass
-
 
 plots = []
 
@@ -109,10 +92,6 @@ for flav in flavourCategPlots.values():
                 # Replace binning tuples by strings
                 m_plot["binning"] = str(m_plot["binning"])
 
-                ## If we are on ttbar, specify decay type:
-                #if tt_cut is not None:
-                #    m_plot["plot_cut"] = joinCuts(m_plot["plot_cut"], tt_cut)
-
                 # Plot weights
                 m_plot["weight"] = "event_pu_weight * event_weight"
                 if len(categ["weights"][subCateg_index]) > 0 and m_plot['scale-factors']:
@@ -123,5 +102,3 @@ for flav in flavourCategPlots.values():
                 print "Plot: {}\nVariable: {}\nCut: {}\nWeight: {}\nBinning: {}\n".format(m_plot["name"], m_plot["variable"], m_plot["plot_cut"], m_plot["weight"], m_plot["binning"])
 
 print "Generated {} plots.\n".format(len(plots))
-
-

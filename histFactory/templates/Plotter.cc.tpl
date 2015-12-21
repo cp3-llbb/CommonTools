@@ -16,6 +16,8 @@
 #include <json/json.h>
 #include <tclap/CmdLine.h>
 
+{{INCLUDES}}
+
 volatile bool MUST_STOP = false;
 
 void Plotter::plot(const std::string& output_file) {

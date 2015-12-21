@@ -39,7 +39,7 @@ myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
 #myFlavours = [ "MuMu" ]
 #myFlavours = [ "ElMu", "MuEl" ]
 
-keepOnlySymmetricWP = True
+keepOnlySymmetricWP = False
 
 #### UTILITY TO GENERATE ALL THE NEEDED CATEGORIES ####
 
@@ -87,11 +87,11 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
             for iso1 in lep1Isos:
                 for iso2 in lep2Isos:
 
-                    #if keepOnlySymmetricWP and id1 != id2:
-                    #    continue
+                    if keepOnlySymmetricWP and id1 != id2:
+                        continue
 
-                    #if keepOnlySymmetricWP and iso1 != iso2:
-                    #    continue
+                    if keepOnlySymmetricWP and iso1 != iso2:
+                        continue
 
                     llSFs = [get_leptons_SF_for_dilepton(0, id1, id2, iso1, iso2)]
 

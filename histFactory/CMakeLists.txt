@@ -33,8 +33,6 @@ if(IN_CMSSW)
     set(Boost_NO_SYSTEM_PATHS ON)
     execute_process(COMMAND scram tool tag boost BOOST_BASE OUTPUT_VARIABLE
         BOOST_ROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND scram tool tag boost LIBDIR OUTPUT_VARIABLE
-        BOOST_LIBRARYDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 else()
     execute_process(COMMAND python-config --prefix OUTPUT_VARIABLE
         PYTHON_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -43,8 +41,7 @@ else()
 endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
-#find_package(Boost REQUIRED)
-find_package(Boost 1.57.0 REQUIRED COMPONENTS system filesystem)
+find_package(Boost 1.55.0 REQUIRED COMPONENTS system filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(PythonLibs REQUIRED)

@@ -19,7 +19,7 @@ addons:
       - make
       - cmake
       - uuid-dev
-      - libboost-all-dev
+      - libboost1.55-all-dev
 
 install:
   - wget http://sbrochet.web.cern.ch/sbrochet/public/ROOT-${ROOT_VERSION}_Python-2.7_Ubuntu-12.04_gcc4.9.tar.xz

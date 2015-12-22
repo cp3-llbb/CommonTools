@@ -10,11 +10,13 @@
 #include <memory>
 #include <regex>
 #include <unordered_map>
+#include <set>
 
 #include <TChain.h>
 #include <TBranch.h>
 #include <TLeaf.h>
 #include <TApplication.h>
+#include <TROOT.h>
 
 #include <formula_parser.h>
 
@@ -23,6 +25,10 @@
 #include <tclap/CmdLine.h>
 
 #include <ctemplate/template.h>
+
+#include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
+namespace fs = boost::filesystem;
 
 struct Branch {
     std::string name;
@@ -179,9 +185,11 @@ std::string buildArrayForVariableBinning(std::string& binning, const size_t dime
 
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
-bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
+bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<fs::path>& includes, std::set<fs::path>& sources) {
 
     plots.clear();
+    includes.clear();
+    sources.clear();
 
     std::FILE* f = std::fopen(python_file.c_str(), "r");
     if (!f) {
@@ -211,6 +219,7 @@ bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
         PyErr_Print();
         return false;
     } else {
+        // Retrieve list of plots
         PyObject* py_plots = PyDict_GetItemString(global_dict, "plots");
         if (!py_plots) {
             std::cerr << "No 'plots' variable declared in python script" << std::endl;
@@ -234,6 +243,73 @@ bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
                 plots.push_back(plot);
             }
         }
+
+        fs::path python_dir(python_file);
+        python_dir = python_dir.parent_path();
+
+        // Retrieve list of include files
+        PyObject* py_includes = PyDict_GetItemString(global_dict, "includes");
+        if (py_includes) {
+
+            if (! PyList_Check(py_includes)) {
+                std::cerr << "The 'includes' variable is not a list" << std::endl;
+                return false;
+            }
+
+            size_t l = PyList_Size(py_includes);
+
+            for (size_t i = 0; i < l; i++) {
+                PyObject* item = PyList_GetItem(py_includes, i);
+                if(! PyString_Check(item) ) {
+                  std::cerr << "The items of the 'include' list must be strings" << std::endl;
+                  return false;
+                }
+                boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+                fs::path temp_path( PyString_AsString(item) );
+                if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                  if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                    return false;
+                  } else {
+                    temp_path = python_dir/temp_path;
+                  }
+                }
+                includes.emplace(temp_path);
+            }
+
+        }
+        
+        // Retrieve list of source files
+        PyObject* py_sources = PyDict_GetItemString(global_dict, "sources");
+        if (py_sources) {
+
+            if (! PyList_Check(py_sources)) {
+                std::cerr << "The 'sources' variable is not a list" << std::endl;
+                return false;
+            }
+
+            size_t l = PyList_Size(py_sources);
+
+            for (size_t i = 0; i < l; i++) {
+                PyObject* item = PyList_GetItem(py_sources, i);
+                if(! PyString_Check(item) ) {
+                  std::cerr << "The items of the 'include' list must be strings" << std::endl;
+                  return false;
+                }
+                boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+                fs::path temp_path( PyString_AsString(item) );
+                if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                  if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                    return false;
+                  } else {
+                    temp_path = python_dir/temp_path;
+                  }
+                }
+                sources.emplace(temp_path);
+            }
+
+        }
     }
 
     PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
@@ -254,18 +330,37 @@ bool get_plots(const std::string& python_file, std::vector<Plot>& plots) {
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir/* = ""*/) {
 
     std::vector<Plot> plots;
+    std::set<fs::path> includes;
+    std::set<fs::path> sources;
     // If an output directory is specified, use it, otherwise use the current directory
     if (output_dir == "")
       output_dir = ".";
 
     std::map<std::string, std::string> unique_names;
 
-    get_plots(config_file, plots);
+    if( !get_plots_files(config_file, plots, includes, sources) )
+      return false;
 
     std::cout << "List of requested plots: ";
     for (size_t i = 0; i < plots.size(); i++) {
         std::cout << "'" << plots[i].name << "'";
         if (i != plots.size() - 1)
+            std::cout << ", ";
+    }
+    std::cout << std::endl;
+    
+    std::cout << "List of requested include files: ";
+    for (const auto& i: includes) {
+        std::cout << "'" << i.string() << "'";
+        if (i != *(----includes.end()))
+            std::cout << ", ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "List of requested source files: ";
+    for (const auto& s: sources) {
+        std::cout << "'" << s.string() << "'";
+        if (s != *(----sources.end()))
             std::cout << ", ";
     }
     std::cout << std::endl;
@@ -278,7 +373,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     }
 
     parser::parser parser;
-
+    
     std::unique_ptr<TChain> t(new TChain("t"));
     t->Add(skeleton.c_str());
 
@@ -392,7 +487,12 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         ctemplate::ExpandTemplate(getTemplate("SavePlot"), ctemplate::DO_NOT_STRIP, &save_plot, &text_save_plots);
     }
 
+    std::string text_includes;
+    for(const auto& f: includes)
+      text_includes += "#include \"" + f.filename().string() + "\"\n";
+
     ctemplate::TemplateDictionary source("source");
+    source.SetValue("INCLUDES", text_includes);
     source.SetValue("HISTS_DECLARATION", hists_declaration);
     source.SetValue("PLOTS", text_plots);
     source.SetValue("SAVE_PLOTS", text_save_plots);
@@ -400,6 +500,27 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     out.open(output_dir + "/Plotter.cc");
     out << output;
+    out.close();
+
+    // Make external sources accessible to plotter 
+    std::set<fs::path> include_dirs;
+    for(const auto& f: includes)
+      include_dirs.emplace(f.parent_path());
+    std::string include_cmake;
+    for(const auto& d: include_dirs)
+      include_cmake += d.string() + " ";
+    
+    std::string source_cmake;
+    for(const auto& s: sources)
+      source_cmake += s.string() + " ";
+
+    ctemplate::TemplateDictionary cmake("cmake");
+    cmake.SetValue("ADD_INCLUDES", include_cmake);
+    cmake.SetValue("ADD_SOURCES", source_cmake);
+    std::string cmake_output;
+    ctemplate::ExpandTemplate(getTemplate("CMakeLists.txt"), ctemplate::DO_NOT_STRIP, &cmake, &cmake_output);
+    out.open(output_dir + "/CMakeLists.txt");
+    out << cmake_output;
     out.close();
 
     return true;
@@ -418,7 +539,7 @@ int main( int argc, char* argv[]) {
         cmd.parse(argc, argv);
 
         /*
-         * When PyROOT is loaded, it creates it's own ROOT application ([1] and [2]). We do not want this to happen,
+         * When PyROOT is loaded, it creates its own ROOT application ([1] and [2]). We do not want this to happen,
          * because it messes with our already loaded ROOT.
          *
          * To prevent this, we create here our own application (which does nothing), just to prevent `CreatePyROOTApplication`

@@ -22,7 +22,9 @@ def joinCuts(*cuts):
 
 #### The IDs/... we want to run on ####
 
-electronID = { TT.LepID.L: "L", TT.LepID.M: "M" }
+electronID = { TT.LepID.L: "L" }
+#electronID = { TT.LepID.L: "L", TT.LepID.M: "M" }
+#electronID = { TT.LepID.L: "L", TT.LepID.M: "M", TT.LepID.T: "T" }
 muonID = { TT.LepID.L: "L" }
 
 electronIso = { TT.LepIso.L: "L" }
@@ -37,7 +39,7 @@ myFlavours = [ "ElEl", "MuEl", "ElMu", "MuMu" ]
 #myFlavours = [ "MuMu" ]
 #myFlavours = [ "ElMu", "MuEl" ]
 
-keepOnlySymmetricWP = True
+keepOnlySymmetricWP = False
 
 #### UTILITY TO GENERATE ALL THE NEEDED CATEGORIES ####
 
@@ -96,6 +98,15 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
                     # ll categs: iterate over two leptons ID & isolation
 
                     lepLepIDIsoStr = TT.LepLepIDIsoStr(id1, iso1, id2, iso2)
+
+                    elIDIso = ""
+                    muIDIso = ""
+                    if flavourChannel == "ElEl" or flavourChannel == "ElMu":
+                        elIDIso = TT.LepIDIso(id1, iso1)
+                        muIDIso = TT.LepIDIso(id2, iso2)
+                    if flavourChannel == "MuMu" or flavourChannel == "MuEl":
+                        muIDIso = TT.LepIDIso(id1, iso1)
+                        elIDIso = TT.LepIDIso(id2, iso2)
                     
                     llStringsBase = {
                             "#CAT_TITLE#": catTitle + "_" + lepLepIDIsoStr, 
@@ -107,6 +118,8 @@ def generateCategoryStrings(categoryStringsDico, flavourChannel):
                                 catCut + "_DiLeptonIsOS_" + lepLepIDIsoStr + "_cut"
                                 ),
                             "#MIN_LEP_IDISO#": TT.LepIDIso(min(id1, id2), min(iso1, iso2)),
+                            "#EL_IDISO#": elIDIso,
+                            "#MU_IDISO#": muIDIso,
                             "#JET_CAT_CUTS#": "1",
                             "#LEP1_SF#": get_lepton_SF_for_dilepton(0, 0, id1, id2, iso1, iso2),
                             "#LEP2_SF#": get_lepton_SF_for_dilepton(1, 0, id1, id2, iso1, iso2)

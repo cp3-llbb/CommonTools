@@ -1,4 +1,7 @@
 import copy
+from HHAnalysis import HH
+from ScaleFactors import *
+
 
 class BasePlotter:
     def __init__(self):
@@ -7,40 +10,34 @@ class BasePlotter:
         self.map = "hh_map_llmetjj_id_iso_btagWP_pair"
         self.lepMap = "hh_map_l_id_iso"
         self.jetMap = "hh_map_j_btagWP"
-        # The following will be redefined in generatePlots.py according to the chosen WP
-        self.mapWP = "0"
-        self.lepMapWP = "0"
-        self.jetMapWP = "0"
-        self.llIsoCat = "LL"
-        self.llIDCat = "LL"
-        self.jjIDCat = "LL"
-        self.jjBtagCat = "nono"
-        self.suffix = ""
-        # The following will be instantiated in generatePlots.py
+        # The following working points HAVE to be defined by the user in generatePlots.py (must be e.g. HH.lepID.L)
+        self.lepid1 = "" 
+        self.lepiso1 = ""
+        self.lepid2 = ""
+        self.lepiso2 = ""
+        self.jetid1 = ""
+        self.jetid2 = ""
+        self.btagWP1 = ""
+        self.btagWP2 = ""
+        self.pair = ""
+        # The following will be instantiated in generatePlots function below
         self.llFlav = ""
         self.catCut = ""  
         self.jetCut = ""
         self.lepCut = ""     
         self.extraCut = ""
         self.totalCut = ""
-        self.evtWeight = "event_weight"
-
-    def joinCuts(self, *cuts):
-        if len(cuts) == 0: 
-            return ""
-        elif len(cuts) == 1: 
-            return cuts[0]
-        else:
-            totalCut = "("
-            for cut in cuts:
-                cut = cut.strip().strip("&")
-                if cut == "":
-                    continue
-                totalCut += "(" + cut + ")&&" 
-            totalCut = totalCut.strip("&") + ")"
-            return totalCut
 
     def generatePlots(self, categories = ["ElEl", "MuMu", "MuEl"]):
+
+        self.mapWP = HH.leplepIDIsojetjetIDbtagWPPair(self.lepid1, self.lepiso1, self.lepid2, self.lepiso2, self.jetid1, self.jetid2, self.btagWP1, self.btagWP2, self.pair)
+        self.lepMapWP = HH.lepIDIso(self.lepid1, self.lepiso1)
+        self.jetMapWP = self.btagWP1 # To Be Updated once jet map includes jetID
+        self.llIsoCat = HH.lepIso.map.at(self.lepiso1)+HH.lepIso.map.at(self.lepiso2) # This is to extract string from WP
+        self.llIDCat = HH.lepID.map.at(self.lepid1)+HH.lepID.map.at(self.lepid2)
+        self.jjIDCat = HH.jetID.map.at(self.jetid1)+HH.jetID.map.at(self.jetid2)
+        self.jjBtagCat = HH.btagWP.map.at(self.btagWP1)+HH.btagWP.map.at(self.btagWP2)
+        self.suffix = "_"+HH.jetPair.map.at(self.pair)+"Ordered"
          
         self.mapIndices = "%s[%s]"%(self.map, self.mapWP)
         self.lepMapIndices = "%s[%s]"%(self.lepMap, self.lepMapWP)
@@ -53,6 +50,11 @@ class BasePlotter:
         self.jet2_str = "hh_jets[%s.ijet2]"%self.baseObject
         self.ll_str = "hh_ll[%s.ill]"%self.baseObject 
         self.jj_str = "hh_jj[%s.ijj]"%self.baseObject
+
+        self.lep1_fwkIdx = self.lep1_str+".idx"
+        self.lep2_fwkIdx = self.lep2_str+".idx"
+        self.jet1_fwkIdx = self.jet1_str+".idx"
+        self.jet2_fwkIdx = self.jet2_str+".idx"
 
         self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3 && (%s.charge != %s.charge)"%(self.lep1_str, self.lep2_str, self.lep1_str, self.lep2_str)
         self.jetCut = ""#"%s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str) 
@@ -124,25 +126,25 @@ class BasePlotter:
                 self.plots_el.extend([
                     {
                         'name':  'el1_RelIso03WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_withEA[%s.idx]"%self.lep1_str,
+                        'variable': "electron_relativeIsoR03_withEA[%s]"%self.lep1_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     },
                     {
                         'name':  'el1_RelIso03WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_deltaBeta[%s.idx]"%self.lep1_str,
+                        'variable': "electron_relativeIsoR03_deltaBeta[%s]"%self.lep1_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     },
                     {
                         'name':  'el2_RelIso03WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_withEA[%s.idx]"%self.lep2_str,
+                        'variable': "electron_relativeIsoR03_withEA[%s]"%self.lep2_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     },
                     {
                         'name':  'el2_RelIso03WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_deltaBeta[%s.idx]"%self.lep2_str,
+                        'variable': "electron_relativeIsoR03_deltaBeta[%s]"%self.lep2_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     }
@@ -151,27 +153,45 @@ class BasePlotter:
                 self.plots_mu.extend([
                     {
                         'name':  'mu1_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_withEA[%s.idx]"%self.lep1_str,
+                        'variable': "muon_relativeIsoR04_withEA[%s]"%self.lep1_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 0.4)'
                     },
                     {
                         'name':  'mu1_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_deltaBeta[%s.idx]"%self.lep1_str,
+                        'variable': "muon_relativeIsoR04_deltaBeta[%s]"%self.lep1_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
                     },
                     {
                         'name':  'mu2_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_withEA[%s.idx]"%self.lep2_str,
+                        'variable': "muon_relativeIsoR04_withEA[%s]"%self.lep2_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 0.4)'
                     },
                     {
                         'name':  'mu2_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_deltaBeta[%s.idx]"%self.lep2_str,
+                        'variable': "muon_relativeIsoR04_deltaBeta[%s]"%self.lep2_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
+                    },
+                    {
+                        'name':  'mumu_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': '({0} * {1} * {2} * {3})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx), get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
+                    },
+                    {
+                        'name':  'mu1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx)),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
+                    },
+                    {
+                        'name':  'mu2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
                     }
                 ])
             
@@ -235,6 +255,18 @@ class BasePlotter:
                         'variable': self.jet2_str+".CSV",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 1)'
+                },
+                {
+                        'name':  'jet1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
+                },
+                {
+                        'name':  'jet2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
                 }
             ])
 
@@ -304,7 +336,13 @@ class BasePlotter:
                         'variable': "abs("+self.jj_str+".DPhi_j_j)",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
-                }
+                },
+                {
+                        'name':  'jj_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                        'variable': "{0} * {1}".format(get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx), get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx)),
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, 0, 2)'
+                }, 
             ])
 
             self.plots_llmetjj.extend([ 
@@ -486,4 +524,19 @@ class BasePlotter:
                 }
             ])
 
+
+    def joinCuts(self, *cuts):
+        if len(cuts) == 0: 
+            return ""
+        elif len(cuts) == 1: 
+            return cuts[0]
+        else:
+            totalCut = "("
+            for cut in cuts:
+                cut = cut.strip().strip("&")
+                if cut == "":
+                    continue
+                totalCut += "(" + cut + ")&&" 
+            totalCut = totalCut.strip("&") + ")"
+            return totalCut
 

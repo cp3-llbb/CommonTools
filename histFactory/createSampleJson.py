@@ -20,21 +20,30 @@ def get_sample(iSample):
     resultset = dbstore.find(Sample, Sample.sample_id == iSample)
     return resultset.one()
 
-def createJson(indices, output):
+def createJson(indices, output, rescale):
     samples = {}
     for isample in indices:
         sample = get_sample(isample)
 
-        if sample.source_dataset.xsection == 1.0:
+        rescale_sample = rescale
+
+        if sample.source_dataset.datatype == u"data":
+            rescale_sample = False
+
+        if rescale_sample and sample.source_dataset.xsection == 1.0:
             print("Warning: cross-section for dataset %r not set." % sample.source_dataset.name)
+            rescale_sample = False
 
         d = {}
         d["files"] = ["/storage/data/cms" + x.lfn for x in sample.files]
         d["db_name"] = sample.name
         d["tree_name"] = "t"
         d["sample_cut"] = "1."
-        d["event-weight-sum"] = sample.event_weight_sum
-        d["cross-section"] = sample.source_dataset.xsection
+
+        if rescale_sample:
+            d["event-weight-sum"] = sample.event_weight_sum
+            d["cross-section"] = sample.source_dataset.xsection
+
         samples[sample.name] = d
 
     with open(output, 'w') as fp:
@@ -47,7 +56,8 @@ if __name__ == '__main__':
 
     parser.add_argument('ids', type=int, nargs='+', help='IDs of the samples', metavar='ID')
     parser.add_argument('-o', '--output', dest='output', default='samples.json', help='Name of output JSON file')
+    parser.add_argument('-s', '--rescale', dest='rescale', action='store_true', help='Store cross-section and sum of event weight in the output JSON file. These values are used to rescale histograms.')
 
     options = parser.parse_args()
 
-    createJson(options.ids, options.output)
+    createJson(options.ids, options.output, options.rescale)

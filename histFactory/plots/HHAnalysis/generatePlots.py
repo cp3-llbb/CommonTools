@@ -29,7 +29,7 @@ for WP in workingPoints :
 
     basePlotter.generatePlots(categories)
 
-    plotFamilies = ["plots_lep", "plots_mu", "plots_el", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj","plots_evt"]
+    plotFamilies = ["plots_lep", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj","plots_evt"]
     for plotFamily in plotFamilies :
         for plot in getattr(basePlotter, plotFamily) :
             # scale factors

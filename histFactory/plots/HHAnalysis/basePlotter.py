@@ -72,7 +72,7 @@ class BasePlotter:
 
 
         zMass = 91.1876 
-        dict_cat_cut =  {
+        self.dict_cat_cut =  {
                             "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
                             "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
                             "MuEl" : "((%s.isElMu)||(%s.isMuEl)) && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str, self.ll_str)
@@ -80,7 +80,7 @@ class BasePlotter:
 
         for cat in categories :
 
-            self.catCut = dict_cat_cut[cat]
+            self.catCut = self.dict_cat_cut[cat]
             self.totalCut = self.joinCuts(self.mapCut, self.catCut, self.jetCut, self.lepCut, self.extraCut)
             self.llFlav = cat
 
@@ -174,25 +174,25 @@ class BasePlotter:
                         'variable': "muon_relativeIsoR04_deltaBeta[%s]"%self.lep2_fwkIdx,
                         'plot_cut': self.totalCut,
                         'binning': '(100, 0, 0.4)'
-                    },
-                    {
-                        'name':  'mumu_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': '({0} * {1} * {2} * {3})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx), get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
-                    },
-                    {
-                        'name':  'mu1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx)),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
-                    },
-                    {
-                        'name':  'mu2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
                     }
+                   # {
+                   #     'name':  'mumu_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                   #     'variable': '({0} * {1} * {2} * {3})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx), get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
+                   #     'plot_cut': self.totalCut,
+                   #     'binning': '(50, 0, 2)'
+                   # },
+                   # {
+                   #     'name':  'mu1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                   #     'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx)),
+                   #     'plot_cut': self.totalCut,
+                   #     'binning': '(50, 0, 2)'
+                   # },
+                   # {
+                   #     'name':  'mu2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                   #     'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
+                   #     'plot_cut': self.totalCut,
+                   #     'binning': '(50, 0, 2)'
+                   # }
                 ])
             
             self.plots_jet.extend([ 
@@ -255,19 +255,19 @@ class BasePlotter:
                         'variable': self.jet2_str+".CSV",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 1)'
-                },
-                {
-                        'name':  'jet1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
-                },
-                {
-                        'name':  'jet2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
                 }
+               # {
+               #         'name':  'jet1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+               #         'variable': get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx),
+               #         'plot_cut': self.totalCut,
+               #         'binning': '(50, 0, 2)'
+               # },
+               # {
+               #         'name':  'jet2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+               #         'variable': get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx),
+               #         'plot_cut': self.totalCut,
+               #         'binning': '(50, 0, 2)'
+               # }
             ])
 
             self.plots_met.extend([ 
@@ -336,13 +336,13 @@ class BasePlotter:
                         'variable': "abs("+self.jj_str+".DPhi_j_j)",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
-                },
-                {
-                        'name':  'jj_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "{0} * {1}".format(get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx), get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx)),
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 2)'
-                }, 
+                }
+               # {
+               #         'name':  'jj_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+               #         'variable': "{0} * {1}".format(get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx), get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx)),
+               #         'plot_cut': self.totalCut,
+               #         'binning': '(50, 0, 2)'
+               # }, 
             ])
 
             self.plots_llmetjj.extend([ 

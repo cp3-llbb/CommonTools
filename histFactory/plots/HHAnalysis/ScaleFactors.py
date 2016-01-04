@@ -54,18 +54,18 @@ def get_csvv2_sf(wp, jet_idx, sysVar = "nominal"):
 
 # lepton scale factors
 
+def get_lepton_SF(hh_lepton, id, iso, sysVar = "nominal"):
+    lep_fwkIdx = hh_lepton+".idx"
+    return '(({0}.isEl) ? 1. : {1} * {2})'.format(hh_lepton, get_muon_id_sf(id, lep_fwkIdx, sysVar), get_muon_iso_sf(iso, id, lep_fwkIdx, sysVar))
+
 def get_leptons_SF(dilepton_object, id1, id2, iso1, iso2, sysVar = "nominal"):
     if noScaleFactors:
         return "1."
 
-    lep1_fwkIdx = dilepton_object+".idxs.first"
     lep1_obj = "hh_leptons[%s.ilep1]"%dilepton_object
-    
-    lep2_fwkIdx = dilepton_object+".idxs.second"
     lep2_obj = "hh_leptons[%s.ilep2]"%dilepton_object
     
-    lep1_sf = '(({0}.isEl) ? 1. : {1} * {2})'.format(lep1_obj, get_muon_id_sf(id1, lep1_fwkIdx, sysVar), get_muon_iso_sf(iso1, id1, lep1_fwkIdx, sysVar))
-    lep2_sf = '(({0}.isEl) ? 1. : {1} * {2})'.format(lep2_obj, get_muon_id_sf(id2, lep2_fwkIdx, sysVar), get_muon_iso_sf(iso2, id2, lep2_fwkIdx, sysVar))
-    
-    return "%s * %s" % (lep1_sf, lep2_sf)
+    lep1_sf = get_lepton_SF(lep1_obj, id1, iso1, sysVar)
+    lep2_sf = get_lepton_SF(lep2_obj, id2, iso2, sysVar)
 
+    return "%s * %s" % (lep1_sf, lep2_sf)

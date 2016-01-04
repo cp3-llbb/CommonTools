@@ -4,36 +4,42 @@ import copy, sys, os, inspect
 # Usage from histFactory/plots/HHAnalysis/ : ./../../build/createHistoWithMultiDraw.exe -d ../../samples.json generatePlots.py 
 scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(scriptDir)
-from basePlotter import BasePlotter
-from mapFacilities import getIndx_llmetjj_id_iso_btagWP_pair, getIndx_ll_id_iso, getIndx_l_id_iso, getIndx_j_bTagWP
+from basePlotter import *
+from HHAnalysis import HH
 
 plots = []
 basePlotter = BasePlotter()
 
-categories = ["ElEl","MuMu","MuEl"]
+categories = ["ElEl", "MuMu", "MuEl"]
 
-dict_WPnames_wps = { "zVeto_nono": ["L","L","L","L","no","no","ht"], "zVeto_LL": ["L","L","L","L","L","L","ht"], "zVeto_MM": ["L","L","L","L","M","M","ht"],  "zVeto_csv_nono": ["L","L","L","L","no","no","csv"], "zVeto_csv_LL": ["L","L","L","L","L","L","csv"], "zVeto_csv_MM": ["L","L","L","L","M","M","csv"] }
-for WPname in dict_WPnames_wps.keys() :
-    lepid1 = dict_WPnames_wps[WPname][0]
-    lepiso1 = dict_WPnames_wps[WPname][1]
-    lepid2 = dict_WPnames_wps[WPname][2]
-    lepiso2 = dict_WPnames_wps[WPname][3]
-    btagWP1 = dict_WPnames_wps[WPname][4]
-    btagWP2 = dict_WPnames_wps[WPname][5]
-    pair = dict_WPnames_wps[WPname][6]
-    basePlotter.mapWP = getIndx_llmetjj_id_iso_btagWP_pair(lepid1, lepiso1, lepid2, lepiso2, btagWP1, btagWP2, pair)
-    basePlotter.jetMapWP = getIndx_j_bTagWP(btagWP1)
-    basePlotter.lepMapWP = getIndx_l_id_iso(lepid1, lepiso1)
-    basePlotter.llIsoCat = lepiso1+lepiso2
-    basePlotter.llIDCat = lepid1+lepid2
-    basePlotter.jjBtagCat = btagWP1+btagWP2
-    basePlotter.suffix = "_"+pair+"Ordered"
+# Order for llmetjj maps : lepid1, lepiso1, lepid2, lepiso2, jetid1, jetid2, btagWP1, btagWP2, pair
+workingPoints = [ ["T","T","T","T","L","L","no","no","csv"], ["T","T","T","T","L","L","L","L","csv"] ]
+
+for WP in workingPoints :
+
+    basePlotter.lepid1 = getattr(HH.lepID, WP[0])
+    basePlotter.lepiso1 = getattr(HH.lepIso, WP[1])
+    basePlotter.lepid2 = getattr(HH.lepID, WP[2])
+    basePlotter.lepiso2 = getattr(HH.lepIso, WP[3])
+    basePlotter.jetid1 = getattr(HH.jetID, WP[4])
+    basePlotter.jetid2 = getattr(HH.jetID, WP[5])
+    basePlotter.btagWP1 = getattr(HH.btagWP, WP[6])
+    basePlotter.btagWP2 = getattr(HH.btagWP, WP[7])
+    basePlotter.pair = getattr(HH.jetPair, WP[8])
+
     basePlotter.generatePlots(categories)
+
     plotFamilies = ["plots_lep", "plots_mu", "plots_el", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj","plots_evt"]
     for plotFamily in plotFamilies :
         for plot in getattr(basePlotter, plotFamily) :
+            # scale factors
+            plot["weight"] = "event_weight" 
+            # can be uncommented as soon as we have a new prod with proper SF treatement
+            #if not "scaleFactor" in plot["name"] : 
+            #    plot["weight"] += " * " + get_leptons_SF(basePlotter.ll_str, basePlotter.lepid1, basePlotter.lepid2, basePlotter.lepiso1, basePlotter.lepiso2)
+            #    plot["weight"] += " * " + get_csvv2_sf(basePlotter.btagWP1, basePlotter.jet1_fwkIdx)
+            #    plot["weight"] += " * " + get_csvv2_sf(basePlotter.btagWP2, basePlotter.jet2_fwkIdx)
             plots.append(plot)
-
 
 
 

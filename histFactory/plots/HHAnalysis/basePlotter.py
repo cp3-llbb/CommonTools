@@ -59,8 +59,6 @@ class BasePlotter:
         self.lepCut = "%s.hlt_DR_matchedObject < 0.3 && %s.hlt_DR_matchedObject < 0.3 && (%s.charge != %s.charge)"%(self.lep1_str, self.lep2_str, self.lep1_str, self.lep2_str)
         self.jetCut = ""#"%s.p4.Pt() > 30 && %s.p4.Pt() > 30"%(self.jet1_str, self.jet2_str) 
 
-        self.plots_el = []
-        self.plots_mu = []
         self.plots_lep = []
         self.plots_jet = []
         self.plots_met = []
@@ -70,8 +68,10 @@ class BasePlotter:
         self.plots_gen = []
         self.plots_evt = []
 
+        self.forSkimmer = []
 
-        zMass = 91.1876 
+
+        #zMass = 91.1876 
         self.dict_cat_cut =  {
                             "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
                             "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
@@ -103,6 +103,18 @@ class BasePlotter:
                     'plot_cut': self.totalCut,
                     'binning': '(25, -3.1416, 3.1416)'
                 },
+                #{
+                #    'name':  'lep1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                #    'variable': get_lepton_SF(self.lep1_str, self.lepid1, self.lepiso1, "nominal"),
+                #    'plot_cut': self.totalCut,
+                #    'binning': '(50, 0, 2)'
+                #},
+                {
+                    'name':  'lep1_Iso_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "({0}.isEl) ? electron_relativeIsoR03_withEA[{1}] : muon_relativeIsoR04_deltaBeta[{1}]".format(self.lep1_str, self.lep1_fwkIdx),
+                    'plot_cut': self.totalCut,
+                    'binning': '(50, 0, 0.4)'
+                },
                 {
                     'name':  'lep2_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
                     'variable': self.lep2_str+".p4.Pt()",
@@ -120,81 +132,20 @@ class BasePlotter:
                     'variable': self.lep2_str+".p4.Phi()",
                     'plot_cut': self.totalCut,
                     'binning': '(25, -3.1416, 3.1416)'
+                },
+                #{
+                #    'name':  'lep2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                #    'variable': get_lepton_SF(self.lep2_str, self.lepid2, self.lepiso2, "nominal"),
+                #    'plot_cut': self.totalCut,
+                #    'binning': '(50, 0, 2)'
+                #},
+                {
+                    'name':  'lep2_Iso_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "({0}.isEl) ? electron_relativeIsoR03_withEA[{1}] : muon_relativeIsoR04_deltaBeta[{1}]".format(self.lep2_str, self.lep2_fwkIdx),
+                    'plot_cut': self.totalCut,
+                    'binning': '(50, 0, 0.4)'
                 }
             ])
-            if cat == "ElEl" :
-                self.plots_el.extend([
-                    {
-                        'name':  'el1_RelIso03WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_withEA[%s]"%self.lep1_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    },
-                    {
-                        'name':  'el1_RelIso03WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_deltaBeta[%s]"%self.lep1_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    },
-                    {
-                        'name':  'el2_RelIso03WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_withEA[%s]"%self.lep2_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    },
-                    {
-                        'name':  'el2_RelIso03WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "electron_relativeIsoR03_deltaBeta[%s]"%self.lep2_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    }
-                ])
-            if cat == "MuMu" :
-                self.plots_mu.extend([
-                    {
-                        'name':  'mu1_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_withEA[%s]"%self.lep1_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 0.4)'
-                    },
-                    {
-                        'name':  'mu1_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_deltaBeta[%s]"%self.lep1_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    },
-                    {
-                        'name':  'mu2_RelIso04WithEA_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_withEA[%s]"%self.lep2_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(50, 0, 0.4)'
-                    },
-                    {
-                        'name':  'mu2_RelIso04WithDeltaBeta_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                        'variable': "muon_relativeIsoR04_deltaBeta[%s]"%self.lep2_fwkIdx,
-                        'plot_cut': self.totalCut,
-                        'binning': '(100, 0, 0.4)'
-                    }
-                   # {
-                   #     'name':  'mumu_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                   #     'variable': '({0} * {1} * {2} * {3})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx), get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
-                   #     'plot_cut': self.totalCut,
-                   #     'binning': '(50, 0, 2)'
-                   # },
-                   # {
-                   #     'name':  'mu1_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                   #     'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid1, self.lep1_fwkIdx), get_muon_iso_sf(self.lepiso1, self.lepid1, self.lep1_fwkIdx)),
-                   #     'plot_cut': self.totalCut,
-                   #     'binning': '(50, 0, 2)'
-                   # },
-                   # {
-                   #     'name':  'mu2_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
-                   #     'variable': '({0} * {1})'.format(get_muon_id_sf(self.lepid2, self.lep2_fwkIdx), get_muon_iso_sf(self.lepiso2, self.lepid2, self.lep2_fwkIdx)),
-                   #     'plot_cut': self.totalCut,
-                   #     'binning': '(50, 0, 2)'
-                   # }
-                ])
-            
             self.plots_jet.extend([ 
                 {
                         'name':  'jet1_pt_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
@@ -310,6 +261,12 @@ class BasePlotter:
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 3.1416)'
                 }
+                #{
+                #        'name':  'll_scaleFactor_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                #        'variable': get_leptons_SF(self.ll_str, self.lepid1, self.lepid2, self.lepiso1, self.lepiso2, "nominal"),
+                #        'plot_cut': self.totalCut,
+                #        'binning': '(50, 0, 3.1416)'
+                #}
             ])
 
             self.plots_jj.extend([ 
@@ -342,7 +299,7 @@ class BasePlotter:
                #         'variable': "{0} * {1}".format(get_csvv2_sf(self.btagWP1, self.jet1_fwkIdx), get_csvv2_sf(self.btagWP2, self.jet2_fwkIdx)),
                #         'plot_cut': self.totalCut,
                #         'binning': '(50, 0, 2)'
-               # }, 
+               # } 
             ])
 
             self.plots_llmetjj.extend([ 
@@ -473,6 +430,7 @@ class BasePlotter:
                         'binning': '(75, 0, 1000)'
                 }
             ])
+            # gen level plots for jj 
             for elt in self.plots_jj : 
                 tempPlot = copy.deepcopy(elt)
                 if "p4" in tempPlot["variable"] :
@@ -523,7 +481,14 @@ class BasePlotter:
                     'binning': '(6, 0, 6)'
                 }
             ])
-
+            self.forSkimmer.extend([
+                {
+                    'name':  'event_weight_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "event_weight",
+                    'plot_cut': self.totalCut,
+                    'binning': '(500, -10000, 10000)'
+                }
+            ])
 
     def joinCuts(self, *cuts):
         if len(cuts) == 0: 

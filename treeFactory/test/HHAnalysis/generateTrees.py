@@ -24,8 +24,8 @@ flavour = "MuEl"
 basePlotter.generatePlots([flavour])
 
 # Currently need to run the code several times for different selections. 
-flavCut = "({0}.isElEl || {0}.isMuMu) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(basePlotter.ll_str)
-#flavCut = "({0}.isElMu || {0}.isMuEl) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(basePlotter.ll_str)
+flavCut = "({0}.isElEl || {0}.isMuMu) && {0}.p4.M() > 12".format(basePlotter.ll_str)
+#flavCut = "({0}.isElMu || {0}.isMuEl) && {0}.p4.M() > 12".format(basePlotter.ll_str)
 
 cut = basePlotter.joinCuts(basePlotter.mapCut, flavCut, basePlotter.jetCut, basePlotter.lepCut, basePlotter.extraCut)
 
@@ -34,7 +34,7 @@ tree["name"] = "t"
 tree["cut"] = cut
 tree["branches"] = []
 
-plotFamilies = ["plots_lep", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj", "plots_evt"]
+plotFamilies = ["plots_lep", "plots_jet", "plots_met", "plots_ll", "plots_jj", "plots_llmetjj", "plots_evt", "forSkimmer"]
 for plotFamily in plotFamilies :
     for plot in getattr(basePlotter, plotFamily) :
         branch = {}

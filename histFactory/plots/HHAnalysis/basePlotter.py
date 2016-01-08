@@ -10,16 +10,8 @@ class BasePlotter:
         self.map = "hh_map_llmetjj_id_iso_btagWP_pair"
         self.lepMap = "hh_map_l_id_iso"
         self.jetMap = "hh_map_j_btagWP"
-        # The following working points HAVE to be defined by the user in generatePlots.py (must be e.g. HH.lepID.L)
-        self.lepid1 = "" 
-        self.lepiso1 = ""
-        self.lepid2 = ""
-        self.lepiso2 = ""
-        self.jetid1 = ""
-        self.jetid2 = ""
-        self.btagWP1 = ""
-        self.btagWP2 = ""
-        self.pair = ""
+        # The following working points can be redefined by the user in generatePlots.py. Order is  lepid1,  lepiso1,  lepid2,  lepiso2,  jetid1,  jetid2,  btagWP1,  btagWP2,  pair
+        self.WP = ["T","T","T","T","L","L","L","L","csv"]
         # The following will be instantiated in generatePlots function below
         self.llFlav = ""
         self.catCut = ""  
@@ -29,6 +21,16 @@ class BasePlotter:
         self.totalCut = ""
 
     def generatePlots(self, categories = ["ElEl", "MuMu", "MuEl"]):
+
+        self.lepid1 = getattr(HH.lepID, self.WP[0])
+        self.lepiso1 = getattr(HH.lepIso, self.WP[1])
+        self.lepid2 = getattr(HH.lepID, self.WP[2])
+        self.lepiso2 = getattr(HH.lepIso, self.WP[3])
+        self.jetid1 = getattr(HH.jetID, self.WP[4])
+        self.jetid2 = getattr(HH.jetID, self.WP[5])
+        self.btagWP1 = getattr(HH.btagWP, self.WP[6])
+        self.btagWP2 = getattr(HH.btagWP, self.WP[7])
+        self.pair = getattr(HH.jetPair, self.WP[8])
 
         self.mapWP = HH.leplepIDIsojetjetIDbtagWPPair(self.lepid1, self.lepiso1, self.lepid2, self.lepiso2, self.jetid1, self.jetid2, self.btagWP1, self.btagWP2, self.pair)
         self.lepMapWP = HH.lepIDIso(self.lepid1, self.lepiso1)

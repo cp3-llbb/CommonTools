@@ -10,16 +10,8 @@ class BasePlotter:
         self.map = "hh_map_llmetjj_id_iso_btagWP_pair"
         self.lepMap = "hh_map_l_id_iso"
         self.jetMap = "hh_map_j_btagWP"
-        # The following working points HAVE to be defined by the user in generatePlots.py (must be e.g. HH.lepID.L)
-        self.lepid1 = "" 
-        self.lepiso1 = ""
-        self.lepid2 = ""
-        self.lepiso2 = ""
-        self.jetid1 = ""
-        self.jetid2 = ""
-        self.btagWP1 = ""
-        self.btagWP2 = ""
-        self.pair = ""
+        # The following working points can be redefined by the user in generatePlots.py. Order is  lepid1,  lepiso1,  lepid2,  lepiso2,  jetid1,  jetid2,  btagWP1,  btagWP2,  pair
+        self.WP = ["T","T","T","T","L","L","L","L","csv"]
         # The following will be instantiated in generatePlots function below
         self.llFlav = ""
         self.catCut = ""  
@@ -29,6 +21,16 @@ class BasePlotter:
         self.totalCut = ""
 
     def generatePlots(self, categories = ["ElEl", "MuMu", "MuEl"]):
+
+        self.lepid1 = getattr(HH.lepID, self.WP[0])
+        self.lepiso1 = getattr(HH.lepIso, self.WP[1])
+        self.lepid2 = getattr(HH.lepID, self.WP[2])
+        self.lepiso2 = getattr(HH.lepIso, self.WP[3])
+        self.jetid1 = getattr(HH.jetID, self.WP[4])
+        self.jetid2 = getattr(HH.jetID, self.WP[5])
+        self.btagWP1 = getattr(HH.btagWP, self.WP[6])
+        self.btagWP2 = getattr(HH.btagWP, self.WP[7])
+        self.pair = getattr(HH.jetPair, self.WP[8])
 
         self.mapWP = HH.leplepIDIsojetjetIDbtagWPPair(self.lepid1, self.lepiso1, self.lepid2, self.lepiso2, self.jetid1, self.jetid2, self.btagWP1, self.btagWP2, self.pair)
         self.lepMapWP = HH.lepIDIso(self.lepid1, self.lepiso1)
@@ -73,9 +75,9 @@ class BasePlotter:
 
         #zMass = 91.1876 
         self.dict_cat_cut =  {
-                            "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
-                            "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
-                            "MuEl" : "((%s.isElMu)||(%s.isMuEl)) && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str, self.ll_str)
+                            "ElEl" : "{0}.isElEl && elel_fire_trigger_Ele17_Ele12_cut && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str),
+                            "MuMu" : "{0}.isMuMu && (mumu_fire_trigger_Mu17_Mu8_cut || mumu_fire_trigger_Mu17_TkMu8_cut) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str),
+                            "MuEl" : "(({0}.isElMu && elmu_fire_trigger_Mu8_Ele17_cut) || ({0}.isMuEl && muel_fire_trigger_Mu17_Ele12_cut)) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str)  
                         }
 
         for cat in categories :
@@ -487,7 +489,32 @@ class BasePlotter:
                     'variable': "event_weight",
                     'plot_cut': self.totalCut,
                     'binning': '(500, -10000, 10000)'
+                },
+                {
+                    'name':  'isElEl_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isElEl"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isMuMu_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isMuMu"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isElMu_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isElMu"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isMuEl_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isMuEl"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
                 }
+
             ])
 
     def joinCuts(self, *cuts):

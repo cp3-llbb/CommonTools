@@ -39,13 +39,16 @@ class condorSubmitter:
             # Get list of files from DB based on sampe ID or name, and split the list according to
             # the split-level asked by the user
             if "ID" in sample.keys():
-                name, files = self.getSampleFiles(sample["ID"])
-                sample["db_name"] = name
-                sample["files"] = self.splitList(files, sample["files_per_job"])
+                dbSample = self.getSample(sample["ID"])
             elif "db_name" in sample.keys():
-                name, files = self.getSampleFiles(sample["db_name"])
-                sample["db_name"] = name
-                sample["files"] = self.splitList(files, sample["files_per_job"])
+                dbSample = self.getSample(sample["db_name"])
+            if dbSample.sampletype == u"SKIM" :
+                files = [ str(file.lfn) for file in dbSample.files ]
+            else :
+                files = [ "/storage/data/cms/" + str(file.lfn) for file in dbSample.files ]
+
+            sample["db_name"] = dbSample.name
+            sample["files"] = self.splitList(files, sample["files_per_job"])
 
             # If a path to a json skeleton was provided, use it, otherwise use the default
             if "json_skeleton" in sample.keys():
@@ -108,8 +111,8 @@ function move_files {
 #EXEC_PATH# -d #SAMPLE_JSON# -- #PLOT_CFG_PATH# && move_files
 """
 
-    def getSampleFiles(self, iSample):
-        """ Get sample name/lit of sample files from the DB, using the sample ID or name. """
+    def getSample(self, iSample):
+        """ Get sample from the DB, using the sample ID or name. """
    
         sample = ""
         dbstore = DbStore()
@@ -120,7 +123,7 @@ function move_files {
         else:
             raise Exception("Argument should be sample ID or DB name.")
 
-        return sample.name, [ "/storage/data/cms/" + str(file.lfn) for file in sample.files ]
+        return sample
 
 
     def splitList(self, m_list, N):

@@ -24,7 +24,7 @@ flavour = "MuEl"
 basePlotter.generatePlots([flavour])
 
 # Currently need to run the code several times for different selections. 
-flavCut = "({0}.isElEl || {0}.isMuMu) && {0}.p4.M() > 12".format(basePlotter.ll_str)
+flavCut = "(({0}.isElEl && elel_fire_trigger_Ele17_Ele12_cut) || ({0}.isMuMu &&  (mumu_fire_trigger_Mu17_Mu8_cut || mumu_fire_trigger_Mu17_TkMu8_cut)) || (({0}.isElMu && elmu_fire_trigger_Mu8_Ele17_cut) || ({0}.isMuEl && muel_fire_trigger_Mu17_Ele12_cut)) ) && {0}.p4.M() > 12".format(basePlotter.ll_str)
 #flavCut = "({0}.isElMu || {0}.isMuEl) && {0}.p4.M() > 12".format(basePlotter.ll_str)
 
 cut = basePlotter.joinCuts(basePlotter.mapCut, flavCut, basePlotter.jetCut, basePlotter.lepCut, basePlotter.extraCut)

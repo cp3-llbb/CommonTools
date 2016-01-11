@@ -75,9 +75,9 @@ class BasePlotter:
 
         #zMass = 91.1876 
         self.dict_cat_cut =  {
-                            "ElEl" : "%s.isElEl && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
-                            "MuMu" : "%s.isMuMu && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str),
-                            "MuEl" : "((%s.isElMu)||(%s.isMuEl)) && %s.p4.M() > 12 && (91.1876 - %s.p4.M()) > 15"%(self.ll_str, self.ll_str, self.ll_str, self.ll_str)
+                            "ElEl" : "{0}.isElEl && elel_fire_trigger_Ele17_Ele12_cut && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str),
+                            "MuMu" : "{0}.isMuMu && (mumu_fire_trigger_Mu17_Mu8_cut || mumu_fire_trigger_Mu17_TkMu8_cut) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str),
+                            "MuEl" : "(({0}.isElMu && elmu_fire_trigger_Mu8_Ele17_cut) || ({0}.isMuEl && muel_fire_trigger_Mu17_Ele12_cut)) && {0}.p4.M() > 12 && (91.1876 - {0}.p4.M()) > 15".format(self.ll_str)  
                         }
 
         for cat in categories :
@@ -489,7 +489,32 @@ class BasePlotter:
                     'variable': "event_weight",
                     'plot_cut': self.totalCut,
                     'binning': '(500, -10000, 10000)'
+                },
+                {
+                    'name':  'isElEl_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isElEl"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isMuMu_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isMuMu"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isElMu_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isElMu"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
+                },
+                {
+                    'name':  'isMuEl_%s_lepIso_%s_lepID_%s_jetID_%s_btag_%s%s'%(self.llFlav, self.llIsoCat, self.llIDCat, self.jjIDCat, self.jjBtagCat, self.suffix),
+                    'variable': "%s.isMuEl"%self.ll_str,
+                    'plot_cut': self.totalCut,
+                    'binning': '(2, 0, 2)'
                 }
+
             ])
 
     def joinCuts(self, *cuts):

@@ -80,8 +80,8 @@ struct Dataset {
 
 class Plotter {
     public:
-        Plotter(const Dataset& dataset, TTree* ttree):
-            m_dataset(dataset), tree(ttree), m_sample_cut(nullptr)
+        Plotter(const Dataset& dataset, TChain* ttree):
+            m_dataset(dataset), tree(ttree), m_sample_cut(nullptr), raw_tree(ttree)
             {
                 if(dataset.cut != "" && dataset.cut != "1"){
                     m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), ttree);
@@ -117,6 +117,7 @@ class Plotter {
         Dataset m_dataset;
         ROOT::TreeWrapper tree;
         TTreeFormula* m_sample_cut;
+        TChain* raw_tree;
 
         // List of branches
         {{BRANCHES}}

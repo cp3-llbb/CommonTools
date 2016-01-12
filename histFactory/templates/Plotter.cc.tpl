@@ -36,6 +36,13 @@ void Plotter::plot(const std::string& output_file) {
             continue;
         }
 
+        std::string filename = raw_tree->GetFile()->GetName();
+        bool runOnElEl = filename.find("DoubleEG") != std::string::npos;
+        bool runOnMuMu = filename.find("DoubleMuon") != std::string::npos;
+        bool runOnMuEl = filename.find("MuonEG") != std::string::npos;
+        bool runOnElMu = runOnMuEl;
+        bool runOnMC = !(runOnElEl || runOnMuMu || runOnMuEl);
+
         if ((index - 1) % 1000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
 

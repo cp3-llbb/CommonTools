@@ -7,7 +7,6 @@
 #include <fstream>
 #include <signal.h>
 
-#include <TChain.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -38,6 +37,13 @@ void Skimmer::skim(const std::string& output_file) {
         if ((index - 1) % 1000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
         index++;
+        
+        std::string filename = raw_tree->GetFile()->GetName();
+        bool runOnElEl = filename.find("DoubleEG") != std::string::npos;
+        bool runOnMuMu = filename.find("DoubleMuon") != std::string::npos;
+        bool runOnMuEl = filename.find("MuonEG") != std::string::npos;
+        bool runOnElMu = runOnMuEl;
+        bool runOnMC = !(runOnElEl || runOnMuMu || runOnMuEl);
 
 {{GLOBAL_CUT}}
 
@@ -156,7 +162,7 @@ int main(int argc, char** argv) {
             // Learn tree structure from the first 10 entries
             t->SetCacheLearnEntries(10);
 
-            Skimmer s(d, wrapped_tree);
+            Skimmer s(d, wrapped_tree, t.get());
             s.skim(output_file);
             std::cout << "Done. Output saved as '" << output_file << "'" << std::endl;
         }

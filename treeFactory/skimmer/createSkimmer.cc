@@ -21,15 +21,14 @@ limitations under the License.
 #include <iostream>
 #include <fstream>
 #include <memory>
-#include <cstdio>
+#include <unordered_map>
 
 #include <TChain.h>
+#include <TBranch.h>
+#include <TLeaf.h>
 #include <TApplication.h>
 
-// Ugly hack to access list of leaves in the formula
-#define protected public
-#include <TTreeFormula.h>
-#undef protected
+#include <formula_parser.h>
 
 #include <uuid/uuid.h>
 
@@ -278,64 +277,60 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     }
     std::cout << std::endl;
 
+    parser::parser parser;
+
     std::unique_ptr<TChain> t(new TChain("t"));
     t->Add(skeleton.c_str());
 
-    std::vector<InputBranch> branches;
-    std::function<void(TTreeFormula*)> getBranches = [&branches, &getBranches](TTreeFormula* f) {
-        if (!f)
-            return;
+    // Get list of all branches
+    std::unordered_map<std::string, InputBranch> tree_branches;
+    TObjArray* root_tree_branches = t->GetListOfBranches();
+    for (size_t i = 0; i < static_cast<size_t>(root_tree_branches->GetEntries()); i++) {
+        TBranch* b = static_cast<TBranch*>(root_tree_branches->UncheckedAt(i));
 
-        for (size_t i = 0; i < f->GetNcodes(); i++) {
-            TLeaf* leaf = f->GetLeaf(i);
-            if (! leaf)
+        InputBranch branch;
+        branch.name = b->GetName();
+        branch.type = b->GetClassName();
+
+        if (branch.type.empty()) {
+            TLeaf* leaf = b->GetLeaf(branch.name.c_str());
+            if (! leaf) {
+                std::cerr << "Error: can't deduce type for branch '" << branch.name << "'" << std::endl;
                 continue;
-
-            TBranch* p_branch = getTopBranch(leaf->GetBranch());
-
-            InputBranch branch;
-            branch.name = p_branch->GetName();
-            if (std::find_if(branches.begin(), branches.end(), [&branch](const InputBranch& b) {  return b.name == branch.name;  }) == branches.end()) {
-                branch.type = p_branch->GetClassName();
-                if (branch.type.empty())
-                    branch.type = leaf->GetTypeName();
-
-                branches.push_back(branch);
             }
-
-            for (size_t j = 0; j < f->fNdimensions[i]; j++) {
-                if (f->fVarIndexes[i][j])
-                    getBranches(f->fVarIndexes[i][j]);
-            }
+            branch.type = leaf->GetTypeName();
         }
 
-        for (size_t i = 0; i < f->fAliases.GetEntriesFast(); i++) {
-            getBranches((TTreeFormula*) f->fAliases.UncheckedAt(i));
-        }
-    };
+        tree_branches.emplace(branch.name, branch);
+    }
 
-    // Tree cut
-    std::shared_ptr<TTreeFormula> cut_formula(new TTreeFormula("selector", output_tree.cut.c_str(), t.get()));
-    getBranches(cut_formula.get());
 
     std::string output_branches_declaration;
     std::string output_branches_filling;
+    std::set<std::string> identifiers;
+
+    // Tree cut
+    if (!parser.parse(output_tree.cut, identifiers))
+        std::cerr << "Warning: " << output_tree.cut << " failed to parse." << std::endl;
+
     for (auto& b: output_tree.branches) {
-        // Create formulas
-        std::shared_ptr<TTreeFormula> variable_formula(new TTreeFormula("variable", b.variable.c_str(), t.get()));
 
-        getBranches(variable_formula.get());
+        if (! parser.parse(b.variable, identifiers))
+            std::cerr << "Warning: " << b.variable << " failed to parse." << std::endl;
 
-        //hists_declaration += "    std::unique_ptr<" + histogram_type + "> " + p.name + "(new " + histogram_type + "(\"" + p.name + "\", \"" + title + "\", " + binning + ")); " + p.name + "->SetDirectory(nullptr);\n";
         output_branches_declaration += "    float& " + b.unique_name + " = output_tree[\"" + b.name + "\"].write<float>();\n";
-
         output_branches_filling += "        " + b.unique_name + " = (" + b.variable + ");\n";
     }
 
-    // Sort alphabetically
-    std::sort(branches.begin(), branches.end(), [](const InputBranch& a, const InputBranch& b) {
-            return a.name < b.name;
-            });
+    // Everything is parsed. Collect the list of branches used by the formula
+    std::vector<InputBranch> branches;
+    for (const auto& id: identifiers) {
+        auto branch = tree_branches.find(id);
+        if (branch == tree_branches.end())
+            continue;
+
+        branches.push_back(branch->second);
+    }
 
     std::string input_branches_declaration;
     for (const auto& branch: branches)  {

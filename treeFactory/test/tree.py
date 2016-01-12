@@ -2,7 +2,7 @@
 tree = {
         "name": "cool_tree",
 
-        "cut": "jet_p4[0].Pt() > 20",
+        "cut": "!(jet_p4[0].Pt() < 20)",
 
         "branches": [
 

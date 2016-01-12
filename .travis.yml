@@ -4,7 +4,11 @@ compiler:
   - gcc
 
 env:
-  - ROOT_VERSION=6.06.00
+  global:
+    - ROOT_VERSION=6.06.00
+  matrix:
+    - PROJECT="histFactory"
+    - PROJECT="treeFactory"
 
 addons:
   apt:
@@ -19,7 +23,9 @@ addons:
       - make
       - cmake
       - uuid-dev
-      - libboost1.55-all-dev
+      - libboost1.55-dev
+      - libboost-filesystem1.55-dev
+      - libboost-system1.55-dev
 
 install:
   - wget http://sbrochet.web.cern.ch/sbrochet/public/ROOT-${ROOT_VERSION}_Python-2.7_Ubuntu-12.04_gcc4.9.tar.xz
@@ -32,12 +38,11 @@ install:
 before_script:
   - export CXX=g++-4.9
   - export CC=gcc-4.9
-  - export HF_BUILD_DIR=`pwd`/histFactory/build
-  - mkdir -p ${HF_BUILD_DIR} && cd ${HF_BUILD_DIR}
-  - cmake ..
+  - export BUILD_DIR="${PROJECT}/build"
+  - mkdir -p ${BUILD_DIR}
+  - cd ${BUILD_DIR} && cmake ..
 
 script:
-  - cd ${HF_BUILD_DIR}
   - make
 
 os:

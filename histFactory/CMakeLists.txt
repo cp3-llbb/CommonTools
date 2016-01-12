@@ -47,7 +47,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
-include_directories(src)
+include_directories(../common/include)
 
 # Configure external
 
@@ -63,7 +63,7 @@ configure_file(scripts/createPlotter.sh.in createPlotter.sh @ONLY NEWLINE_STYLE 
 # plotter sources
 set(PLOTTER_SOURCES
     src/createPlotter.cpp
-    src/formula_parser.cpp
+    ../common/src/formula_parser.cpp
     )
 
 # Multidraw sources

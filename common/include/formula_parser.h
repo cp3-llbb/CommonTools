@@ -98,7 +98,19 @@ namespace parser
                     ;
 
                 unary_expression
-                    = postfix_expression.alias()
+                    = postfix_expression
+                    | INC_OP >> unary_expression
+                    | DEC_OP >> unary_expression
+                    | unary_operator >> cast_expression
+                    ;
+
+                unary_operator
+                    = qi::lit(ADDROF)
+                    | STAR
+                    | PLUS
+                    | MINUS
+                    | TILDE
+                    | BANG
                     ;
 
                 cast_expression
@@ -330,7 +342,7 @@ namespace parser
 
             qi::rule<Iterator, ascii::space_type>
                     primary_expression, postfix_expression, postfix_expression_helper,
-                    argument_expression_list, unary_expression,
+                    argument_expression_list, unary_expression, unary_operator,
                     cast_expression,
                     multiplicative_expression, multiplicative_expression_helper,
                     additive_expression, additive_expression_helper,

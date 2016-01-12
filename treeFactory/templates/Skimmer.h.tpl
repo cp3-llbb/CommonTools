@@ -12,6 +12,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TChain.h>
 #include <Math/Vector4D.h>
 
 // Generated automatically
@@ -39,8 +40,8 @@ struct Dataset {
 
 class Skimmer {
     public:
-        Skimmer(const Dataset& dataset, ROOT::TreeWrapper& tree):
-            m_dataset(dataset), tree(tree) {};
+        Skimmer(const Dataset& dataset, ROOT::TreeWrapper& tree, TChain* raw_tree):
+            m_dataset(dataset), tree(tree), raw_tree(raw_tree) {};
         virtual ~Skimmer() {};
 
         void skim(const std::string&);
@@ -48,6 +49,7 @@ class Skimmer {
     private:
         Dataset m_dataset;
         ROOT::TreeWrapper& tree;
+        TChain* raw_tree;
 
         // List of input branches
         {{BRANCHES}}

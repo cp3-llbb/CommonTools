@@ -13,7 +13,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
-#include <TTree.h>
+#include <TChain.h>
 #include <TTreeFormula.h>
 #include <Math/Vector4D.h>
 

@@ -26,7 +26,7 @@ from SAMADhi import Sample, DbStore
 
 class condorSubmitter:
 
-    def __init__(self, sampleCfg, execPath, plotConfig, baseDir = "."):
+    def __init__(self, sampleCfg, execPath, plotConfig, baseDir = ".", rescale = False):
 
         self.sampleCfg = sampleCfg
         self.baseDir = os.path.join(os.path.abspath(baseDir), "condor")
@@ -50,6 +50,25 @@ class condorSubmitter:
             sample["db_name"] = dbSample.name
             sample["files"] = self.splitList(files, sample["files_per_job"])
 
+            rescale_sample = rescale
+
+            if dbSample.source_dataset.datatype == u"data":
+                rescale_sample = False
+
+            if rescale_sample and dbSample.source_dataset.xsection == 1.0:
+                print("Warning: cross-section for dataset %r not set." % dbSample.source_dataset.name)
+
+            if rescale_sample:
+                sample["event-weight-sum"] = dbSample.event_weight_sum
+                sample["cross-section"] = dbSample.source_dataset.xsection
+            else :
+                sample["event-weight-sum"] = 1.
+                sample["cross-section"] = 1.
+
+
+
+
+
             # If a path to a json skeleton was provided, use it, otherwise use the default
             if "json_skeleton" in sample.keys():
                 with open(sample["json_skeleton"], "r") as js:
@@ -65,6 +84,8 @@ class condorSubmitter:
                                 "tree_name": "t",
                                 "sample_cut": "1.",
                                 "db_name": sample["db_name"],
+                                "event-weight-sum": sample["event-weight-sum"],
+                                "cross-section": sample["cross-section"]
                             }
                         }
 

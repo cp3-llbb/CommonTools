@@ -38,17 +38,23 @@ def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectator
     factory.EvaluateAllMethods()
     file_MVA.Close()
 
-def MVA_out_in_tree(inFileDir, file, outFileDir, list_dict_mva):
+def MVA_out_in_tree(args):
     ''' Merge MVA output(s) in trees '''
-
-    print "Merging MVA output in " + file +"."
+    try : 
+        inFileDir = args[0]
+        inFileName = args[1]
+        outFileDir = args[2]
+        list_dict_mva = args[3]
+    except IndexError :
+        print "Error : args must be a tuple with [inFileDir, inFileName, outFileDir, list_dict_mva]"
+        return 
     chain = R.TChain("t")
-    chain.Add(inFileDir+file)
+    chain.Add(inFileDir+inFileName)
     
-    outFileName = outFileDir+file
+    outFileName = outFileDir+inFileName
     file_withBDTout = R.TFile(outFileName, "recreate")
     tree_withBDTout = chain.CloneTree(0)
-    print "Number of input tree entries : ", chain.GetEntries()
+    print "Merging MVA output in %s with %s entries."%(inFileName, chain.GetEntries())
 
     # list all discriminative variables needed (removing overlap)
     fullDiscrList = []
@@ -72,7 +78,7 @@ def MVA_out_in_tree(inFileDir, file, outFileDir, list_dict_mva):
         xmlFile = dict_mva["xmlFile"]
         discriList = dict_mva["discriList"]
         spectatorList = dict_mva["spectatorList"]
-        reader[label] = R.TMVA.Reader()
+        reader[label] = R.TMVA.Reader("Silent=1")
         for var in discriList :
             reader[label].AddVariable(var, dict_variableName_Array[var])
         for var in spectatorList :
@@ -83,8 +89,6 @@ def MVA_out_in_tree(inFileDir, file, outFileDir, list_dict_mva):
         reader[label].BookMVA(label, xmlFile)
 
     for entry in xrange(chain.GetEntries()):
-        if entry%1000 == 0 :
-            print entry
         chain.GetEntry(entry)
         for dict_mva in list_dict_mva :
             discriList = dict_mva["discriList"]

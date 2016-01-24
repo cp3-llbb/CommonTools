@@ -25,6 +25,7 @@ find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
 
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(common/include)
 
 # Configure external
 set(EXTERNAL_DIR "${PROJECT_BINARY_DIR}/external")
@@ -40,6 +41,7 @@ configure_file(scripts/parallelizedSkimmer.py.in parallelizedSkimmer.py @ONLY NE
 set(SKIMMER_SOURCES
     Skimmer.cc
     ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
+    common/src/scale_factors.cpp
     )
 
 if(IN_CMSSW)

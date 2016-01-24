@@ -7,6 +7,7 @@ set -e
 PROJECT_DIR="@PROJECT_SOURCE_DIR@"
 EXTERNAL_DIR="@EXTERNAL_DIR@"
 TEMPLATES_DIR="@PROJECT_SOURCE_DIR@/templates"
+COMMON_TOOLS_ROOT="@PROJECT_SOURCE_DIR@/.."
 
 SKELETON=$1
 CONFIG=$2
@@ -29,6 +30,7 @@ mkdir -p "$OUTPUT/scripts"
 # Copy files
 cp -r "$PROJECT_DIR/cmake" "$OUTPUT"
 cp "$TEMPLATES_DIR/generateHeader.sh" "$OUTPUT/"
+cp -r "$COMMON_TOOLS_ROOT/common" "$OUTPUT"
 
 cp -r "$EXTERNAL_DIR/src" "$OUTPUT/build/external/"
 cp -r "$EXTERNAL_DIR/lib" "$OUTPUT/build/external/"

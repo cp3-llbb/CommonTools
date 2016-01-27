@@ -143,12 +143,12 @@ plot_x_values = np.array(plot_x_values)
 plot_y_values = np.array(plot_y_values)
 
 data_x_mean = weights_matrix.mean(axis=1)
-data_x_error_up_mean = np.sqrt((weights_up ** 2).mean(axis=1))
-data_x_error_down_mean = np.sqrt((weights_down ** 2).mean(axis=1))
+data_x_error_up_mean = np.sqrt((weights_up ** 2).mean(axis=1) / len(weights_up[0]))
+data_x_error_down_mean = np.sqrt((weights_down ** 2).mean(axis=1) / len(weights_up[0]))
 
 data_y_mean = weights_matrix.mean(axis=0)
-data_y_error_up_mean = np.sqrt((weights_up ** 2).mean(axis=0))
-data_y_error_down_mean = np.sqrt((weights_down ** 2).mean(axis=0))
+data_y_error_up_mean = np.sqrt((weights_up ** 2).mean(axis=0) / len(weights_up))
+data_y_error_down_mean = np.sqrt((weights_down ** 2).mean(axis=0) / len(weights_up))
 
 pt_graph = ROOT.TGraphAsymmErrors(len(plot_x_values), plot_x_values, data_x_mean, ROOT.nullptr, ROOT.nullptr, data_x_error_down_mean, data_x_error_up_mean)
 

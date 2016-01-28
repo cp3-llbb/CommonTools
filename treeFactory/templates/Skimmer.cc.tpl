@@ -1,6 +1,7 @@
 // vim: syntax=cpp
 
 #include <Skimmer.h>
+#include <scale_factors.h>
 
 #include <memory>
 #include <iostream>

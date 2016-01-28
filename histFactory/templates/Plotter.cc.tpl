@@ -1,6 +1,7 @@
 // vim: syntax=cpp
 
 #include <Plotter.h>
+#include <scale_factors.h>
 
 #include <memory>
 #include <iostream>

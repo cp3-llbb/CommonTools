@@ -9,6 +9,7 @@ env:
   matrix:
     - PROJECT="histFactory"
     - PROJECT="treeFactory"
+    - PROJECT="common"
 
 addons:
   apt:
@@ -39,11 +40,11 @@ before_script:
   - export CXX=g++-4.9
   - export CC=gcc-4.9
   - export BUILD_DIR="${PROJECT}/build"
-  - mkdir -p ${BUILD_DIR}
-  - cd ${BUILD_DIR} && cmake ..
+  - if [[ $PROJECT != "common" ]]; then mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR} && cmake ..; else cd common/tests; fi
 
 script:
   - make
+  - if [[ $PROJECT == "common" ]]; then ./tests.exe; fi
 
 os:
   - linux

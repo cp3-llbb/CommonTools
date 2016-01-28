@@ -27,6 +27,7 @@ find_library(ROOT_TREEPLAYER_LIB TreePlayer PATHS ${ROOT_LIBRARY_DIR}
 
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(common/include)
 include_directories({{ADD_INCLUDES}})
 
 # Configure external
@@ -43,6 +44,7 @@ configure_file(scripts/parallelizedPlotter.py.in parallelizedPlotter.py @ONLY NE
 set(PLOTTER_SOURCES
     Plotter.cc
     ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
+    common/src/scale_factors.cpp
     {{ADD_SOURCES}}
     )
 

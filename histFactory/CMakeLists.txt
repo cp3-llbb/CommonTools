@@ -60,6 +60,10 @@ include_directories(${PROJECT_BINARY_DIR})
 # Create bash helper script for the plotter
 configure_file(scripts/createPlotter.sh.in createPlotter.sh @ONLY NEWLINE_STYLE UNIX)
 
+set(COMMON_SOURCES
+    ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
+    )
+
 # plotter sources
 set(PLOTTER_SOURCES
     src/createPlotter.cpp
@@ -69,7 +73,6 @@ set(PLOTTER_SOURCES
 # Multidraw sources
 set(MULTIDRAW_SOURCES
     src/createHistoWithMultiDraw.cpp
-    ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
     ${EXTERNAL_SRC_DIR}/TMultiDrawTreePlayer.cxx
     ${EXTERNAL_SRC_DIR}/TSelectorMultiDraw.cxx
     ${MD_DICTIONARY}
@@ -94,13 +97,14 @@ if(IN_CMSSW)
                     SELECTION ${SRC}/classes_def.xml
                     )
 
-                list(APPEND PLOTTER_SOURCES ${CP3LLBB_SUBDIR}_dict.cpp)
-                list(APPEND MULTIDRAW_SOURCES ${CP3LLBB_SUBDIR}_dict.cpp)
+                list(APPEND COMMON_SOURCES ${CP3LLBB_SUBDIR}_dict.cpp)
                 
             endif()
         endif()
     endforeach()
 endif()
+
+add_library(common STATIC ${COMMON_SOURCES})
 
 add_executable(plotter ${PLOTTER_SOURCES})
 set_target_properties(plotter PROPERTIES OUTPUT_NAME "createPlotter.exe")
@@ -108,11 +112,11 @@ set_target_properties(plotter PROPERTIES OUTPUT_NAME "createPlotter.exe")
 add_executable(multidraw ${MULTIDRAW_SOURCES})
 set_target_properties(multidraw PROPERTIES OUTPUT_NAME "createHistoWithMultiDraw.exe")
 
-add_executable(count src/countProcessedEvents.cpp
-    ${EXTERNAL_SRC_DIR}/jsoncpp.cpp)
+add_executable(count src/countProcessedEvents.cpp)
 set_target_properties(count PROPERTIES OUTPUT_NAME "createProcessedEvents.exe")
 
 # Link libraries
+target_link_libraries(plotter common)
 target_link_libraries(plotter ${ROOT_LIBRARIES})
 target_link_libraries(plotter ${PYTHON_LIBRARY})
 target_link_libraries(plotter ${Boost_FILESYSTEM_LIBRARY}
@@ -124,10 +128,12 @@ find_library(CTEMPLATE_LIBS NAMES "libctemplate_nothreads.a"
     "ctemplate_nothreads" PATHS ${EXTERNAL_LIB_DIR} NO_DEFAULT_PATH)
 target_link_libraries(plotter ${CTEMPLATE_LIBS})
 
+target_link_libraries(multidraw common)
 target_link_libraries(multidraw ${ROOT_LIBRARIES})
 target_link_libraries(multidraw ${ROOT_TREEPLAYER_LIBRARY})
 target_link_libraries(multidraw ${PYTHON_LIBRARY})
 
 target_link_libraries(multidraw "uuid")
 
+target_link_libraries(count common)
 target_link_libraries(count ${ROOT_LIBRARIES})

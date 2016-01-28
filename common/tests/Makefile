@@ -1,4 +1,4 @@
-SOURCES=../src/scale_factors.cpp scale_factors_test.cpp
+SOURCES=../src/scale_factors.cpp scale_factors_test.cpp tests.cpp ../src/formula_parser.cpp formula_parser_tests.cpp
 INCPATHS=../include
 CXXFLAGS=-std=c++11 -Wall
 

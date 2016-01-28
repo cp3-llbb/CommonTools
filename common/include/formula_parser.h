@@ -22,6 +22,7 @@ namespace parser
                 XOR_ASSIGN("^="), OR_ASSIGN("|="), RIGHT_OP(">>"), LEFT_OP("<<"),
                 INC_OP("++"), DEC_OP("--"), PTR_OP("->"), AND_OP("&&"),
                 OR_OP("||"), LE_OP("<="), GE_OP(">="), EQ_OP("=="), NE_OP("!="),
+                NAMESPACE("::"),
                 SEMICOLON(';'),
                 COMMA(','), COLON(':'), ASSIGN('='), LEFT_PAREN('('),
                 RIGHT_PAREN(')'), DOT('.'), ADDROF('&'), BANG('!'), TILDE('~'),
@@ -75,6 +76,7 @@ namespace parser
                     | int_
                     | QUOTED_STRING
                     | LEFT_PAREN >> expression >> RIGHT_PAREN
+                    | LEFT_BRACE >> expression >> RIGHT_BRACE
                     ;
 
 
@@ -86,8 +88,10 @@ namespace parser
                     =   (
                             LEFT_BRACKET >> expression >> RIGHT_BRACKET
                         |   LEFT_PAREN >> -argument_expression_list >> RIGHT_PAREN
+                        |   LEFT_BRACE >> expression >> RIGHT_BRACE
                         |   DOT >> IDENTIFIER
                         |   PTR_OP >> IDENTIFIER
+                        |   NAMESPACE >> IDENTIFIER
                         ) >>
                         postfix_expression_helper
                     | eps
@@ -306,7 +310,8 @@ namespace parser
             }
 
             void new_id(const std::string& id) {
-                m_identifiers->emplace(id);
+                if (m_identifiers)
+                    m_identifiers->emplace(id);
             }
 
             void set_identifiers(std::set<std::string>& ids) {
@@ -325,7 +330,7 @@ namespace parser
                     ELLIPSIS, RIGHT_ASSIGN, LEFT_ASSIGN, ADD_ASSIGN, SUB_ASSIGN,
                     MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, AND_ASSIGN, XOR_ASSIGN,
                     OR_ASSIGN, RIGHT_OP, LEFT_OP, INC_OP, DEC_OP, PTR_OP, AND_OP,
-                    OR_OP, LE_OP, GE_OP, EQ_OP, NE_OP;
+                    OR_OP, LE_OP, GE_OP, EQ_OP, NE_OP, NAMESPACE;
 
             char
                     SEMICOLON, COMMA, COLON, ASSIGN, LEFT_PAREN, RIGHT_PAREN,

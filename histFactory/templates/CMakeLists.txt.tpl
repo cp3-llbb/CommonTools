@@ -19,6 +19,7 @@ endif()
 # Find ROOT
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
+find_library(ROOT_TMVA_LIBRARY TMVA ${ROOT_LIBRARY_DIR} NO_DEFAULT_PATH)
 
 find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
     NO_DEFAULT_PATH)
@@ -85,6 +86,7 @@ set_target_properties(plotter PROPERTIES OUTPUT_NAME "plotter.exe")
 # Link libraries
 target_link_libraries(plotter ${ROOT_LIBRARIES})
 target_link_libraries(plotter ${ROOT_GENVECTOR_LIB})
+target_link_libraries(plotter ${ROOT_TMVA_LIBRARY})
 target_link_libraries(plotter ${ROOT_TREEPLAYER_LIB})
 
 find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS

@@ -1,7 +1,7 @@
 import ROOT as R
 from array import array
 
-def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectatorVariables = [], label = "TMVA"):
+def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectatorVariables = [], label = "BDT"):
     ''' Train a MVA and write xml files for possibly different MVA methods (kBDT etc)'''
 
     MVA_fileName = "TMVA_"+label+".root"

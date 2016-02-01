@@ -28,9 +28,9 @@ mkdir -p "$OUTPUT/build/external"
 mkdir -p "$OUTPUT/scripts"
 
 # Copy files
-cp -r "$PROJECT_DIR/cmake" "$OUTPUT"
-cp "$TEMPLATES_DIR/generateHeader.sh" "$OUTPUT/"
+cp -r "$COMMON_TOOLS_ROOT/cmake" "$OUTPUT"
 cp -r "$COMMON_TOOLS_ROOT/common" "$OUTPUT"
+cp "$TEMPLATES_DIR/generateHeader.sh" "$OUTPUT/"
 
 cp -r "$EXTERNAL_DIR/src" "$OUTPUT/build/external/"
 cp -r "$EXTERNAL_DIR/lib" "$OUTPUT/build/external/"

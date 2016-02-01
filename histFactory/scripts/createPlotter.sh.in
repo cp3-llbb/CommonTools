@@ -43,7 +43,12 @@ cp "$PROJECT_DIR/scripts/parallelizedPlotter.py.in" "$OUTPUT/scripts/"
 
 pushd "$OUTPUT/build" &> /dev/null
 
-cmake .. && make -j4
+command -v clang++ >/dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+    CXX=clang++ cmake .. && make -j4
+else
+    cmake .. && make -j4
+fi
 
 popd &> /dev/null
 

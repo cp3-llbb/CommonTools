@@ -95,11 +95,11 @@ class Plotter {
     private:
 
         // Helper functions to fill an histogram
-        template<typename T> typename std::enable_if<!is_stl_container_like<T>::value, bool>::type fill(TH1* h, const T& value, double weight) {
+        template<typename T, typename std::enable_if<!is_stl_container_like<T>::value, bool>::type = 0> void fill(TH1* h, const T& value, double weight) {
             h->Fill(value, weight);
         }
 
-        template<typename T> typename std::enable_if<is_stl_container_like<T>::value, bool>::type fill(TH1* h, const T& value, double weight) {
+        template<typename T, typename std::enable_if<is_stl_container_like<T>::value, bool>::type = 0> void fill(TH1* h, const T& value, double weight) {
             for (const auto& v: value)
                 h->Fill(v, weight);
         }

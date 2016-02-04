@@ -13,6 +13,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TFile.h>
+#include <TError.h>
 
 #include <json/json.h>
 #include <tclap/CmdLine.h>
@@ -134,6 +135,7 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
 
 int main(int argc, char** argv) {
 
+    gErrorIgnoreLevel = kWarning + 1;
 
     try {
 

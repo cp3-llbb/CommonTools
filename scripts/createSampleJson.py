@@ -27,8 +27,10 @@ def createJson(indices, output, rescale):
 
         rescale_sample = rescale
 
+        is_data = False
         if sample.source_dataset.datatype == u"data":
             rescale_sample = False
+            is_data = True
 
         if rescale_sample and sample.source_dataset.xsection == 1.0:
             print("Warning: cross-section for dataset %r not set." % sample.source_dataset.name)
@@ -39,10 +41,13 @@ def createJson(indices, output, rescale):
         d["db_name"] = sample.name
         d["tree_name"] = "t"
         d["sample_cut"] = "1."
+        d["is-data"] = is_data
 
         if rescale_sample:
             d["event-weight-sum"] = sample.event_weight_sum
             d["cross-section"] = sample.source_dataset.xsection
+            if len(sample.extras_event_weight_sum) > 0:
+                d["extras-event-weight-sum"] = json.loads(sample.extras_event_weight_sum)
 
         samples[sample.name] = d
 

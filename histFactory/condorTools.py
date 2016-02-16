@@ -52,22 +52,25 @@ class condorSubmitter:
 
             rescale_sample = rescale
 
+            is_data = False
             if dbSample.source_dataset.datatype == u"data":
                 rescale_sample = False
+                is_data = True
+
+            sample["is-data"] = is_data
 
             if rescale_sample and dbSample.source_dataset.xsection == 1.0:
                 print("Warning: cross-section for dataset %r not set." % dbSample.source_dataset.name)
 
+            sample["extras-event-weight-sum"] = {}
             if rescale_sample:
                 sample["event-weight-sum"] = dbSample.event_weight_sum
                 sample["cross-section"] = dbSample.source_dataset.xsection
+                if len(dbSample.extras_event_weight_sum) > 0:
+                    sample["extras-event-weight-sum"] = json.loads(dbSample.extras_event_weight_sum)
             else :
                 sample["event-weight-sum"] = 1.
                 sample["cross-section"] = 1.
-
-
-
-
 
             # If a path to a json skeleton was provided, use it, otherwise use the default
             if "json_skeleton" in sample.keys():
@@ -85,7 +88,9 @@ class condorSubmitter:
                                 "sample_cut": "1.",
                                 "db_name": sample["db_name"],
                                 "event-weight-sum": sample["event-weight-sum"],
-                                "cross-section": sample["cross-section"]
+                                "extras-event-weight-sum": sample["extras-event-weight-sum"],
+                                "cross-section": sample["cross-section"],
+                                "is-data": sample["is-data"]
                             }
                         }
 

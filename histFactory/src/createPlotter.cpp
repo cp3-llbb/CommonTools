@@ -41,6 +41,7 @@ struct Plot {
     std::string cut;
     std::string weight;
     std::string binning;
+    std::string normalize_to;
 
     std::string title;
     std::string x_axis;
@@ -73,6 +74,7 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     static PyObject* PY_NAME = PyString_FromString("name");
     static PyObject* PY_VARIABLE = PyString_FromString("variable");
     static PyObject* PY_PLOT_CUT = PyString_FromString("plot_cut");
+    static PyObject* PY_NORMALIZE_TO = PyString_FromString("normalize-to");
     static PyObject* PY_WEIGHT = PyString_FromString("weight");
     static PyObject* PY_BINNING = PyString_FromString("binning");
     static PyObject* PY_TITLE = PyString_FromString("title");
@@ -88,6 +90,9 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     CHECK_AND_GET(plot.variable, PY_VARIABLE);
     CHECK_AND_GET(plot.cut, PY_PLOT_CUT);
     CHECK_AND_GET(plot.binning, PY_BINNING);
+
+    plot.normalize_to = "nominal";
+    GET(plot.normalize_to, PY_NORMALIZE_TO);
 
     plot.weight = "1.";
     GET(plot.weight, PY_WEIGHT);
@@ -402,8 +407,11 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::string hists_declaration;
     std::string text_plots;
     std::set<std::string> identifiers;
+    std::set<std::string> normalize_to;
     size_t index = 0;
     for (auto& p: plots) {
+
+        normalize_to.emplace(p.normalize_to);
 
         if ((index % 200) == 0)
             std::cout << "Parsing plot #" << index << " / " << plots.size() << std::endl;
@@ -484,6 +492,9 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         ctemplate::TemplateDictionary save_plot("save_plot");
         save_plot.SetValue("UNIQUE_NAME", p.name);
         save_plot.SetValue("PLOT_NAME", unique_names[p.name]);
+
+        std::string sample_scale = "m_dataset.cross_section / m_dataset.extras_event_weight_sum[\"" + p.normalize_to + "\"]";
+        save_plot.SetValue("SAMPLE_SCALE", sample_scale);
         ctemplate::ExpandTemplate(getTemplate("SavePlot"), ctemplate::DO_NOT_STRIP, &save_plot, &text_save_plots);
     }
 
@@ -491,8 +502,16 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     for(const auto& f: includes)
       text_includes += "#include \"" + f.filename().string() + "\"\n";
 
+    std::string text_ensure_normalization;
+    for (auto& n: normalize_to) {
+        ctemplate::TemplateDictionary d("d");
+        d.SetValue("NAME", n);
+        ctemplate::ExpandTemplate(getTemplate("EnsureNormalization"), ctemplate::DO_NOT_STRIP, &d, &text_ensure_normalization);
+    }
+
     ctemplate::TemplateDictionary source("source");
     source.SetValue("INCLUDES", text_includes);
+    source.SetValue("ENSURE_NORMALIZATIONS", text_ensure_normalization);
     source.SetValue("HISTS_DECLARATION", hists_declaration);
     source.SetValue("PLOTS", text_plots);
     source.SetValue("SAVE_PLOTS", text_save_plots);

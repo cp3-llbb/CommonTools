@@ -24,6 +24,8 @@ volatile bool MUST_STOP = false;
 
 void Plotter::plot(const std::string& output_file) {
 
+{{ENSURE_NORMALIZATIONS}}
+
 {{HISTS_DECLARATION}}
 
     size_t index = 1;
@@ -39,13 +41,13 @@ void Plotter::plot(const std::string& output_file) {
         }
 
         std::string filename = raw_tree->GetFile()->GetName();
-        bool runOnElEl = filename.find("DoubleEG") != std::string::npos;
-        bool runOnMuMu = filename.find("DoubleMuon") != std::string::npos;
-        bool runOnMuEl = filename.find("MuonEG") != std::string::npos;
-        bool runOnElMu = runOnMuEl;
-        bool runOnMC = !(runOnElEl || runOnMuMu || runOnMuEl);
+        bool runOnElEl = m_dataset.is_data && (filename.find("DoubleEG") != std::string::npos);
+        bool runOnMuMu = m_dataset.is_data && (filename.find("DoubleMuon") != std::string::npos);
+        bool runOnMuEl = m_dataset.is_data && (filename.find("MuonEG") != std::string::npos);
+        bool runOnElMu = m_dataset.is_data && (runOnMuEl);
+        bool runOnMC = !m_dataset.is_data;
 
-        if ((index - 1) % 1000 == 0)
+        if ((index - 1) % 100000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
 
         bool __cut = false;
@@ -58,7 +60,6 @@ void Plotter::plot(const std::string& output_file) {
 
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 
-    double sample_scale = m_dataset.cross_section / m_dataset.event_weight_sum;
 {{SAVE_PLOTS}}
 }
 
@@ -88,6 +89,7 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         dataset.db_name = sample["db_name"].asString();
         dataset.cut = sample.get("sample_cut", "1").asString();
         dataset.tree_name = sample.get("tree_name", "t").asString();
+        dataset.is_data = sample["is-data"].asBool();
 
         if (sample.isMember("output_name")) {
             dataset.output_name = sample["output_name"].asString();
@@ -114,6 +116,13 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         } else {
             dataset.event_weight_sum = 1.;
         }
+
+        if (sample.isMember("extras-event-weight-sum")) {
+            for (auto e: sample["extras-event-weight-sum"].getMemberNames())
+                dataset.extras_event_weight_sum.emplace(e, sample["extras-event-weight-sum"][e].asDouble());
+        }
+
+        dataset.extras_event_weight_sum["nominal"] = dataset.event_weight_sum;
 
         // If a list of files is specified, only use those
         if (sample.isMember("files")) {

@@ -76,6 +76,8 @@ struct Dataset {
     std::string cut;
     double cross_section;
     double event_weight_sum;
+    std::map<std::string, double> extras_event_weight_sum;
+    bool is_data;
 };
 
 class Plotter {

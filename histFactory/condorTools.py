@@ -66,7 +66,7 @@ class condorSubmitter:
             if rescale_sample:
                 sample["event-weight-sum"] = dbSample.event_weight_sum
                 sample["cross-section"] = dbSample.source_dataset.xsection
-                if len(dbSample.extras_event_weight_sum) > 0:
+                if dbSample.extras_event_weight_sum:
                     sample["extras-event-weight-sum"] = json.loads(dbSample.extras_event_weight_sum)
             else :
                 sample["event-weight-sum"] = 1.

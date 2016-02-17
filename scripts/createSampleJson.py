@@ -46,7 +46,7 @@ def createJson(indices, output, rescale):
         if rescale_sample:
             d["event-weight-sum"] = sample.event_weight_sum
             d["cross-section"] = sample.source_dataset.xsection
-            if len(sample.extras_event_weight_sum) > 0:
+            if sample.extras_event_weight_sum:
                 d["extras-event-weight-sum"] = json.loads(sample.extras_event_weight_sum)
 
         samples[sample.name] = d

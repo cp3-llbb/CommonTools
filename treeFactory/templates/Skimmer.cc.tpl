@@ -7,6 +7,9 @@
 #include <iostream>
 #include <fstream>
 #include <signal.h>
+#include <chrono>
+#include <thread>
+#include <random>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -145,14 +148,44 @@ int main(int argc, char** argv) {
 
         sigaction(SIGINT, &sigIntHandler, NULL);
 
+        // Random numbers
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> sleep_time(300, 1500);
+
+        auto addFileToChain = [&sleep_time, &gen](TChain* chain, const std::string& filename) -> bool {
+            if (! chain)
+                return false;
+
+            // Try 5 times to open the file
+            size_t n = 5;
+            while (n--) {
+                bool success = chain->Add(filename.c_str(), 0) != 0;
+                if (success)
+                    return true;
+
+                // Sleep a bit before trying to open the file again
+                // The sleep time is random to avoid all the jobs on the cluster
+                // to re-try to open the files at the same time
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time(gen)));
+            }
+
+            std::cerr << "Error: cannot open '" << filename << "'" << std::endl;
+            return false;
+        };
+
         for (const Dataset& d: datasets) {
             if (MUST_STOP)
                 break;
 
             std::cout << "Creating skim for dataset '" << d.name << "'" << std::endl;
             std::unique_ptr<TChain> t(new TChain(d.tree_name.c_str()));
-            for (const std::string& file: d.files)
-                t->Add(file.c_str());
+
+            for (const std::string& file: d.files) {
+                bool success = addFileToChain(t.get(), file);
+                if (!success)
+                    return 2;
+            }
 
             std::string output_file = output_dir + "/" + d.output_name + ".root";
 

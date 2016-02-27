@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
         // Random numbers
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> sleep_time(300, 1500);
+        std::uniform_int_distribution<> sleep_time(1 * 1000, 30 * 1000);
 
         auto addFileToChain = [&sleep_time, &gen](TChain* chain, const std::string& filename) -> bool {
             if (! chain)
@@ -160,14 +160,20 @@ int main(int argc, char** argv) {
             // Try 5 times to open the file
             size_t n = 5;
             while (n--) {
+                size_t old_gErrorIgnoreLevel = gErrorIgnoreLevel;
+                gErrorIgnoreLevel = kError + 1;
                 bool success = chain->Add(filename.c_str(), 0) != 0;
+                gErrorIgnoreLevel = old_gErrorIgnoreLevel;
                 if (success)
                     return true;
+
+                auto sleep_time_value = sleep_time(gen);
+                std::cout << "Error while opening '" << filename << "'. Sleeping for " << sleep_time_value << " ms and trying " << n << " more time." << std::endl;
 
                 // Sleep a bit before trying to open the file again
                 // The sleep time is random to avoid all the jobs on the cluster
                 // to re-try to open the files at the same time
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time(gen)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_value));
             }
 
             std::cerr << "Error: cannot open '" << filename << "'" << std::endl;

@@ -1,5 +1,6 @@
 import ROOT as R
 from array import array
+import sys
 
 def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectatorVariables = [], label = "BDT"):
     ''' Train a MVA and write xml files for possibly different MVA methods (kBDT etc)'''
@@ -55,6 +56,9 @@ def MVA_out_in_tree(args):
     file_withBDTout = R.TFile(outFileName, "recreate")
     tree_withBDTout = chain.CloneTree(0)
     print "Merging MVA output in %s with %s entries."%(inFileName, chain.GetEntries())
+    if chain.GetEntries() == 0 :
+        print "Skip %s because 0 entries..."%inFileName
+        sys.exit()
 
     # list all discriminative variables needed (removing overlap)
     fullDiscrList = []

@@ -27,6 +27,8 @@ volatile bool MUST_STOP = false;
 
 void Plotter::plot(const std::string& output_file) {
 
+TH1::SetDefaultSumw2(true);
+
 {{ENSURE_NORMALIZATIONS}}
 
 {{HISTS_DECLARATION}}

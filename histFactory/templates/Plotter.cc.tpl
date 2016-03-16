@@ -33,6 +33,8 @@ TH1::SetDefaultSumw2(true);
 
 {{HISTS_DECLARATION}}
 
+{{USER_CODE_BEFORE_LOOP}}
+
     size_t index = 1;
     while (tree.next()) {
 
@@ -58,10 +60,14 @@ TH1::SetDefaultSumw2(true);
         bool __cut = false;
         double __weight = 0;
 
+{{USER_CODE_IN_LOOP}}
+
 {{PLOTS}}
 
         index++;
     }
+
+{{USER_CODE_AFTER_LOOP}}
 
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 

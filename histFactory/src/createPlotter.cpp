@@ -196,7 +196,7 @@ std::string buildArrayForVariableBinning(std::string& binning, const size_t dime
 
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
-bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<fs::path>& includes, std::set<fs::path>& sources, UserCode& userCode) {
+bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<fs::path>& includes, std::set<fs::path>& sources, std::set<std::string>& extra_branches, UserCode& userCode) {
 
     plots.clear();
     includes.clear();
@@ -306,7 +306,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
             for (size_t i = 0; i < l; i++) {
                 PyObject* item = PyList_GetItem(py_sources, i);
                 if(! PyString_Check(item) ) {
-                  std::cerr << "The items of the 'include' list must be strings" << std::endl;
+                  std::cerr << "The items of the 'sources' list must be strings" << std::endl;
                   return false;
                 }
                 boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
@@ -320,6 +320,28 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
                   }
                 }
                 sources.emplace(temp_path);
+            }
+
+        }
+
+        // Retrieve list of additional branches
+        PyObject* py_extra_branches = PyDict_GetItemString(global_dict, "extra_branches");
+        if (py_extra_branches) {
+
+            if (! PyList_Check(py_extra_branches)) {
+                std::cerr << "The 'extra_branches' variable is not a list" << std::endl;
+                return false;
+            }
+
+            size_t l = PyList_Size(py_extra_branches);
+
+            for (size_t i = 0; i < l; i++) {
+                PyObject* item = PyList_GetItem(py_extra_branches, i);
+                if(! PyString_Check(item) ) {
+                  std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
+                  return false;
+                }
+                extra_branches.emplace( PyString_AsString(item) );
             }
 
         }
@@ -372,6 +394,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::vector<Plot> plots;
     std::set<fs::path> includes;
     std::set<fs::path> sources;
+    std::set<std::string> extra_branches;
     UserCode userCode;
     // If an output directory is specified, use it, otherwise use the current directory
     if (output_dir == "")
@@ -379,7 +402,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     std::map<std::string, std::string> unique_names;
 
-    if( !get_plots_files(config_file, plots, includes, sources, userCode) )
+    if( !get_plots_files(config_file, plots, includes, sources, extra_branches, userCode) )
       return false;
 
     std::cout << "List of requested plots: ";
@@ -393,7 +416,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::cout << "List of requested include files: ";
     for (const auto& i: includes) {
         std::cout << "'" << i.string() << "'";
-        if (i != *(----includes.end()))
+        if (i != *(--includes.end()))
             std::cout << ", ";
     }
     std::cout << std::endl;
@@ -401,11 +424,19 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::cout << "List of requested source files: ";
     for (const auto& s: sources) {
         std::cout << "'" << s.string() << "'";
-        if (s != *(----sources.end()))
+        if (s != *(--sources.end()))
             std::cout << ", ";
     }
     std::cout << std::endl;
 
+    std::cout << "List of requested extra branches: ";
+    for (const auto& s: extra_branches) {
+        std::cout << "'" << s << "'";
+        if (s != *(--extra_branches.end()))
+            std::cout << ", ";
+    }
+
+    std::cout << std::endl;
     if( !userCode.before_loop.empty() )
       std::cout << "User has requested code before the event loop." << std::endl;
     if( !userCode.in_loop.empty() )
@@ -502,6 +533,9 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
         ctemplate::ExpandTemplate(getTemplate("Plot"), ctemplate::DO_NOT_STRIP, &plot, &text_plots);
     }
+
+    // Update the list of identifiers with the extra branches requested by the user
+    identifiers.insert(extra_branches.begin(), extra_branches.end());
 
     // Everything is parsed. Collect the list of branches used by the formula
     std::vector<Branch> branches;

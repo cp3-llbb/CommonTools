@@ -196,7 +196,7 @@ std::string buildArrayForVariableBinning(std::string& binning, const size_t dime
 
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
-bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<fs::path>& includes, std::set<fs::path>& sources, std::set<std::string>& extra_branches, UserCode& userCode) {
+bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<std::string>& includes, std::set<fs::path>& sources, std::set<std::string>& extra_branches, UserCode& userCode) {
 
     plots.clear();
     includes.clear();
@@ -275,19 +275,23 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
                   std::cerr << "The items of the 'include' list must be strings" << std::endl;
                   return false;
                 }
-                boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
-                fs::path temp_path( PyString_AsString(item) );
-                if( temp_path.filename().string().find('<') != std::string::npos ){
-                  std::cout << "Header file " << temp_path.filename().string() << " seems to be a library header. No attempt will be made to check its path." << std::endl;
-                } else if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
-                  if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
-                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
-                    return false;
-                  } else {
-                    temp_path = python_dir/temp_path;
+                std::string temp_string( PyString_AsString(item) );
+                if( temp_string.find("<") != std::string::npos ){
+                  std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
+                  includes.emplace(temp_string);
+                } else {
+                  boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+                  fs::path temp_path( temp_string );
+                  if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                    if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                      std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                      return false;
+                    } else {
+                      temp_path = python_dir/temp_path;
+                      includes.emplace(temp_path.string());
+                    }
                   }
                 }
-                includes.emplace(temp_path);
             }
 
         }
@@ -392,7 +396,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir/* = ""*/) {
 
     std::vector<Plot> plots;
-    std::set<fs::path> includes;
+    std::set<std::string> includes;
     std::set<fs::path> sources;
     std::set<std::string> extra_branches;
     UserCode userCode;
@@ -415,7 +419,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     
     std::cout << "List of requested include files: ";
     for (const auto& i: includes) {
-        std::cout << "'" << i.string() << "'";
+        std::cout << "'" << i << "'";
         if (i != *(--includes.end()))
             std::cout << ", ";
     }
@@ -577,10 +581,10 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     std::string text_includes;
     for(const auto& f: includes){
-      if(f.filename().string().find('<') != std::string::npos)
-        text_includes += "#include " + f.filename().string() + "\n";
+      if(f.find('<') != std::string::npos)
+        text_includes += "#include " + f + "\n";
       else
-        text_includes += "#include \"" + f.filename().string() + "\"\n";
+        text_includes += "#include \"" + fs::path(f).filename().string() + "\"\n";
     }
 
     std::string text_ensure_normalization;
@@ -607,8 +611,10 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     // Make external sources accessible to plotter 
     std::set<fs::path> include_dirs;
-    for(const auto& f: includes)
-      include_dirs.emplace(f.parent_path());
+    for(const auto& f: includes){
+      if(f.find('<') == std::string::npos)
+        include_dirs.emplace( fs::path(f).parent_path() );
+    }
     std::string include_cmake;
     for(const auto& d: include_dirs)
       include_cmake += d.string() + " ";

@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 import os, sys
 
-#usage from treefactory : python resubmit.py 'yourCondorDir' [submit]
+# Usage: resubmit.py 'yourCondorDir' [submit]
 
 condorDir = sys.argv[1]
 logDir = condorDir+"/logs/"

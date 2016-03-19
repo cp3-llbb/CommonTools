@@ -229,153 +229,152 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
     if (! script_result) {
         PyErr_Print();
         return false;
-    } else {
-        // Retrieve list of plots
-        PyObject* py_plots = PyDict_GetItemString(global_dict, "plots");
-        if (!py_plots) {
-            std::cerr << "No 'plots' variable declared in python script" << std::endl;
+    }
+    
+    // Retrieve list of plots
+    PyObject* py_plots = PyDict_GetItemString(global_dict, "plots");
+    if (!py_plots) {
+        std::cerr << "No 'plots' variable declared in python script" << std::endl;
+        return false;
+    }
+
+    if (! PyList_Check(py_plots)) {
+        std::cerr << "The 'plots' variable is not a list" << std::endl;
+        return false;
+    }
+
+    size_t l = PyList_Size(py_plots);
+    if (! l)
+        return true;
+
+    for (size_t i = 0; i < l; i++) {
+        PyObject* item = PyList_GetItem(py_plots, i);
+
+        Plot plot;
+        if (plot_from_PyObject(item, plot)) {
+            plots.push_back(plot);
+        }
+    }
+
+    fs::path python_dir(python_file);
+    python_dir = python_dir.parent_path();
+
+    // Retrieve list of include files
+    PyObject* py_includes = PyDict_GetItemString(global_dict, "includes");
+    if (py_includes) {
+
+        if (! PyList_Check(py_includes)) {
+            std::cerr << "The 'includes' variable is not a list" << std::endl;
             return false;
         }
 
-        if (! PyList_Check(py_plots)) {
-            std::cerr << "The 'plots' variable is not a list" << std::endl;
-            return false;
-        }
-
-        size_t l = PyList_Size(py_plots);
-        if (! l)
-            return true;
+        size_t l = PyList_Size(py_includes);
 
         for (size_t i = 0; i < l; i++) {
-            PyObject* item = PyList_GetItem(py_plots, i);
-
-            Plot plot;
-            if (plot_from_PyObject(item, plot)) {
-                plots.push_back(plot);
+            PyObject* item = PyList_GetItem(py_includes, i);
+            if(! PyString_Check(item) ) {
+              std::cerr << "The items of the 'include' list must be strings" << std::endl;
+              return false;
             }
-        }
-
-        fs::path python_dir(python_file);
-        python_dir = python_dir.parent_path();
-
-        // Retrieve list of include files
-        PyObject* py_includes = PyDict_GetItemString(global_dict, "includes");
-        if (py_includes) {
-
-            if (! PyList_Check(py_includes)) {
-                std::cerr << "The 'includes' variable is not a list" << std::endl;
-                return false;
-            }
-
-            size_t l = PyList_Size(py_includes);
-
-            for (size_t i = 0; i < l; i++) {
-                PyObject* item = PyList_GetItem(py_includes, i);
-                if(! PyString_Check(item) ) {
-                  std::cerr << "The items of the 'include' list must be strings" << std::endl;
+            std::string temp_string( PyString_AsString(item) );
+            if( temp_string.find("<") != std::string::npos ){
+              std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
+              includes.emplace(temp_string);
+            } else {
+              boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+              fs::path temp_path( temp_string );
+              if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                  std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
                   return false;
-                }
-                std::string temp_string( PyString_AsString(item) );
-                if( temp_string.find("<") != std::string::npos ){
-                  std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
-                  includes.emplace(temp_string);
                 } else {
-                  boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
-                  fs::path temp_path( temp_string );
-                  if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
-                    if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
-                      std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
-                      return false;
-                    } else {
-                      temp_path = python_dir/temp_path;
-                      includes.emplace(temp_path.string());
-                    }
-                  }
+                  temp_path = python_dir/temp_path;
+                  includes.emplace(temp_path.string());
                 }
+              }
             }
-
         }
-        
-        // Retrieve list of source files
-        PyObject* py_sources = PyDict_GetItemString(global_dict, "sources");
-        if (py_sources) {
 
-            if (! PyList_Check(py_sources)) {
-                std::cerr << "The 'sources' variable is not a list" << std::endl;
+    }
+    
+    // Retrieve list of source files
+    PyObject* py_sources = PyDict_GetItemString(global_dict, "sources");
+    if (py_sources) {
+
+        if (! PyList_Check(py_sources)) {
+            std::cerr << "The 'sources' variable is not a list" << std::endl;
+            return false;
+        }
+
+        size_t l = PyList_Size(py_sources);
+
+        for (size_t i = 0; i < l; i++) {
+            PyObject* item = PyList_GetItem(py_sources, i);
+            if(! PyString_Check(item) ) {
+              std::cerr << "The items of the 'sources' list must be strings" << std::endl;
+              return false;
+            }
+            boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+            fs::path temp_path( PyString_AsString(item) );
+            if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+              if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
                 return false;
+              } else {
+                temp_path = python_dir/temp_path;
+              }
             }
-
-            size_t l = PyList_Size(py_sources);
-
-            for (size_t i = 0; i < l; i++) {
-                PyObject* item = PyList_GetItem(py_sources, i);
-                if(! PyString_Check(item) ) {
-                  std::cerr << "The items of the 'sources' list must be strings" << std::endl;
-                  return false;
-                }
-                boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
-                fs::path temp_path( PyString_AsString(item) );
-                if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
-                  if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
-                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
-                    return false;
-                  } else {
-                    temp_path = python_dir/temp_path;
-                  }
-                }
-                sources.emplace(temp_path);
-            }
-
+            sources.emplace(temp_path);
         }
 
-        // Retrieve list of additional branches
-        PyObject* py_extra_branches = PyDict_GetItemString(global_dict, "extra_branches");
-        if (py_extra_branches) {
+    }
 
-            if (! PyList_Check(py_extra_branches)) {
-                std::cerr << "The 'extra_branches' variable is not a list" << std::endl;
-                return false;
-            }
+    // Retrieve list of additional branches
+    PyObject* py_extra_branches = PyDict_GetItemString(global_dict, "extra_branches");
+    if (py_extra_branches) {
 
-            size_t l = PyList_Size(py_extra_branches);
-
-            for (size_t i = 0; i < l; i++) {
-                PyObject* item = PyList_GetItem(py_extra_branches, i);
-                if(! PyString_Check(item) ) {
-                  std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
-                  return false;
-                }
-                extra_branches.emplace( PyString_AsString(item) );
-            }
-
+        if (! PyList_Check(py_extra_branches)) {
+            std::cerr << "The 'extra_branches' variable is not a list" << std::endl;
+            return false;
         }
 
-        // Retrieve user code to be included in the function
-        PyObject* py_before_loop = PyDict_GetItemString(global_dict, "code_before_loop");
-        if (py_before_loop) {
-            if (! PyString_Check(py_before_loop)) {
-                std::cerr << "The 'before_loop' variable is not a string" << std::endl;
-                return false;
+        size_t l = PyList_Size(py_extra_branches);
+
+        for (size_t i = 0; i < l; i++) {
+            PyObject* item = PyList_GetItem(py_extra_branches, i);
+            if(! PyString_Check(item) ) {
+              std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
+              return false;
             }
-            userCode.before_loop = PyString_AsString(py_before_loop);
-        }
-        PyObject* py_in_loop = PyDict_GetItemString(global_dict, "code_in_loop");
-        if (py_in_loop) {
-            if (! PyString_Check(py_in_loop)) {
-                std::cerr << "The 'in_loop' variable is not a string" << std::endl;
-                return false;
-            }
-            userCode.in_loop = PyString_AsString(py_in_loop);
-        }
-        PyObject* py_after_loop = PyDict_GetItemString(global_dict, "code_after_loop");
-        if (py_after_loop) {
-            if (! PyString_Check(py_after_loop)) {
-                std::cerr << "The 'after_loop' variable is not a string" << std::endl;
-                return false;
-            }
-            userCode.after_loop = PyString_AsString(py_after_loop);
+            extra_branches.emplace( PyString_AsString(item) );
         }
 
+    }
+
+    // Retrieve user code to be included in the function
+    PyObject* py_before_loop = PyDict_GetItemString(global_dict, "code_before_loop");
+    if (py_before_loop) {
+        if (! PyString_Check(py_before_loop)) {
+            std::cerr << "The 'before_loop' variable is not a string" << std::endl;
+            return false;
+        }
+        userCode.before_loop = PyString_AsString(py_before_loop);
+    }
+    PyObject* py_in_loop = PyDict_GetItemString(global_dict, "code_in_loop");
+    if (py_in_loop) {
+        if (! PyString_Check(py_in_loop)) {
+            std::cerr << "The 'in_loop' variable is not a string" << std::endl;
+            return false;
+        }
+        userCode.in_loop = PyString_AsString(py_in_loop);
+    }
+    PyObject* py_after_loop = PyDict_GetItemString(global_dict, "code_after_loop");
+    if (py_after_loop) {
+        if (! PyString_Check(py_after_loop)) {
+            std::cerr << "The 'after_loop' variable is not a string" << std::endl;
+            return false;
+        }
+        userCode.after_loop = PyString_AsString(py_after_loop);
     }
 
     PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
@@ -419,28 +418,22 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     
     std::cout << "List of requested include files: ";
     for (const auto& i: includes) {
-        std::cout << "'" << i << "'";
-        if (i != *(--includes.end()))
-            std::cout << ", ";
+        std::cout << "'" << i << "', ";
     }
     std::cout << std::endl;
 
     std::cout << "List of requested source files: ";
     for (const auto& s: sources) {
-        std::cout << "'" << s.string() << "'";
-        if (s != *(--sources.end()))
-            std::cout << ", ";
+        std::cout << "'" << s.string() << "', ";
     }
     std::cout << std::endl;
 
     std::cout << "List of requested extra branches: ";
     for (const auto& s: extra_branches) {
-        std::cout << "'" << s << "'";
-        if (s != *(--extra_branches.end()))
-            std::cout << ", ";
+        std::cout << "'" << s << "', ";
     }
-
     std::cout << std::endl;
+    
     if( !userCode.before_loop.empty() )
       std::cout << "User has requested code before the event loop." << std::endl;
     if( !userCode.in_loop.empty() )

@@ -1,5 +1,25 @@
 #! /usr/bin/env python
 
+# Written by Sebastien Wertz, 20/03/2016
+#
+# Combine histograms in output file and write resulting histograms to output file.
+#
+# Config file syntax example:
+#
+# toJoin = [
+#         {
+#             "match": "addThese_.*", "(and)*These",
+#             "newName": "result",
+#             "veto": "(not)?These",    # optional
+#             "normalise": True,    # optional
+#         }
+#     ]
+#
+# All histograms matching the regexp in "match" will be added to give the new histo with name "newName".
+# Histograms matching the "veto" regexp's will not be considered.
+# If asked, normalise the resulting histogram.
+
+
 import ROOT as R
 import argparse
 import imp

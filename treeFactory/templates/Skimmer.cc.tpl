@@ -19,6 +19,8 @@
 #include <json/json.h>
 #include <tclap/CmdLine.h>
 
+{{INCLUDES}}
+
 volatile bool MUST_STOP = false;
 
 void Skimmer::skim(const std::string& output_file) {
@@ -29,6 +31,8 @@ void Skimmer::skim(const std::string& output_file) {
     ROOT::TreeWrapper output_tree(output_tree_);
 
 {{OUTPUT_BRANCHES_DECLARATION}}
+
+{{USER_CODE_BEFORE_LOOP}}
 
     uint64_t selected_entries = 0;
     uint64_t index = 1;
@@ -51,6 +55,8 @@ void Skimmer::skim(const std::string& output_file) {
 
 {{GLOBAL_CUT}}
 
+{{USER_CODE_IN_LOOP}}
+
 {{OUTPUT_BRANCHES_FILLING}}
 
         output_tree.fill();
@@ -58,6 +64,9 @@ void Skimmer::skim(const std::string& output_file) {
         selected_entries++;
     }
 
+{{USER_CODE_AFTER_LOOP}}
+
+    outfile->cd();
     output_tree_->Write();
     outfile->Close();
 

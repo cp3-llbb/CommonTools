@@ -26,6 +26,7 @@ find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(common/include)
+include_directories({{ADD_INCLUDES}})
 
 # Configure external
 set(EXTERNAL_DIR "${PROJECT_BINARY_DIR}/external")
@@ -42,6 +43,7 @@ set(SKIMMER_SOURCES
     Skimmer.cc
     ${EXTERNAL_SRC_DIR}/jsoncpp.cpp
     common/src/scale_factors.cpp
+    {{ADD_SOURCES}}
     )
 
 if(IN_CMSSW)

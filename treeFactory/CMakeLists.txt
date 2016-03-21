@@ -30,7 +30,7 @@ if(NOT IN_CMSSW)
 endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(PythonLibs REQUIRED)
@@ -57,7 +57,7 @@ configure_file(scripts/createSkimmer.sh.in createSkimmer.sh @ONLY NEWLINE_STYLE 
 include(CP3Dictionaries)
 
 set(SKIMMER_SOURCES
-    "skimmer/createSkimmer.cc"
+    "src/createSkimmer.cc"
     "../common/src/formula_parser.cpp"
     )
 list(APPEND SKIMMER_SOURCES ${DICTIONARIES_SOURCES})
@@ -69,3 +69,5 @@ target_link_libraries(skimmer ${ROOT_LIBRARIES})
 target_link_libraries(skimmer ${PYTHON_LIBRARY})
 target_link_libraries(skimmer "uuid")
 target_link_libraries(skimmer ${CTEMPLATE_LIBS})
+target_link_libraries(skimmer ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY})

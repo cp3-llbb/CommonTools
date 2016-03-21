@@ -26,7 +26,6 @@ mkdir -p "$OUTPUT/scripts"
 
 # Copy files
 cp -r "$COMMON_TOOLS_ROOT/cmake" "$OUTPUT"
-cp "$TEMPLATES_DIR/CMakeLists.txt" "$OUTPUT/"
 cp "$TEMPLATES_DIR/generateHeader.sh" "$OUTPUT/"
 cp -r "$COMMON_TOOLS_ROOT/common" "$OUTPUT"
 
@@ -41,7 +40,12 @@ cp "$PROJECT_DIR/scripts/parallelizedSkimmer.py.in" "$OUTPUT/scripts/"
 
 pushd "$OUTPUT/build" &> /dev/null
 
-cmake .. && make -j4
+command -v clang++ >/dev/null 2>&1
+if [[ $? -eq 0 ]]; then
+    CXX=clang++ cmake .. && make -j4
+else
+    cmake .. && make -j4
+fi
 
 popd &> /dev/null
 

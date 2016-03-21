@@ -49,7 +49,7 @@ struct OutputBranch {
     std::string name;
     std::string unique_name;
     std::string variable;
-
+    std::string type;
 };
 
 struct Tree {
@@ -88,6 +88,7 @@ struct UserCode {
 bool output_branch_from_PyObject(PyObject* value, OutputBranch& branch) {
     static PyObject* PY_NAME = PyString_FromString("name");
     static PyObject* PY_VARIABLE = PyString_FromString("variable");
+    static PyObject* PY_TYPE = PyString_FromString("type");
 
     if (! PyDict_Check(value)) {
         std::cerr << "Error: branches dictionnary value must be a dictionnary" << std::endl;
@@ -95,6 +96,8 @@ bool output_branch_from_PyObject(PyObject* value, OutputBranch& branch) {
 
     CHECK_AND_GET(branch.name, PY_NAME);
     CHECK_AND_GET(branch.variable, PY_VARIABLE);
+    branch.type = "float";
+    GET(branch.type, PY_TYPE);
 
     return true;
 }
@@ -478,7 +481,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         if (! parser.parse(b.variable, identifiers))
             std::cerr << "Warning: " << b.variable << " failed to parse." << std::endl;
 
-        output_branches_declaration += "    float& " + b.unique_name + " = output_tree[\"" + b.name + "\"].write<float>();\n";
+        output_branches_declaration += "    " + b.type + "& " + b.unique_name + " = output_tree[\"" + b.name + "\"].write<" + b.type + ">();\n";
         output_branches_filling += "        " + b.unique_name + " = (" + b.variable + ");\n";
     }
 

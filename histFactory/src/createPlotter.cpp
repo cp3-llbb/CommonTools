@@ -42,6 +42,7 @@ struct Plot {
     std::string weight;
     std::string binning;
     std::string normalize_to;
+    std::string output_root_folder;
 
     std::string title;
     std::string x_axis;
@@ -81,6 +82,7 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     static PyObject* PY_VARIABLE = PyString_FromString("variable");
     static PyObject* PY_PLOT_CUT = PyString_FromString("plot_cut");
     static PyObject* PY_NORMALIZE_TO = PyString_FromString("normalize-to");
+    static PyObject* PY_FOLDER = PyString_FromString("folder");
     static PyObject* PY_WEIGHT = PyString_FromString("weight");
     static PyObject* PY_BINNING = PyString_FromString("binning");
     static PyObject* PY_TITLE = PyString_FromString("title");
@@ -99,6 +101,9 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
 
     plot.normalize_to = "nominal";
     GET(plot.normalize_to, PY_NORMALIZE_TO);
+
+    plot.output_root_folder = "";
+    GET(plot.output_root_folder, PY_FOLDER);
 
     plot.weight = "1.";
     GET(plot.weight, PY_WEIGHT);
@@ -569,6 +574,10 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
         std::string sample_scale = "m_dataset.cross_section / m_dataset.extras_event_weight_sum[\"" + p.normalize_to + "\"]";
         save_plot.SetValue("SAMPLE_SCALE", sample_scale);
+        if (! p.output_root_folder.empty()) {
+            save_plot.ShowSection("IN_FOLDER");
+            save_plot.SetValue("FOLDER", p.output_root_folder);
+        }
         ctemplate::ExpandTemplate(getTemplate("SavePlot"), ctemplate::DO_NOT_STRIP, &save_plot, &text_save_plots);
     }
 

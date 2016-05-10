@@ -294,9 +294,10 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
                   return false;
                 } else {
                   temp_path = python_dir/temp_path;
-                  includes.emplace(temp_path.string());
                 }
               }
+
+              includes.emplace(temp_path.string());
             }
         }
 

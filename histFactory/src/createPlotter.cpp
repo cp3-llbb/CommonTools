@@ -56,6 +56,14 @@ struct UserCode {
     std::string after_loop;
 };
 
+struct Extra {
+    UserCode userCode;
+    std::set<std::string> includes;
+    std::set<fs::path> sources;
+    std::set<std::string> extra_branches;
+    std::map<std::string, std::string> sample_weights;
+};
+
 #define CHECK_AND_GET(var, obj) if (PyDict_Contains(value, obj) == 1) { \
     PyObject* item = PyDict_GetItem(value, obj); \
     if (! PyString_Check(item)) {\
@@ -201,11 +209,11 @@ std::string buildArrayForVariableBinning(std::string& binning, const size_t dime
 
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir = "");
 
-bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, std::set<std::string>& includes, std::set<fs::path>& sources, std::set<std::string>& extra_branches, UserCode& userCode) {
+bool parse_python_file(const std::string& python_file, std::vector<Plot>& plots, Extra& extra) {
 
     plots.clear();
-    includes.clear();
-    sources.clear();
+    extra.includes.clear();
+    extra.sources.clear();
 
     std::FILE* f = std::fopen(python_file.c_str(), "r");
     if (!f) {
@@ -284,7 +292,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
             std::string temp_string( PyString_AsString(item) );
             if( temp_string.find("<") != std::string::npos ){
               std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
-              includes.emplace(temp_string);
+              extra.includes.emplace(temp_string);
             } else {
               boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
               fs::path temp_path( temp_string );
@@ -297,7 +305,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
                 }
               }
 
-              includes.emplace(temp_path.string());
+              extra.includes.emplace(temp_path.string());
             }
         }
 
@@ -330,7 +338,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
                 temp_path = python_dir/temp_path;
               }
             }
-            sources.emplace(temp_path);
+            extra.sources.emplace(temp_path);
         }
 
     }
@@ -352,7 +360,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
               std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
               return false;
             }
-            extra_branches.emplace( PyString_AsString(item) );
+            extra.extra_branches.emplace( PyString_AsString(item) );
         }
 
     }
@@ -364,7 +372,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
             std::cerr << "The 'before_loop' variable is not a string" << std::endl;
             return false;
         }
-        userCode.before_loop = PyString_AsString(py_before_loop);
+        extra.userCode.before_loop = PyString_AsString(py_before_loop);
     }
     PyObject* py_in_loop = PyDict_GetItemString(global_dict, "code_in_loop");
     if (py_in_loop) {
@@ -372,7 +380,7 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
             std::cerr << "The 'in_loop' variable is not a string" << std::endl;
             return false;
         }
-        userCode.in_loop = PyString_AsString(py_in_loop);
+        extra.userCode.in_loop = PyString_AsString(py_in_loop);
     }
     PyObject* py_after_loop = PyDict_GetItemString(global_dict, "code_after_loop");
     if (py_after_loop) {
@@ -380,8 +388,37 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
             std::cerr << "The 'after_loop' variable is not a string" << std::endl;
             return false;
         }
-        userCode.after_loop = PyString_AsString(py_after_loop);
+        extra.userCode.after_loop = PyString_AsString(py_after_loop);
     }
+
+    // Retrieve dict of sample weights
+    // The key can be set in the sample json to indicate which sample weight to use
+    // The value is any valid C++ code, which will be added in the global `getSampleWeight`
+    // function.
+    PyObject* py_sample_weights = PyDict_GetItemString(global_dict, "sample_weights");
+    if (py_sample_weights) {
+        if (! PyDict_Check(py_sample_weights)) {
+            std::cerr << "The 'sample_weights' variable is not a dictionnary" << std::endl;
+            return false;
+        }
+
+        PyObject* key, *value;
+        Py_ssize_t pos = 0;
+        while (PyDict_Next(py_sample_weights, &pos, &key, &value)) {
+            if (! PyString_Check(key)) {
+                std::cerr << "Keys of 'sample_weights' dict must be strings" << std::endl;
+                return false;
+            }
+
+            if (! PyString_Check(value)) {
+                std::cerr << "Values of 'sample_weights' dict must be strings" << std::endl;
+                return false;
+            }
+
+            extra.sample_weights.emplace(PyString_AsString(key), PyString_AsString(value));
+        }
+    }
+
 
     PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
     for (size_t i = 0; i < PySequence_Size(atexit_exithandlers); i++) {
@@ -401,18 +438,15 @@ bool get_plots_files(const std::string& python_file, std::vector<Plot>& plots, s
 bool execute(const std::string& skeleton, const std::string& config_file, std::string output_dir/* = ""*/) {
 
     std::vector<Plot> plots;
-    std::set<std::string> includes;
-    std::set<fs::path> sources;
-    std::set<std::string> extra_branches;
-    UserCode userCode;
+    Extra extra;
     // If an output directory is specified, use it, otherwise use the current directory
     if (output_dir == "")
       output_dir = ".";
 
     std::map<std::string, std::string> unique_names;
 
-    if( !get_plots_files(config_file, plots, includes, sources, extra_branches, userCode) )
-      return false;
+    if (!parse_python_file(config_file, plots, extra))
+        return false;
 
     std::cout << "List of requested plots: ";
     for (size_t i = 0; i < plots.size(); i++) {
@@ -423,28 +457,28 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     std::cout << std::endl;
     
     std::cout << "List of requested include files: ";
-    for (const auto& i: includes) {
+    for (const auto& i: extra.includes) {
         std::cout << "'" << i << "', ";
     }
     std::cout << std::endl;
 
     std::cout << "List of requested source files: ";
-    for (const auto& s: sources) {
+    for (const auto& s: extra.sources) {
         std::cout << "'" << s.string() << "', ";
     }
     std::cout << std::endl;
 
     std::cout << "List of requested extra branches: ";
-    for (const auto& s: extra_branches) {
+    for (const auto& s: extra.extra_branches) {
         std::cout << "'" << s << "', ";
     }
     std::cout << std::endl;
     
-    if( !userCode.before_loop.empty() )
+    if( !extra.userCode.before_loop.empty() )
       std::cout << "User has requested code before the event loop." << std::endl;
-    if( !userCode.in_loop.empty() )
+    if( !extra.userCode.in_loop.empty() )
       std::cout << "User has requested code in the event loop." << std::endl;
-    if( !userCode.after_loop.empty() )
+    if( !extra.userCode.after_loop.empty() )
       std::cout << "User has requested code after the event loop." << std::endl;
 
     // Convert plots name to unique name to avoid collision between different runs
@@ -537,8 +571,14 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         ctemplate::ExpandTemplate(getTemplate("Plot"), ctemplate::DO_NOT_STRIP, &plot, &text_plots);
     }
 
+    for (const auto& it: extra.sample_weights) {
+        if (! parser.parse(it.second, identifiers)) {
+            std::cerr << "Warning: " << it.second << " failed to parse." << std::endl;
+        }
+    }
+
     // Update the list of identifiers with the extra branches requested by the user
-    identifiers.insert(extra_branches.begin(), extra_branches.end());
+    identifiers.insert(extra.extra_branches.begin(), extra.extra_branches.end());
 
     // Everything is parsed. Collect the list of branches used by the formula
     std::vector<Branch> branches;
@@ -583,7 +623,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     }
 
     std::string text_includes;
-    for(const auto& f: includes){
+    for(const auto& f: extra.includes){
       if(f.find('<') != std::string::npos)
         text_includes += "#include " + f + "\n";
       else
@@ -597,15 +637,26 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
         ctemplate::ExpandTemplate(getTemplate("EnsureNormalization"), ctemplate::DO_NOT_STRIP, &d, &text_ensure_normalization);
     }
 
+    // Create `getSampleWeight` function
+    std::string sample_weight_function = "    if ((m_dataset.sample_weight_key.empty()) || (m_dataset.sample_weight_key == \"none\")) {\n        return 1.;\n    }\n";
+    for (const auto& it: extra.sample_weights) {
+        sample_weight_function += R"(    if (m_dataset.sample_weight_key == ")" + it.first + R"(") {)" + "\n";
+        sample_weight_function += "        return (" + it.second + ");\n";
+        sample_weight_function += "    }\n";
+    }
+
+    sample_weight_function += "\n    return 1.;";
+
     ctemplate::TemplateDictionary source("source");
     source.SetValue("INCLUDES", text_includes);
     source.SetValue("ENSURE_NORMALIZATIONS", text_ensure_normalization);
     source.SetValue("HISTS_DECLARATION", hists_declaration);
     source.SetValue("PLOTS", text_plots);
     source.SetValue("SAVE_PLOTS", text_save_plots);
-    source.SetValue("USER_CODE_BEFORE_LOOP", userCode.before_loop);
-    source.SetValue("USER_CODE_IN_LOOP", userCode.in_loop);
-    source.SetValue("USER_CODE_AFTER_LOOP", userCode.after_loop);
+    source.SetValue("USER_CODE_BEFORE_LOOP", extra.userCode.before_loop);
+    source.SetValue("USER_CODE_IN_LOOP", extra.userCode.in_loop);
+    source.SetValue("USER_CODE_AFTER_LOOP", extra.userCode.after_loop);
+    source.SetValue("SAMPLE_WEIGHT_IMPL", sample_weight_function);
     ctemplate::ExpandTemplate(getTemplate("Plotter.cc"), ctemplate::DO_NOT_STRIP, &source, &output);
 
     out.open(output_dir + "/Plotter.cc");
@@ -614,7 +665,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     // Make external sources accessible to plotter 
     std::set<fs::path> include_dirs;
-    for(const auto& f: includes){
+    for(const auto& f: extra.includes){
       if(f.find('<') == std::string::npos)
         include_dirs.emplace( fs::path(f).parent_path() );
     }
@@ -623,7 +674,7 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
       include_cmake += d.string() + " ";
     
     std::string source_cmake;
-    for(const auto& s: sources)
+    for(const auto& s: extra.sources)
       source_cmake += s.string() + " ";
 
     ctemplate::TemplateDictionary cmake("cmake");

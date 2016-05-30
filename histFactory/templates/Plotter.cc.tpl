@@ -25,9 +25,13 @@
 
 volatile bool MUST_STOP = false;
 
+double Plotter::getSampleWeight() {
+{{SAMPLE_WEIGHT_IMPL}}
+}
+
 void Plotter::plot(const std::string& output_file) {
 
-TH1::SetDefaultSumw2(true);
+    TH1::SetDefaultSumw2(true);
 
 {{ENSURE_NORMALIZATIONS}}
 
@@ -56,6 +60,9 @@ TH1::SetDefaultSumw2(true);
 
         if ((index - 1) % 100000 == 0)
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
+        double __sample_weight = 1.;
+        if (!m_dataset.is_data)
+            __sample_weight = getSampleWeight();
 
         bool __cut = false;
         double __weight = 0;
@@ -134,6 +141,13 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         }
 
         dataset.extras_event_weight_sum["nominal"] = dataset.event_weight_sum;
+
+        // Sample weights
+        if (sample.isMember("sample-weight")) {
+            dataset.sample_weight_key = sample["sample-weight"].asString();
+        } else {
+            dataset.sample_weight_key = "";
+        }
 
         // If a list of files is specified, only use those
         if (sample.isMember("files")) {

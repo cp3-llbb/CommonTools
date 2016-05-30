@@ -16,3 +16,8 @@ plots = [
         },
 
         ]
+
+sample_weights = {
+        "test": "5.25",
+        "test2": "muon_p4.size()"
+        }

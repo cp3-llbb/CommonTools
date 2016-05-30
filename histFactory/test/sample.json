@@ -6,13 +6,9 @@
         ],
         "db_name": "TT_TuneCUETP8M1_13TeV-powheg-pythia8_MiniAODv2_v1.0.0+7415_TTAnalysis_12d3865",
         "sample_cut": "1.",
-        "runs": [
-            {
-                "tt_type": "hadronic"
-            },
-            {
-                "tt_type": "dileptonic"
-            }
-        ]
+        "sample-weight": "test",
+        "extras-event-weight-sum": {
+        "pdf_up": 1000
+        }
     }
 }

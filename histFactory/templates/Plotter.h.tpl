@@ -78,6 +78,7 @@ struct Dataset {
     double event_weight_sum;
     std::map<std::string, double> extras_event_weight_sum;
     bool is_data;
+    std::string sample_weight_key;
 };
 
 class Plotter {
@@ -115,6 +116,8 @@ class Plotter {
         template<typename T, typename U, typename V> void fill(TH3* h, const T& value_x, const U& value_y, const V& value_z, double weight) {
             h->Fill(value_x, value_y, value_z, weight);
         }
+
+        double getSampleWeight();
 
         Dataset m_dataset;
         ROOT::TreeWrapper tree;

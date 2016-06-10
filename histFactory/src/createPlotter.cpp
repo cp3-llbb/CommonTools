@@ -285,27 +285,26 @@ bool parse_python_file(const std::string& python_file, std::vector<Plot>& plots,
 
         for (size_t i = 0; i < l; i++) {
             PyObject* item = PyList_GetItem(py_includes, i);
-            if(! PyString_Check(item) ) {
-              std::cerr << "The items of the 'include' list must be strings" << std::endl;
-              return false;
+            if (! PyString_Check(item) ) {
+                std::cerr << "The items of the 'include' list must be strings" << std::endl;
+                return false;
             }
             std::string temp_string( PyString_AsString(item) );
-            if( temp_string.find("<") != std::string::npos ){
-              std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
-              extra.includes.emplace(temp_string);
+            if ( temp_string.find("<") != std::string::npos ){
+                std::cout << "Header file " << temp_string << " seems to be a library header. No attempt will be made to check its path." << std::endl;
+                extra.includes.emplace(temp_string);
             } else {
-              boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
-              fs::path temp_path( temp_string );
-              if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
-                if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
-                  std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
-                  return false;
-                } else {
-                  temp_path = python_dir/temp_path;
+                boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+                fs::path temp_path( temp_string );
+                if ( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                    if ( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                          std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                          return false;
+                    } else {
+                          temp_path = python_dir/temp_path;
+                    }
                 }
-              }
-
-              extra.includes.emplace(temp_path.string());
+                extra.includes.emplace(temp_path.string());
             }
         }
 
@@ -324,19 +323,19 @@ bool parse_python_file(const std::string& python_file, std::vector<Plot>& plots,
 
         for (size_t i = 0; i < l; i++) {
             PyObject* item = PyList_GetItem(py_sources, i);
-            if(! PyString_Check(item) ) {
-              std::cerr << "The items of the 'sources' list must be strings" << std::endl;
-              return false;
+            if (! PyString_Check(item) ) {
+                std::cerr << "The items of the 'sources' list must be strings" << std::endl;
+                return false;
             }
             boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
             fs::path temp_path( PyString_AsString(item) );
-            if( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
-              if( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
-                std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
-                return false;
-              } else {
-                temp_path = python_dir/temp_path;
-              }
+            if ( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                if ( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                    return false;
+                } else {
+                    temp_path = python_dir/temp_path;
+                }
             }
             extra.sources.emplace(temp_path);
         }
@@ -356,9 +355,9 @@ bool parse_python_file(const std::string& python_file, std::vector<Plot>& plots,
 
         for (size_t i = 0; i < l; i++) {
             PyObject* item = PyList_GetItem(py_extra_branches, i);
-            if(! PyString_Check(item) ) {
-              std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
-              return false;
+            if (! PyString_Check(item) ) {
+                std::cerr << "The items of the 'extra_branches' list must be strings" << std::endl;
+                return false;
             }
             extra.extra_branches.emplace( PyString_AsString(item) );
         }
@@ -418,7 +417,6 @@ bool parse_python_file(const std::string& python_file, std::vector<Plot>& plots,
             extra.sample_weights.emplace(PyString_AsString(key), PyString_AsString(value));
         }
     }
-
 
     PyObject* atexit_exithandlers = PyObject_GetAttrString(atexit_module, "_exithandlers");
     for (size_t i = 0; i < PySequence_Size(atexit_exithandlers); i++) {
@@ -623,11 +621,11 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     }
 
     std::string text_includes;
-    for(const auto& f: extra.includes){
-      if(f.find('<') != std::string::npos)
-        text_includes += "#include " + f + "\n";
-      else
-        text_includes += "#include \"" + fs::path(f).filename().string() + "\"\n";
+    for (const auto& f: extra.includes) {
+        if (f.find('<') != std::string::npos)
+            text_includes += "#include " + f + "\n";
+        else
+            text_includes += "#include \"" + fs::path(f).filename().string() + "\"\n";
     }
 
     std::string text_ensure_normalization;

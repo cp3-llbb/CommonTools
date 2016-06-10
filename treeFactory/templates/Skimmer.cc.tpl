@@ -23,12 +23,18 @@
 
 volatile bool MUST_STOP = false;
 
+double Skimmer::getSampleWeight() {
+{{SAMPLE_WEIGHT_IMPL}}
+}
+
 void Skimmer::skim(const std::string& output_file) {
 
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 
     TTree* output_tree_ = new TTree("{{OUTPUT_TREE_NAME}}", "Skimmed tree");
     ROOT::TreeWrapper output_tree(output_tree_);
+
+    float& sample_weight_branch = output_tree["sample_weight"].write<float>();
 
 {{OUTPUT_BRANCHES_DECLARATION}}
 
@@ -63,6 +69,8 @@ void Skimmer::skim(const std::string& output_file) {
 {{USER_CODE_IN_LOOP}}
 
 {{OUTPUT_BRANCHES_FILLING}}
+
+        sample_weight_branch = getSampleWeight();
 
         output_tree.fill();
 
@@ -116,6 +124,13 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
             dataset.output_name = dataset.db_name + "_skim";
         }
 
+        // Sample weights
+        if (sample.isMember("sample-weight")) {
+            dataset.sample_weight_key = sample["sample-weight"].asString();
+        } else {
+            dataset.sample_weight_key = "";
+        }
+        
         // If a list of files is specified, only use those
         if (sample.isMember("files")) {
             Json::Value files = sample["files"];

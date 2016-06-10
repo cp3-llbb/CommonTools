@@ -288,9 +288,9 @@ bool get_output_tree(const std::string& python_file, Tree& tree, std::set<std::s
                   return false;
                 } else {
                   temp_path = python_dir/temp_path;
-                  includes.emplace(temp_path.string());
                 }
               }
+              includes.emplace(temp_path.string());
             }
         }
 

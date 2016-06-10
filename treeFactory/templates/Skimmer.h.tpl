@@ -41,7 +41,12 @@ struct Dataset {
 class Skimmer {
     public:
         Skimmer(const Dataset& dataset, ROOT::TreeWrapper& tree, TChain* raw_tree):
-            m_dataset(dataset), tree(tree), raw_tree(raw_tree) {};
+            m_dataset(dataset), tree(tree), raw_tree(raw_tree) {
+                if(dataset.cut != "" && dataset.cut != "1"){
+                    m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), ttree);
+                    raw_tree->SetNotify(m_sample_cut);
+                }
+            }
         virtual ~Skimmer() {};
 
         void skim(const std::string&);
@@ -49,6 +54,7 @@ class Skimmer {
     private:
         Dataset m_dataset;
         ROOT::TreeWrapper& tree;
+        TTreeFormula* m_sample_cut;
         TChain* raw_tree;
 
         // List of input branches

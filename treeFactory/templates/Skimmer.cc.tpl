@@ -46,6 +46,11 @@ void Skimmer::skim(const std::string& output_file) {
             std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
         index++;
         
+        if (m_sample_cut){
+          if( !m_sample_cut->EvalInstance() )
+            continue;
+        }
+
         std::string filename = raw_tree->GetFile()->GetName();
         bool runOnElEl = filename.find("DoubleEG") != std::string::npos;
         bool runOnMuMu = filename.find("DoubleMuon") != std::string::npos;

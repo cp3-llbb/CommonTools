@@ -13,6 +13,7 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <TChain.h>
+#include <TTreeFormula.h>
 #include <Math/Vector4D.h>
 
 // Generated automatically
@@ -36,19 +37,29 @@ struct Dataset {
     std::string path;
     std::vector<std::string> files;
     std::string cut;
+    std::string sample_weight_key;
 };
 
 class Skimmer {
     public:
         Skimmer(const Dataset& dataset, ROOT::TreeWrapper& tree, TChain* raw_tree):
-            m_dataset(dataset), tree(tree), raw_tree(raw_tree) {};
+            m_dataset(dataset), tree(tree), raw_tree(raw_tree) {
+                if(dataset.cut != "" && dataset.cut != "1"){
+                    m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), raw_tree);
+                    raw_tree->SetNotify(m_sample_cut);
+                }
+            }
         virtual ~Skimmer() {};
 
         void skim(const std::string&);
 
     private:
+        
+        double getSampleWeight();
+
         Dataset m_dataset;
         ROOT::TreeWrapper& tree;
+        TTreeFormula* m_sample_cut;
         TChain* raw_tree;
 
         // List of input branches

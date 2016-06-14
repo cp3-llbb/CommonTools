@@ -1,41 +1,60 @@
 #! /usr/bin/env python
 
 import argparse
+import re
 import sys
+
+from cp3_llbb.CommonTools.HistogramTools import getEnvelopHistograms
 
 parser = argparse.ArgumentParser(description='Create scale variation systematics histograms.')
 
-parser.add_argument('input', metavar='input', nargs=1, help='The ROOT input file containing histograms')
-parser.add_argument('nominal', metavar='nominal', nargs=1, help='The name of the nominal histogram')
+parser.add_argument('inputs', metavar='input', nargs='+', help='The ROOT input file containing histograms')
 
 args = parser.parse_args()
 
 import ROOT
 
-f = ROOT.TFile.Open(args.input[0])
-if not f:
-    sys.exit(1)
+for input in args.inputs:
 
-nominal = f.Get(args.nominal[0])
-if not nominal:
-    print("%r not found in input file" % args.nominal[0])
-    sys.exit(1)
+    print("Working on %r...") % input
+    f = ROOT.TFile.Open(input)
+    if not f or f.IsZombie():
+        continue
 
-scale_variations = []
-for x in range(0, 6):
-    scale_variations.append("%s__scale%d" % (args.nominal[0], x))
+    # List keys
+    variations = {}
+    for key in f.GetListOfKeys():
+        if '__scale' in key.GetName():
+            name = re.sub('__.*$', '', key.GetName())
+            var = variations.setdefault(name, [])
+            var.append(key.ReadObj())
 
-# Check that all histograms are in the input root file
-for v in scale_variations:
-    h = f.Get(v)
-    if not h:
-        print("%r not found in input file" % v)
-        sys.exit(2)
+    # Ensure we have all uncertainties
+    to_remove = []
+    for key, values in variations.items():
+        if len(values) != 6:
+            print("Warning: I was expecting 6 scale variations, but I got %d for %r" % (len(values), key))
+            to_remove.append(key)
 
-# All good, call the script doing the job
+    for n in to_remove:
+        del variations[n]
 
-args = ['./getEnvelopHistogram.py', '-i', '-s', 'scale', args.input[0], args.nominal[0]]
-args += scale_variations
+    envelop = {}
+    for key, var in variations.items():
+        nominal = f.Get(key)
 
-import subprocess
-subprocess.call(args)
+        env = getEnvelopHistograms(nominal, var)
+        env[0].SetName(nominal.GetName() + "__scaleup")
+        env[1].SetName(nominal.GetName() + "__scaledown")
+
+        envelop[key] = env
+
+    # Re-open the file in write mode
+    f.Close()
+    f = ROOT.TFile.Open(input, "update")
+
+    for key, env in envelop.items():
+        env[0].Write('', ROOT.TObject.kOverwrite)
+        env[1].Write('', ROOT.TObject.kOverwrite)
+
+    f.Close()

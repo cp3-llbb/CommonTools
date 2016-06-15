@@ -24,7 +24,7 @@ for input in args.inputs:
     # List keys
     variations = {}
     for key in f.GetListOfKeys():
-        if '__scale' in key.GetName():
+        if '__scale' in key.GetName() and "__scaleup" not in key.GetName() and "__scaledown" not in key.GetName():
             name = re.sub('__.*$', '', key.GetName())
             var = variations.setdefault(name, [])
             var.append(key.ReadObj())

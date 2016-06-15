@@ -6,69 +6,62 @@ def printCanvas(canvas, name, formats, directory):
         canvas.Print(outFile)
 
 def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, formats, directory):
-    canvas=ROOT.TCanvas(name,name)
-    #canvas.SetGridx()
-    #canvas.SetGridy()
-    Tleft=ROOT.TLatex(0.125,0.91,leftText)
+    canvas=ROOT.TCanvas(name,name, 550, 400)
+    canvas.SetGridx()
+    canvas.SetGridy()
+    Tleft=ROOT.TLatex(0.125,0.92,leftText)
     Tleft.SetNDC(ROOT.kTRUE) 
-    Tleft.SetTextSize(0.048) 
-    font = Tleft.GetTextFont() 
+    Tleft.SetTextSize(0.048)
+    #font = Tleft.GetTextFont() 
     #TPaveText* Tright=new TPaveText(0.8,0.85,0.945,0.90,"NDC") 
     #Tright.SetTextFont(font) 
     #Tright.AddText(rightText) 
     #Tright.SetFillColor(0)
     mg = ROOT.TMultiGraph()
-    colors = [1, 100, 12, 28, 89, 8, 74]
-    color = 0
+    colors = [ ROOT.kRed, ROOT.kMagenta, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+2, ROOT.kOrange+1 ]
     markers = [20, 21, 22, 23, 29, 33, 34]
-    marker = 0
-    for graph in graphs:
-        graph.SetMarkerColor(colors[color])
-        graph.SetMarkerStyle(markers[marker])
+    for i,graph in enumerate(graphs):
+        graph.SetMarkerColor(colors[i])
+        graph.SetLineColor(colors[i])
+        graph.SetLineWidth(2)
+        graph.SetMarkerStyle(markers[i])
         mg.Add(graph)
-        color += 1
-        marker += 1 
-        if color == 7 :
-            print "If you want to avoid same colors, add some in drawCanvas.py"
-    mg.Draw("AP")
+    mg.Draw("AL")
     mg.GetXaxis().SetTitle(xlabel)
-    mg.GetXaxis().SetTitleFont(font)
-    #mg.GetYaxis().SetRangeUser(0.7,1.3)
+    #mg.GetXaxis().SetTitleFont(font)
+    mg.GetXaxis().SetRangeUser(-0.05,1.05)
+    mg.GetYaxis().SetRangeUser(-0.05,1.05)
     mg.GetYaxis().SetTitle(ylabel)
-    mg.GetYaxis().SetTitleFont(font)
-    mg.GetYaxis().SetTitleOffset(0.87)
+    #mg.GetYaxis().SetTitleFont(font)
     mg.SetTitle("")
-    legend.SetTextFont(font) 
-    legend.SetFillColor(0)
+    #legend.SetTextFont(font) 
+    legend.SetFillColor(10)
+    legend.SetFillStyle(0)
     legend.SetLineColor(0)
+    legend.SetTextSize(0.035)
     legend.Draw() 
     Tleft.Draw() 
     #Tright.Draw() 
     #canvas.Write() 
     printCanvas(canvas, name, formats, directory) 
+    mg.GetXaxis().SetRangeUser(0.001,1)
+    mg.GetYaxis().SetRangeUser(0.5,1)
     canvas.SetLogx()
     printCanvas(canvas, name+"_logX", formats, directory) 
-    #lepPosMiddle[4]={0.4,0.4,0.6,0.6} 
 
 
 def gStyle():
-    ROOT.gROOT.SetStyle("Plain")
+    #ROOT.gROOT.SetStyle("Plain")
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptTitle(0)
     # Fonts
-    ROOT.gStyle.SetTextFont(132)
-    ROOT.gStyle.SetTextSize(0.08)
-    ROOT.gStyle.SetLabelFont(132,"x")
-    ROOT.gStyle.SetLabelFont(132,"y")
-    ROOT.gStyle.SetTitleOffset(1,"x")
-    ROOT.gStyle.SetTitleOffset(1,"y")
-    ROOT.gStyle.SetLabelFont(132,"z")
-    ROOT.gStyle.SetLabelSize(0.05,"x")
-    ROOT.gStyle.SetTitleSize(0.06,"x")
-    ROOT.gStyle.SetLabelSize(0.05,"y")
-    ROOT.gStyle.SetTitleSize(0.06,"y")
-    ROOT.gStyle.SetLabelSize(0.05,"z")
-    ROOT.gStyle.SetTitleSize(0.06,"z")
+    ROOT.gStyle.SetTextFont(42)
+    ROOT.gStyle.SetTextSize(0.06)
+    #ROOT.gStyle.SetLegendTextSize(0.05)
+    ROOT.gStyle.SetLabelFont(42,"xyz")
+    ROOT.gStyle.SetLabelSize(0.035,"xyx")
+    ROOT.gStyle.SetTitleOffset(1.4,"xyz")
+    ROOT.gStyle.SetTitleSize(0.035,"xyz")
     ROOT.gStyle.SetHistLineWidth(2)
     ROOT.gStyle.SetHistLineColor(1)
 

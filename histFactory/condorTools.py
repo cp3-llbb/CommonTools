@@ -44,7 +44,7 @@ class condorSubmitter:
                 dbSample = self.getSample(sample["db_name"])
             if dbSample.sampletype == u"SKIM" :
                 files = [ str(file.lfn) for file in dbSample.files ]
-            else :
+            else:
                 files = [ "/storage/data/cms/" + str(file.lfn) for file in dbSample.files ]
 
             sample["db_name"] = dbSample.name

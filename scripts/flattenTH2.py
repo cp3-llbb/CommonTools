@@ -35,7 +35,7 @@ for input in args.inputs:
                 m_th2 = f.Get(key.GetName())
                 
                 if not m_th2.InheritsFrom("TH2"):
-                    print "Warning: histogram {} matches a regexp, but is not a TH2!"
+                    print "Warning: histogram {} matches a regexp, but is not a TH2!".format(m_th2.GetName())
                     continue
 
                 if m_th2.GetName() in selectedTH2Names: 
@@ -53,13 +53,14 @@ for input in args.inputs:
             m_axis = m_th2.GetYaxis()
             m_otherAxis = m_th2.GetXaxis()
         if args.axis == 'y':
+            m_axis = m_th2.GetXaxis()
             m_otherAaxis = m_th2.GetYaxis()
         
         nBinsX = m_th2.GetXaxis().GetNbins()
         nBinsY = m_th2.GetYaxis().GetNbins()
         nBins = nBinsX * nBinsY 
         start = m_axis.GetXmin()
-        end = m_otherAxis.GetNbins() * (m_axis.GetXmax() - start)
+        end = m_otherAxis.GetNbins() * (m_axis.GetXmax() - start) + start
         
         m_th1 = ROOT.TH1F(args.prefix + m_th2.GetName(), args.prefix + m_th2.GetTitle(), nBins, start, end)
         m_th1.Sumw2()

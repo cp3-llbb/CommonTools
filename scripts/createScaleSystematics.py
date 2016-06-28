@@ -9,6 +9,7 @@ from cp3_llbb.CommonTools.HistogramTools import getEnvelopHistograms
 parser = argparse.ArgumentParser(description='Create scale variation systematics histograms.')
 
 parser.add_argument('inputs', metavar='input', nargs='+', help='The ROOT input file containing histograms')
+parser.add_argument('-s', '--syst', metavar='scale', default='scale', help='Name of the systematics of which the envelope is needed')
 
 args = parser.parse_args()
 
@@ -24,7 +25,7 @@ for input in args.inputs:
     # List keys
     variations = {}
     for key in f.GetListOfKeys():
-        if '__scale' in key.GetName() and "__scaleup" not in key.GetName() and "__scaledown" not in key.GetName():
+        if re.match(".*__{}[0-9]$".format(args.syst), key.GetName()) and not re.match(".*__{}up$".format(args.syst), key.GetName()) and not re.match(".*__{}down$".format(args.syst), key.GetName()):
             name = re.sub('__.*$', '', key.GetName())
             var = variations.setdefault(name, [])
             var.append(key.ReadObj())
@@ -44,8 +45,8 @@ for input in args.inputs:
         nominal = f.Get(key)
 
         env = getEnvelopHistograms(nominal, var)
-        env[0].SetName(nominal.GetName() + "__scaleup")
-        env[1].SetName(nominal.GetName() + "__scaledown")
+        env[0].SetName(nominal.GetName() + "__{}up".format(args.syst))
+        env[1].SetName(nominal.GetName() + "__{}down".format(args.syst))
 
         envelop[key] = env
 

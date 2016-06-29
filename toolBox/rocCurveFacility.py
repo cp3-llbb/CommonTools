@@ -74,10 +74,10 @@ def drawFigMeritVsCutCurve(bkgTH1, sigTH1, total = 0): # Not implemented
     discrV = [ ]
     effV = [ ]
 
-    for i in xrange(1, myTH1.GetNbinsX()):
-        discrV.append(myTH1.GetBinLowEdge(i))
-        nBkg = bkgTH1.Integral(0,i)
-        nSig = sigTH1.Integral(0,i)
+    for i in xrange(1, bkgTH1.GetNbinsX() + 1):
+        discrV.append(bkgTH1.GetBinLowEdge(i))
+        nBkg = bkgTH1.Integral(i, bkgTH1.GetNbinsX() + 1)
+        nSig = sigTH1.Integral(i, sigTH1.GetNbinsX() + 1)
         effV.append(2*(math.sqrt(nSig+nBkg) - math.sqrt(nBkg)))
 
     return ROOT.TGraph(len(discrV), np.array(discrV), np.array(effV))

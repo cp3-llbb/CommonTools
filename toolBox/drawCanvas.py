@@ -5,7 +5,7 @@ def printCanvas(canvas, name, formats, directory):
         outFile=directory+"/"+name+"."+format
         canvas.Print(outFile)
 
-def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, formats, directory):
+def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, formats, directory, range=None, log_range=None):
     canvas=ROOT.TCanvas(name,name, 550, 400)
     canvas.SetGridx()
     canvas.SetGridy()
@@ -17,6 +17,7 @@ def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, format
     #Tright.SetTextFont(font) 
     #Tright.AddText(rightText) 
     #Tright.SetFillColor(0)
+
     mg = ROOT.TMultiGraph()
     colors = [ ROOT.kRed, ROOT.kMagenta, ROOT.kBlue, ROOT.kCyan+1, ROOT.kGreen+2, ROOT.kOrange+1 ]
     markers = [20, 21, 22, 23, 29, 33, 34]
@@ -29,8 +30,9 @@ def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, format
     mg.Draw("AL")
     mg.GetXaxis().SetTitle(xlabel)
     #mg.GetXaxis().SetTitleFont(font)
-    mg.GetXaxis().SetRangeUser(-0.05,1.05)
-    mg.GetYaxis().SetRangeUser(-0.05,1.05)
+    if range:
+        mg.GetXaxis().SetRangeUser(range[0][0], range[0][1])
+        mg.GetYaxis().SetRangeUser(range[1][0], range[1][1])
     mg.GetYaxis().SetTitle(ylabel)
     #mg.GetYaxis().SetTitleFont(font)
     mg.SetTitle("")
@@ -44,8 +46,10 @@ def drawTGraph(graphs, name, xlabel, ylabel, legend, leftText, rightText, format
     #Tright.Draw() 
     #canvas.Write() 
     printCanvas(canvas, name, formats, directory) 
-    mg.GetXaxis().SetRangeUser(0.001,1)
-    mg.GetYaxis().SetRangeUser(0.5,1)
+    if log_range:
+        mg.GetXaxis().SetRangeUser(log_range[0][0], log_range[0][1])
+        mg.GetYaxis().SetRangeUser(log_range[1][0], log_range[1][1])
+
     canvas.SetLogx()
     printCanvas(canvas, name+"_logX", formats, directory) 
 
@@ -75,6 +79,8 @@ def gStyle():
     ROOT.gStyle.SetPadLeftMargin(0.125)
 
     ROOT.gStyle.SetFrameBorderMode(0) 
+
+    ROOT.TGaxis.SetExponentOffset(-0.06, 0., "y")
 
     #ROOT.gStyle.SetPadTickX(1) # To get tick marks on the opposite side of the frame
     #ROOT.gStyle.SetPadTickY(1) 

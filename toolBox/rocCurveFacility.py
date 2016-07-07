@@ -77,6 +77,8 @@ def drawFigMeritVsCutCurve(bkgTH1, sigTH1, total = 0): # Not implemented
     for i in xrange(1, bkgTH1.GetNbinsX() + 1):
         discrV.append(bkgTH1.GetBinLowEdge(i))
         nBkg = bkgTH1.Integral(i, bkgTH1.GetNbinsX() + 1)
+        if nBkg < 0:
+            nBkg = 0
         nSig = sigTH1.Integral(i, sigTH1.GetNbinsX() + 1)
         effV.append(2*(math.sqrt(nSig+nBkg) - math.sqrt(nBkg)))
 

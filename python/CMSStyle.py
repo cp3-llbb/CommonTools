@@ -97,5 +97,10 @@ def applyStyle(fig, ax, lumi, extra='Preliminary', pos='out'):
     ax.text(extra_label_x, extra_label_y, extra, transform=fig.transFigure, fontsize='large', fontstyle='italic', va=extra_label_va, ha=extra_label_ha)
 
     # Finally, the luminosity
-    ax.text(lumi_text_x, lumi_text_y, "%.2f $fb^{-1}$ (13 TeV)" % (lumi / 1000.), transform=fig.transFigure, fontsize='large', va='baseline', ha='right')
+    if not lumi:
+        fmt = "(13 TeV)"
+    else:
+        fmt = "%.2f $fb^{-1}$ (13 TeV)" % (lumi / 1000.)
+
+    ax.text(lumi_text_x, lumi_text_y, fmt, transform=fig.transFigure, fontsize='large', va='baseline', ha='right')
 

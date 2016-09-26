@@ -3,15 +3,16 @@
 import argparse
 import parser
 import json
-
-import ROOT
 import numpy as np
+import sys
 
+tmpargv = sys.argv[:] # to prevent pyroot to hijack argparse we need to go around
+sys.argv = []
+import ROOT
 import CMS_lumi, tdrstyle
-
 ROOT.gROOT.SetBatch(True)
-
 tdrstyle.setTDRStyle()
+sys.argv = tmpargv
 
 # kBird palette
 stops = np.array([0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000])
@@ -55,7 +56,7 @@ canvas.SetTicky(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help='JSON file you want to draw')
-parser.add_argument('output', help='Output filename')
+parser.add_argument('output', help='Output filename (pdf extension will be added)')
 
 args = parser.parse_args()
 

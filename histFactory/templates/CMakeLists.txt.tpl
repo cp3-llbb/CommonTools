@@ -73,3 +73,5 @@ target_link_libraries(plotter ${ROOT_TREEPLAYER_LIB})
 find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
     "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)
 target_link_libraries(plotter ${TREEWRAPPER_LIB})
+
+target_link_libraries(plotter {{ADD_LIBS}})

@@ -70,3 +70,5 @@ target_link_libraries(skimmer ${ROOT_TREEPLAYER_LIB})
 find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
     "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)
 target_link_libraries(skimmer ${TREEWRAPPER_LIB})
+
+target_link_libraries(skimmer {{ADD_LIBS}})

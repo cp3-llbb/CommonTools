@@ -662,7 +662,7 @@ int main( int argc, char* argv[]) {
 
     try {
 
-        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.2.0");
+        TCLAP::CmdLine cmd("Skim trees", ' ', "0.2.0");
 
         TCLAP::ValueArg<std::string> skeletonArg("i", "input", "Input file containing a skeleton tree", true, "", "ROOT file", cmd);
         TCLAP::ValueArg<std::string> outputArg("o", "output", "Output directory", false, "", "FOLDER", cmd);

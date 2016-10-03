@@ -78,5 +78,14 @@ The value of the `branches` key is a list of dictionaries. Each dictionary descr
 
  - `name`: the name of the branch
  - `variable`: the formula used to evaluate the branch value.
+ - `type`: the variable type used for the branch value (default: `float`)
 
-**Note**: Only `float` branches can be created for the moment. A way to specify the type of the branch will be added in the future.
+The following variables can also be defined in the python script, and are not mandatory:
+ - `includes`: (list of strings) Paths to additional header files to be included in the skimmer executable.
+ - `sources`: (list of strings) Paths to additional source files to be compiled and linked with the skimmer executable.
+ - `libraries`: (list of strings) Paths to dynamic or static libraries to be linked with the skimmer executable.
+ - `extra_branches`: (list of strings) Branches to be read from the input files. Useful if branches are not used explicitly for the skim's output branches (and thus would not be read by the skimmer), but still have to be read to perform additional actions (for instance, call functions defined in the variables below).
+ - `code_before_loop`: (string) Code inserted in the skimmer, before the loop on the events starts.
+ - `code_in_loop`: (string) Code inserted in the actual loop over the events (before the output branches' quantities are defined)
+ - `code_after_loop`: (string) Code inserted after the loop over the events.
+Specified paths cans be absolute, relative from the current directory, or relative from the directory where the python script is stored.

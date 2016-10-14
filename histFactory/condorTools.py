@@ -43,12 +43,13 @@ class condorSubmitter:
             elif "db_name" in sample.keys():
                 dbSample = self.getSample(sample["db_name"])
             if dbSample.sampletype == u"SKIM" :
-                files = [ str(file.lfn) for file in dbSample.files ]
+                files = [ (str(file.lfn), file.nevents) for file in dbSample.files ]
             else:
-                files = [ "/storage/data/cms/" + str(file.lfn) for file in dbSample.files ]
+                files = [ ("/storage/data/cms/" + str(file.lfn), file.nevents) for file in dbSample.files ]
 
             sample["db_name"] = dbSample.name
-            sample["files"] = self.splitList(files, sample["files_per_job"])
+
+            self.splitSample(sample, files)
 
             rescale_sample = rescale
 
@@ -151,14 +152,94 @@ function move_files {
 
         return sample
 
+    def splitByFiles(self, files, N):
+        """
+        Split files in sub-lists containing at most N entries.
+        files is expected to be an array of tuples (path, entries)
 
-    def splitList(self, m_list, N):
-        """ Split m_list in sub-lists containing at most N entries. """
+        return a list of tuples (files, start_entry, end_entry)
+        """
 
-        if len(m_list) <= N:
-            return [ m_list ]
+        N = min(len(files), N)
+        jobs = []
 
-        return [ m_list[i:i+N] for i in range(0, len(m_list), N) ]
+        for i in range(0, len(files), N):
+            entries = 0
+            files_ = []
+            for f in files[i:i+N]:
+                entries += f[1]
+                files_.append(f[0])
+
+            jobs.append((files_, 0, entries))
+
+        return jobs
+
+    def splitByEvents(self, files, N):
+        """
+        Split files in sub-lists containing at most N events.
+        files is expected to be an array of tuples (path, entries)
+
+        return a list of tuples (files, start_entry, end_entry)
+        """
+
+        events = 0
+        for f in files:
+            events += f[1]
+
+        n_jobs = int(events / N)
+        if events % N != 0:
+            n_jobs += 1
+
+        local_files = []
+        for f in files:
+            local_files.append((f[0], 0, f[1]))
+
+        jobs = []
+        for _ in range(0, n_jobs):
+
+            # A job
+            start = local_files[0][1]
+            end = 0
+            files_ = []
+
+            remaining_events = N
+            for f in local_files[:]:
+                files_.append(f[0])
+
+                remaining_events_in_file = f[2] - f[1]
+                old_remaining_events = remaining_events
+                remaining_events -= remaining_events_in_file
+                if (remaining_events >= 0):
+                    # Missing events, let's continue with the next file
+                    local_files.remove(f)
+
+                    if remaining_events == 0 or len(local_files) == 0:
+                        jobs.append((files_, start, start + N - remaining_events - 1))
+                        break
+
+                else:
+                    jobs.append((files_, start, start + N - 1))
+
+                    # Compute new starting entry for next job
+                    local_files[0] = (f[0], f[1] + old_remaining_events, f[2])
+                    break
+
+        return jobs
+
+    def splitSample(self, sample, files):
+        """
+        Split a sample into sub-jobs according to the files-per-job or events-per-job values
+        """
+
+        if "files_per_job" in sample and "events_per_job" in sample:
+            raise Exception("'files_per_job' and 'events_per_job' are mutually exclusive")
+
+        if "files_per_job" in sample:
+            jobs = self.splitByFiles(files, sample["files_per_job"])
+        else:
+            jobs = self.splitByEvents(files, sample["events_per_job"])
+
+        sample["jobs"] = jobs
     
     
     def setupCondorDirs(self):
@@ -197,9 +278,9 @@ function move_files {
 
         for sample in self.sampleCfg:
             name = sample["db_name"]
-            fileListList = sample["files"]
+            jobList = sample["jobs"]
 
-            for fileList in fileListList:
+            for job in jobList:
 
                 jsonFileName = os.path.join(self.inDir, "samples_{}.json".format(jobCount) )
                 jsonContent = copy.deepcopy(sample["json_skeleton"])
@@ -209,7 +290,9 @@ function move_files {
                     jsonContent[name] = copy.deepcopy(sample["json_skeleton"]["#DB_NAME#"])
                     jsonContent[name]["db_name"] = name
                 
-                jsonContent[name]["files"] = fileList
+                jsonContent[name]["files"] = job[0]
+                jsonContent[name]["event-start"] = job[1]
+                jsonContent[name]["event-end"] = job[2]
                 
                 if "output_name" not in jsonContent[name].keys():
                     jsonContent[name]["output_name"] = name + "_histos"

@@ -79,6 +79,9 @@ struct Dataset {
     std::map<std::string, double> extras_event_weight_sum;
     bool is_data;
     std::string sample_weight_key;
+    uint64_t event_start = 0;
+    uint64_t event_end;
+    bool event_end_filled = false;
 };
 
 class Plotter {
@@ -90,6 +93,9 @@ class Plotter {
                     m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), ttree);
                     ttree->SetNotify(m_sample_cut);
                 }
+
+                tree.setEntry(dataset.event_start);
+                tree.stopAt(dataset.event_end);
             };
         virtual ~Plotter() { delete m_sample_cut; };
 

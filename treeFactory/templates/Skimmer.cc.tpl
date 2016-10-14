@@ -41,6 +41,7 @@ void Skimmer::skim(const std::string& output_file) {
 {{USER_CODE_BEFORE_LOOP}}
 
     uint64_t selected_entries = 0;
+    uint64_t entries = m_dataset.event_end - m_dataset.event_start + 1;
     uint64_t index = 1;
     while (tree.next()) {
 
@@ -49,7 +50,7 @@ void Skimmer::skim(const std::string& output_file) {
         }
 
         if ((index - 1) % 1000 == 0)
-            std::cout << "Processing entry " << index << " of " << tree.getEntries() << std::endl;
+            std::cout << "Processing entry " << index << " of " << entries << std::endl;
         index++;
         
         if (m_sample_cut){
@@ -143,6 +144,24 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
             dataset.files.push_back(dataset.path + "/*.root");
         }
 
+        // Read where to start and end the process loop
+        if (sample.isMember("event-start")) {
+            dataset.event_start = sample["event-start"].asUInt64();
+        } else {
+            dataset.event_start = 0;
+        }
+
+        if (sample.isMember("event-end")) {
+            dataset.event_end = sample["event-end"].asUInt64();
+            dataset.event_end_filled = true;
+        } else {
+            dataset.event_end = 0;
+        }
+
+        if (dataset.event_end_filled && dataset.event_end < dataset.event_start)
+            dataset.event_end_filled = false;
+
+
         datasets.push_back(dataset);
     }
 
@@ -209,7 +228,7 @@ int main(int argc, char** argv) {
             return false;
         };
 
-        for (const Dataset& d: datasets) {
+        for (Dataset& d: datasets) {
             if (MUST_STOP)
                 break;
 
@@ -230,6 +249,17 @@ int main(int argc, char** argv) {
             t->SetCacheSize(10 * 1024 * 1024);
             // Learn tree structure from the first 10 entries
             t->SetCacheLearnEntries(10);
+
+            if (!d.event_end_filled) {
+                // Process everything
+                d.event_end = t->GetEntries() - 1;
+                d.event_end_filled = true;
+            } else if (d.event_end >= t->GetEntries()) {
+                d.event_end = t->GetEntries() - 1;
+            }
+
+            std::cout << "Processing events " << d.event_start << " to " << d.event_end << std::endl;
+
 
             Skimmer s(d, wrapped_tree, t.get());
             s.skim(output_file);

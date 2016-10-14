@@ -38,6 +38,9 @@ struct Dataset {
     std::vector<std::string> files;
     std::string cut;
     std::string sample_weight_key;
+    uint64_t event_start = 0;
+    uint64_t event_end;
+    bool event_end_filled = false;
 };
 
 class Skimmer {
@@ -48,6 +51,9 @@ class Skimmer {
                     m_sample_cut = new TTreeFormula("sample_cut", dataset.cut.c_str(), raw_tree);
                     raw_tree->SetNotify(m_sample_cut);
                 }
+                
+                tree.setEntry(dataset.event_start);
+                tree.stopAt(dataset.event_end);
             }
         virtual ~Skimmer() {};
 

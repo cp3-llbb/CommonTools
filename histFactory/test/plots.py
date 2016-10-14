@@ -5,7 +5,7 @@ plots = [
             'plot_cut': 'electron_p4.size() > 0',
             'binning': '(100, 0, 800)',
             'folder': 'my/nice/little/folder'
-        },
+            },
 
         {
             'name': 'test_normalize_to',
@@ -13,7 +13,14 @@ plots = [
             'plot_cut': 'electron_p4.size() > 0',
             'binning': '(100, 0, 800)',
             "normalize-to": "pdf_up"
-        },
+            },
+
+        {
+            'name': 'entries',
+            'variable': '1',
+            'binning': '(2, 0, 2)',
+            'plot_cut': 'true'
+            }
 
         ]
 

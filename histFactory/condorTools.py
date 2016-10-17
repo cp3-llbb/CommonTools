@@ -9,7 +9,6 @@ import json
 import stat
 import copy
 import subprocess
-import ast
 
 # Add default ingrid storm package
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')

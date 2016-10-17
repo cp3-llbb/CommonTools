@@ -9,6 +9,7 @@ import json
 import stat
 import copy
 import subprocess
+import ast
 
 # Add default ingrid storm package
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
@@ -43,9 +44,23 @@ class condorSubmitter:
             elif "db_name" in sample.keys():
                 dbSample = self.getSample(sample["db_name"])
             if dbSample.sampletype == u"SKIM" :
-                files = [ (str(file.lfn), file.nevents) for file in dbSample.files ]
+                files = [ (str(file.lfn), file.nevents, file.event_weight_sum, json.loads(file.extras_event_weight_sum)) for file in dbSample.files ]
             else:
-                files = [ ("/storage/data/cms/" + str(file.lfn), file.nevents) for file in dbSample.files ]
+                files = [ ("/storage/data/cms/" + str(file.lfn), file.nevents, file.event_weight_sum, json.loads(file.extras_event_weight_sum)) for file in dbSample.files ]
+            if "sample_fraction" in sample.keys() and sample["sample_fraction"] < 1:
+                # Truncate file list according to the required fraction
+                # NB : the returned file list does not contain exactly nEvt_tot*fraction event
+                #      it is rounded up to nEvt_tot * fraction + nEvt in next file
+                nEvt_tot = dbSample.nevents
+                nEvt_wanted = int(nEvt_tot * sample["sample_fraction"]) + (nEvt_tot % sample["sample_fraction"] > 0)
+                nEvt_temp = 0
+                truncated_files = []
+                for file in files:
+                    truncated_files.append(file)
+                    nEvt_temp += file[1]
+                    if nEvt_temp >= nEvt_wanted:
+                        break
+                files = truncated_files
 
             sample["db_name"] = dbSample.name
 
@@ -61,14 +76,21 @@ class condorSubmitter:
             sample["is-data"] = is_data
 
             if rescale_sample and dbSample.source_dataset.xsection == 1.0:
-                print("Warning: cross-section for dataset %r not set." % dbSample.source_dataset.name)
+                print("Warning: cross-section for dataset %s not set." % str(dbSample.source_dataset.name))
 
             sample["extras-event-weight-sum"] = {}
             if rescale_sample:
-                sample["event-weight-sum"] = dbSample.event_weight_sum
+                event_weights = [f[2] for f in files]
+                sample["event-weight-sum"] = sum (event_weights)
                 sample["cross-section"] = dbSample.source_dataset.xsection
                 if dbSample.extras_event_weight_sum:
-                    sample["extras-event-weight-sum"] = json.loads(dbSample.extras_event_weight_sum)
+                    extras_event_weight_sum = {}
+                    for f in files:
+                        extras_event_weight_sum = { k: extras_event_weight_sum.get(k, 0) + f[3].get(k) for k in set(f[3]) }
+                    if json.loads(dbSample.extras_event_weight_sum).viewkeys() != extras_event_weight_sum.viewkeys():
+                        print("Error: all the files in %s do not have the same extras_event_weight_sum content!" % str(dbSample.source_dataset.name))
+                        sys.exit()
+                    sample["extras-event-weight-sum"] = extras_event_weight_sum
             else :
                 sample["event-weight-sum"] = 1.
                 sample["cross-section"] = 1.

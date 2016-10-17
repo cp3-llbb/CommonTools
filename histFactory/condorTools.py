@@ -9,6 +9,7 @@ import json
 import stat
 import copy
 import subprocess
+import math
 
 # Add default ingrid storm package
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
@@ -51,7 +52,7 @@ class condorSubmitter:
                 # NB : the returned file list does not contain exactly nEvt_tot*fraction event
                 #      it is rounded up to nEvt_tot * fraction + nEvt in next file
                 nEvt_tot = dbSample.nevents
-                nEvt_wanted = int(nEvt_tot * sample["sample_fraction"]) + (nEvt_tot % sample["sample_fraction"] > 0)
+                nEvt_wanted = math.ceil(nEvt_tot * sample["sample_fraction"])
                 nEvt_temp = 0
                 truncated_files = []
                 for file in files:

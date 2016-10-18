@@ -68,6 +68,7 @@ struct Extra {
     UserCode userCode;
     std::set<std::string> includes;
     std::set<fs::path> sources;
+    std::set<fs::path> libraries;
     std::set<std::string> extra_branches;
     std::map<std::string, std::string> sample_weights;
 };
@@ -333,7 +334,37 @@ bool get_output_tree(const std::string& python_file, Tree& tree, Extra& extra) {
             }
             extra.sources.emplace(temp_path);
         }
+    }
+    
+    // Retrieve list of libraries
+    PyObject* py_libs = PyDict_GetItemString(global_dict, "libraries");
+    if (py_libs) {
 
+        if (! PyList_Check(py_libs)) {
+            std::cerr << "The 'libraries' variable is not a list" << std::endl;
+            return false;
+        }
+
+        size_t l = PyList_Size(py_libs);
+
+        for (size_t i = 0; i < l; i++) {
+            PyObject* item = PyList_GetItem(py_libs, i);
+            if (! PyString_Check(item) ) {
+                std::cerr << "The items of the 'libraries' list must be strings" << std::endl;
+                return false;
+            }
+            boost::system::error_code dummy; // dummy error code to get the noexcept exists() overload
+            fs::path temp_path( PyString_AsString(item) );
+            if ( !fs::exists(temp_path, dummy) || !fs::is_regular_file(temp_path) ) {
+                if ( !fs::exists(python_dir/temp_path, dummy) || !fs::is_regular_file(python_dir/temp_path) ) {
+                    std::cerr << "File " << temp_path.filename().string() << " could not be found in ./" << temp_path.parent_path().string() << " or in ./" << (python_dir/temp_path).parent_path().string() << std::endl;
+                    return false;
+                } else {
+                    temp_path = python_dir/temp_path;
+                }
+            }
+            extra.libraries.emplace(temp_path);
+        }
     }
 
     // Retrieve list of additional branches
@@ -355,7 +386,6 @@ bool get_output_tree(const std::string& python_file, Tree& tree, Extra& extra) {
             }
             extra.extra_branches.emplace( PyString_AsString(item) );
         }
-
     }
 
     // Retrieve user code to be included in the function
@@ -456,6 +486,12 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
 
     std::cout << "List of requested source files: ";
     for (const auto& s: extra.sources) {
+        std::cout << "'" << s.string() << "', ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "List of requested libraries: ";
+    for (const auto& s: extra.libraries) {
         std::cout << "'" << s.string() << "', ";
     }
     std::cout << std::endl;
@@ -605,9 +641,14 @@ bool execute(const std::string& skeleton, const std::string& config_file, std::s
     for(const auto& s: extra.sources)
       source_cmake += s.string() + " ";
 
+    std::string libs_cmake;
+    for(const auto& l: extra.libraries)
+      libs_cmake += l.string() + " ";
+
     ctemplate::TemplateDictionary cmake("cmake");
     cmake.SetValue("ADD_INCLUDES", include_cmake);
     cmake.SetValue("ADD_SOURCES", source_cmake);
+    cmake.SetValue("ADD_LIBS", libs_cmake);
     std::string cmake_output;
     ctemplate::ExpandTemplate(getTemplate("CMakeLists.txt"), ctemplate::DO_NOT_STRIP, &cmake, &cmake_output);
     out.open(output_dir + "/CMakeLists.txt");
@@ -621,7 +662,7 @@ int main( int argc, char* argv[]) {
 
     try {
 
-        TCLAP::CmdLine cmd("Create histograms from trees", ' ', "0.2.0");
+        TCLAP::CmdLine cmd("Skim trees", ' ', "0.2.0");
 
         TCLAP::ValueArg<std::string> skeletonArg("i", "input", "Input file containing a skeleton tree", true, "", "ROOT file", cmd);
         TCLAP::ValueArg<std::string> outputArg("o", "output", "Output directory", false, "", "FOLDER", cmd);

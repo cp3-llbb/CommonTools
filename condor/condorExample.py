@@ -3,7 +3,7 @@
 ## Example usage of condorTools
 ## Run `python condorExample.py`
 
-from condorTools import condorSubmitter
+from cp3_llbb.CommonTools.condorTools import condorSubmitter
 
 ## Create an instance of the submitter for
 ## - sample n.517

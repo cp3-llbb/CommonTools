@@ -7,8 +7,7 @@ env:
   global:
     - ROOT_VERSION=6.06.00
   matrix:
-    - PROJECT="histFactory"
-    - PROJECT="treeFactory"
+    - PROJECT="Factories"
     - PROJECT="common"
 
 addons:

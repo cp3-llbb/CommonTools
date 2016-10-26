@@ -73,48 +73,6 @@ mark_as_advanced(ROOT_CONFIG_EXECUTABLE)
 include(CMakeParseArguments)
 find_program(ROOTCINT_EXECUTABLE rootcint PATHS $ENV{ROOTSYS}/bin NO_DEFAULT_PATH)
 find_program(GENREFLEX_EXECUTABLE genreflex PATHS $ENV{ROOTSYS}/bin NO_DEFAULT_PATH)
-find_package(GCCXML)
-
-#----------------------------------------------------------------------------
-# function ROOT_GENERATE_DICTIONARY( dictionary
-#                                    header1 header2 ...
-#                                    LINKDEF linkdef1 ...
-#                                    OPTIONS opt1...)
-function(ROOT_GENERATE_DICTIONARY dictionary)
-  CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;OPTIONS" "" ${ARGN})
-  #---Get the list of include directories------------------
-  get_directory_property(incdirs INCLUDE_DIRECTORIES)
-  set(includedirs)
-  foreach( d ${incdirs})
-     set(includedirs ${includedirs} -I${d})
-  endforeach()
-  #---Get the list of header files-------------------------
-  set(headerfiles)
-  #---Get the list of header files-------------------------
-  set(headerfiles)
-  foreach(fp ${ARG_UNPARSED_ARGUMENTS})
-    file(GLOB files ${fp})
-    if(files)
-      foreach(f ${files})
-        if(NOT f MATCHES LinkDef) # skip LinkDefs from globbing result
-            set(headerfiles ${headerfiles} ${f})
-        endif()
-      endforeach()
-    else()
-      set(headerfiles ${headerfiles} ${fp})
-    endif()
-  endforeach()
-  #---Get LinkDef.h file------------------------------------
-  set(linkdefs)
-  foreach( f ${ARG_LINKDEF})
-    set(linkdefs ${linkdefs} ${f})
-  endforeach()
-  #---call rootcint------------------------------------------
-  add_custom_command(OUTPUT ${dictionary}.cxx
-                     COMMAND ${ROOTCINT_EXECUTABLE} -cint -f  ${dictionary}.cxx
-                                          -c ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
-                     DEPENDS ${headerfiles} ${linkdefs} VERBATIM)
-endfunction()
 
 #----------------------------------------------------------------------------
 # function REFLEX_GENERATE_DICTIONARY(dictionary
@@ -165,8 +123,6 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   #---Check GCCXML and get path-----------------------------
   if(GCCXML)
     get_filename_component(gccxmlpath ${GCCXML} PATH)
-  else()
-    message(WARNING "GCCXML not found. Install and setup your environment to find 'gccxml' executable")
   endif()
   #---Actual command----------------------------------------
   add_custom_command(OUTPUT ${gensrcdict} ${rootmapname}

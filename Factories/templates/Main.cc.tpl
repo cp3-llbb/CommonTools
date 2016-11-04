@@ -74,8 +74,6 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
 
     {{USER_CODE_AFTER_LOOP}}
 
-    std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
-
 {{CODE_AFTER_LOOP}}
 
 }

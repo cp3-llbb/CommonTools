@@ -167,6 +167,11 @@ bool HistFactory::create_templates(std::set<std::string>& identifiers, std::stri
         ctemplate::ExpandTemplate(get_template("Plot"), ctemplate::DO_NOT_STRIP, &plot, &inLoop);
     }
 
+    // Open output file, after the loop
+    beforeLoop += R"(
+    std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
+)";
+
     for (auto& p: m_plots) {
         ctemplate::TemplateDictionary save_plot("save_plot");
         save_plot.SetValue("UNIQUE_NAME", p.unique_name);

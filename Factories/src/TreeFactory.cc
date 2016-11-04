@@ -86,7 +86,8 @@ bool TreeFactory::create_templates(std::set<std::string>& identifiers, std::stri
     inLoop.clear();
     afterLoop.clear();
 
-    beforeLoop = R"(    TTree* output_tree_ = new TTree(")" + m_tree.name + R"(", "Skimmed tree");
+    beforeLoop = R"(    std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
+    TTree* output_tree_ = new TTree(")" + m_tree.name + R"(", "Skimmed tree");
     ROOT::TreeWrapper output_tree(output_tree_);
     float& sample_weight_branch = output_tree["sample_weight"].write<float>();
 )";
@@ -113,7 +114,6 @@ bool TreeFactory::create_templates(std::set<std::string>& identifiers, std::stri
 
     afterLoop = R"(    outfile->cd();
     output_tree_->Write();
-    outfile->Close();
 )";
 
     return true;

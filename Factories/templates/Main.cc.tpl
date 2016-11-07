@@ -17,6 +17,7 @@
 #include <TH3F.h>
 #include <TFile.h>
 #include <TError.h>
+#include <TParameter.h>
 
 #include <json/json.h>
 #include <tclap/CmdLine.h>
@@ -74,10 +75,16 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
 
     {{USER_CODE_AFTER_LOOP}}
 
-    std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
-
 {{CODE_AFTER_LOOP}}
 
+
+    // Merge mode: use first value
+    TParameter<double> cross_section("cross_section", m_dataset.cross_section, 'f');
+    // Merge mode: addition
+    TParameter<double> event_weight_sum("event_weight_sum", m_dataset.event_weight_sum, '+');
+
+    cross_section.Write();
+    event_weight_sum.Write();
 }
 
 bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets) {

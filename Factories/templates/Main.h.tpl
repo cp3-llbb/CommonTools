@@ -17,10 +17,12 @@
 #include <TTreeFormula.h>
 #include <Math/Vector4D.h>
 
-// Generated automatically
-#include <classes.h>
-
-#include <cp3_llbb/TreeWrapper/interface/TreeWrapper.h>
+#ifdef IN_CMSSW
+    #include <classes.h> // Generated automatically
+    #include <cp3_llbb/TreeWrapper/interface/TreeWrapper.h>
+#else
+    #include <TreeWrapper.h>
+#endif
 
 // No other choices, as ROOT strips the 'std' namespace from types...
 using namespace std;

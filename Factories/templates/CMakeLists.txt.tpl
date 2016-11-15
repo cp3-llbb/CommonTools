@@ -62,10 +62,14 @@ if(IN_CMSSW)
             ${PROJECT_SOURCE_DIR}/generateHeader.sh
             ${PROJECT_BINARY_DIR}/classes.h
             COMMENT "Generating classes.h...")
-
+    add_definitions(-DIN_CMSSW)
+    find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
+        "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)
+    list(APPEND SOURCES classes.h)
+else()
+    find_library(TREEWRAPPER_LIB TreeWrapper)
+    find_path(TREEWRAPPER_INCLUDE_DIR TreeWrapper.h)
 endif()
-
-list(APPEND SOURCES classes.h)
 
 add_executable(generated ${SOURCES})
 set_target_properties(generated PROPERTIES OUTPUT_NAME "{{EXECUTABLE}}")
@@ -76,9 +80,10 @@ target_link_libraries(generated ${ROOT_GENVECTOR_LIB})
 target_link_libraries(generated ${ROOT_TMVA_LIBRARY})
 target_link_libraries(generated ${ROOT_TREEPLAYER_LIB})
 
-find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
-    "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)
 target_link_libraries(generated ${TREEWRAPPER_LIB})
+if(NOT IN_CMSSW)
+    target_include_directories(generated PRIVATE ${TREEWRAPPER_INCLUDE_DIR})
+endif()
 
 # Find libraries requested by the user, if any
 {{#HAS_LIBRARY_DIRECTORIES}}

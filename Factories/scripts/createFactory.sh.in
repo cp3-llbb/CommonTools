@@ -46,12 +46,16 @@ cp "$PROJECT_DIR/scripts/parallelizedFactory.py.in" "$OUTPUT/scripts/"
 
 pushd "$OUTPUT/build" &> /dev/null
 
+
+set +e
+chosen_CXX=""
 command -v clang++ >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
-    CXX=clang++ cmake .. && make -j4
-else
-    cmake .. && make -j4
+    chosen_CXX="clang++"
 fi
+set -e
+
+CXX=${chosen_CXX} cmake .. && make -j 4
 
 popd &> /dev/null
 

@@ -108,19 +108,21 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         const Json::Value& sample = root[samples_str[index]];
         Dataset dataset;
 
-        // Mandatory fields
         dataset.name = samples_str[index];
-        dataset.db_name = sample["db_name"].asString();
+        
+        dataset.is_data = sample.get("is-data", false).asBool();
         dataset.cut = sample.get("sample_cut", "1").asString();
         dataset.tree_name = sample.get("tree_name", "t").asString();
-        dataset.is_data = sample["is-data"].asBool();
 
+        dataset.db_name = sample.get("db_name", dataset.name).asString();
         if (sample.isMember("output_name")) {
             dataset.output_name = sample["output_name"].asString();
         } else {
-            dataset.output_name = dataset.db_name + "_{{SUFFIX}}";
+            dataset.output_name = dataset.db_name;
             if(sample.isMember("suffix"))
                 dataset.output_name += sample["suffix"].asString();
+            else
+                dataset.output_name += "_{{SUFFIX}}";
         }
         
         if( std::find_if(datasets.begin(), datasets.end(), [&](const Dataset &d){ return d.output_name == dataset.output_name; }) != datasets.end() ){

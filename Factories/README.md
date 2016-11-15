@@ -54,6 +54,10 @@ An helper script is available to create a viable working directory for the plott
 ./createPlotter.sh <skeleton ROOT file> <python configuration file> <output directory>
 ```
 
+**Note**: Outside of CMSSW, you need to have [TreeWrapper](https://github.com/blinkseb/TreeWrapper) installed somewhere (say in `TW`). Then, to be able to build the generated code (or run `createPlotter.sh`), you'll need the following environment variables to be set:
+ - `CMAKE_LIBRARY_PATH` to `$TW/.libs`
+ - `CMAKE_INCLUDE_PATH` to `$TW/interface`
+
 3 arguments are needed:
  1) `skeleton ROOT file`: The absolute path of a ROOT file from one of your datasets. It's needed because of code creating the plotting code needs to know the structure of the tree to correctly identify what is a branch in your plot / cut strings. This can be *any* file from *any* dataset, it really does not matter: you just have to ensure that the tree structure is correct.
 
@@ -117,3 +121,22 @@ The value of the `branches` key is a list of dictionaries. Each dictionary descr
  - `name`: the name of the branch
  - `variable`: the formula used to evaluate the branch value.
  - `type`: the type of the branch. Default to `float`
+
+
+### JSON file format
+
+The entries in the JSON file passed to either `plotter.exe` or `skimmer.exe` can have the following fields:
+ - `is-data` (default to `False`): specifies if the sample is data or not. No event weight is applied in the former case
+ - `sample_cut` (default to `1`): apply cut on the whole sample
+ - `tree_name` (default to `t`): name of the TTree from which to read the data
+ - `db_name` (defaults to the sample name): name of the sample in the DB.
+ - `output_name` (defaults to the `db_name`): "base" name of the output file
+ - `suffix` (default to `_histos` for HistFactory, and `_skim` for TreeFactory): suffix appended to the "base" output name
+ - `cross-section` (default to `1`): stored as TParameter in the output file
+ - `event-weight-sum` (default to `1`): stored as TParameter in the output file. In HistFactory, histograms are scaled by `cross-section/event-weight-sum`
+ - `extras-event-weight-sum` (optional): Dictionary of extra event weight sums to use (for systematics, for instance). By default the only key is `"nominal"`, with value `event-weight-sum`
+ - `sample-weight` (optional): Name of the special per-event sample weight to be used (see above, Python file format)
+ - `files`: List of files as input, or:
+ - `path`: Take all `.root` files in this directory
+ - `event-start` (default `0`): first event to be read
+ - `event-end` (default last): last event to be read

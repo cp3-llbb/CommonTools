@@ -21,9 +21,11 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
 
     CHECK_AND_GET(plot.name, PY_NAME);
     CHECK_AND_GET(plot.variable, PY_VARIABLE);
-    CHECK_AND_GET(plot.cut, PY_PLOT_CUT);
     CHECK_AND_GET(plot.binning, PY_BINNING);
 
+    plot.cut = "1";
+    GET(plot.cut, PY_PLOT_CUT);
+    
     plot.normalize_to = "nominal";
     GET(plot.normalize_to, PY_NORMALIZE_TO);
 

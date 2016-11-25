@@ -172,6 +172,11 @@ bool HistFactory::create_templates(std::set<std::string>& identifiers, std::stri
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
 )";
 
+    afterLoop += R"(
+    outfile->cd();
+
+)";
+
     for (auto& p: m_plots) {
         ctemplate::TemplateDictionary save_plot("save_plot");
         save_plot.SetValue("UNIQUE_NAME", p.unique_name);

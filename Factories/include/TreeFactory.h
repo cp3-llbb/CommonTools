@@ -14,6 +14,7 @@ struct OutputBranch {
 struct Tree {
     std::string name;
     std::string cut;
+    bool clone;
     std::vector<OutputBranch> branches;
 };
 
@@ -27,6 +28,10 @@ protected:
 
     virtual std::string suffix() const override {
         return "skim";
+    }
+
+    virtual bool read_whole_tree() const override {
+        return m_tree.clone;
     }
 
     virtual bool parse_config_file(PyObject* global_dict) override;

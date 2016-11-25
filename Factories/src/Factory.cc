@@ -354,6 +354,8 @@ bool Factory::run() {
 
     sample_weight_function += "\n    return 1.;";
 
+    std::string tree_read_all =  read_whole_tree() ? "true" : "false";
+
     std::string output;
 
     // Main source file
@@ -368,6 +370,7 @@ bool Factory::run() {
     source.SetValue("CODE_BEFORE_LOOP", beforeLoop);
     source.SetValue("CODE_IN_LOOP", inLoop);
     source.SetValue("CODE_AFTER_LOOP", afterLoop);
+    source.SetValue("TREE_READ_ALL", tree_read_all);
 
     ctemplate::ExpandTemplate(get_template("Main.cc"), ctemplate::DO_NOT_STRIP, &source, &output);
 

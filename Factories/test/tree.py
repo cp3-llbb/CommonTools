@@ -3,6 +3,8 @@ extra_branches = ["weight"]
 tree = {
         "name": "cool_tree",
 
+        "clone": True,
+
         "cut": "!(jet_p4[0].Pt() < 20)",
 
         "branches": [

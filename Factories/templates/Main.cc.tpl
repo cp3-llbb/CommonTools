@@ -38,7 +38,7 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
 
     uint64_t entries = m_dataset.event_end - m_dataset.event_start + 1;
     size_t index = 1;
-    while (tree.next()) {
+    while (tree.next({{TREE_READ_ALL}})) {
 
         if (MUST_STOP) {
             break;

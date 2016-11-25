@@ -22,12 +22,19 @@ bool output_branch_from_PyObject(PyObject* value, OutputBranch& branch) {
 bool tree_from_PyObject(PyObject* value, Tree& tree) {
     static PyObject* PY_NAME = PyString_FromString("name");
     static PyObject* PY_CUT = PyString_FromString("cut");
+    static PyObject* PY_CLONE = PyString_FromString("clone");
     static PyObject* PY_BRANCHES = PyString_FromString("branches");
 
     CHECK_AND_GET(tree.name, PY_NAME);
 
     tree.cut = "1";
     GET(tree.cut, PY_CUT);
+
+    tree.clone = false;
+    if (PyDict_Contains(value, PY_CLONE) == 1) {
+        PyObject* item = PyDict_GetItem(value, PY_CLONE);
+        tree.clone = PyObject_IsTrue(item);
+    }
     
     if (PyDict_Contains(value, PY_BRANCHES) == 0) {
         std::cout << "No branches declared in tree" << std::endl;
@@ -87,8 +94,17 @@ bool TreeFactory::create_templates(std::set<std::string>& identifiers, std::stri
     afterLoop.clear();
 
     beforeLoop = R"(    std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));
-    TTree* output_tree_ = new TTree(")" + m_tree.name + R"(", "Skimmed tree");
-    ROOT::TreeWrapper output_tree(output_tree_);
+)";
+
+    if (m_tree.clone) {
+        beforeLoop += R"(    TTree* output_tree_ = raw_tree->CloneTree(0);
+    output_tree_->SetName(")" + m_tree.name + "\");\n";
+    } else {
+        beforeLoop += R"(    TTree* output_tree_ = new TTree(")" + m_tree.name + R"(", "Skimmed tree");
+)";
+    }
+
+    beforeLoop += R"(    ROOT::TreeWrapper output_tree(output_tree_);
     float& sample_weight_branch = output_tree["sample_weight"].write<float>();
 )";
 

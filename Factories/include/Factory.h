@@ -76,6 +76,7 @@ class Factory {
 
         virtual std::string name() const = 0;
         virtual std::string suffix() const = 0;
+        virtual bool read_whole_tree() const { return false; }
 
         virtual bool parse_config_file(PyObject* global_dict) = 0;
         virtual bool create_templates(std::set<std::string>& identifiers, std::string& beforeLoop, std::string& inLoop, std::string& afterLoop) = 0;

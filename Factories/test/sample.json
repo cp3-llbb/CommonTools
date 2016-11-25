@@ -1,16 +1,14 @@
 {
-    "TT_TuneCUETP8M1_13TeV-powheg-pythia8_MiniAODv2_v1.0.0+7415_TTAnalysis_12d3865": {
+    "TTTo2L2Nu_13TeV-powheg_ext1_Spring16MiniAODv2_v0.1.1+76X-75-g45bc215_HHAnalysis_2016-06-03.v0-38-gd217142": {
         "tree_name": "t",
         "files": [
-            "/storage/data/cms/store/user/obondu/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCUETP8M1_amcatnloFXFX_25ns/160706_112558/0000/output_mc_1.root"
+            "/storage/data/cms/store/user/sbrochet/TTTo2L2Nu_13TeV-powheg/TTTo2L2Nu_13TeV-powheg_ext1_Spring16MiniAODv2/161120_001605/0000/output_mc_757.root"
         ],
-        "db_name": "TTJets_TuneCUETP8M1_amcatnloFXFX_25ns_v0.1.4+76X_HHAnalysis_2016-06-03.v0",
+        "db_name": "TTTo2L2Nu_13TeV-powheg_ext1_Spring16MiniAODv2_v0.1.1+76X-75-g45bc215_HHAnalysis_2016-06-03.v0-38-gd217142",
         "sample_cut": "1.",
         "sample-weight": "test",
         "extras-event-weight-sum": {
             "pdf_up": 1000
-        },
-        "event-start": 10,
-        "event-end": 1000
+        }
     }
 }

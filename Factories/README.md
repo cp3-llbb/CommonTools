@@ -114,6 +114,7 @@ An example of a valid python script is given in `test/tree.py`. The script needs
 
  - `name` (mandatory): the name of the tree inside the output file
  - `cut` (optional, default to `"1"`): the cut to apply before filling the tree
+ - `clone` (optional, default to `False`): if set to `True`, the input tree is cloned into the output tree.
  - `branches` (mandatory): a list of branches to create. Format of this list is given below.
 
 The value of the `branches` key is a list of dictionaries. Each dictionary describe a branch to create, with the following format:

@@ -400,12 +400,14 @@ function do_hadd {
 
 check_success
 
+pushd #OUTDIR_PATH#
+
 base_list=`find -regex ".*_[0-9]*.root" -printf "%f\\n" | sed "s/_[0-9]*.root//g" | sort | uniq`
 
-pushd #OUTDIR_PATH#
 for base in $base_list; do
  do_hadd $base $1
 done
+
 popd"""
             f.write(cmd.replace("#OUTDIR_PATH#", self.outDir)
                        .replace("#LOGDIR_PATH#", self.logDir))

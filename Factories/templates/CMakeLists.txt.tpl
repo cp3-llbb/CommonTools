@@ -63,13 +63,11 @@ if(IN_CMSSW)
             ${PROJECT_BINARY_DIR}/classes.h
             COMMENT "Generating classes.h...")
     add_definitions(-DIN_CMSSW)
-    find_library(TREEWRAPPER_LIB cp3_llbbTreeWrapper PATHS
-        "$ENV{CMSSW_BASE}/lib/$ENV{SCRAM_ARCH}" NO_DEFAULT_PATH)
     list(APPEND SOURCES classes.h)
-else()
-    find_library(TREEWRAPPER_LIB TreeWrapper)
-    find_path(TREEWRAPPER_INCLUDE_DIR TreeWrapper.h)
 endif()
+
+find_library(TREEWRAPPER_LIB "libTreeWrapper.a" PATHS ${EXTERNAL_LIB_DIR})
+find_path(TREEWRAPPER_INCLUDE_DIR TreeWrapper.h PATHS ${EXTERNAL_INCLUDE_DIR})
 
 add_executable(generated ${SOURCES})
 set_target_properties(generated PROPERTIES OUTPUT_NAME "{{EXECUTABLE}}")

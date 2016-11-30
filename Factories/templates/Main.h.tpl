@@ -19,10 +19,9 @@
 
 #ifdef IN_CMSSW
     #include <classes.h> // Generated automatically
-    #include <cp3_llbb/TreeWrapper/interface/TreeWrapper.h>
-#else
-    #include <TreeWrapper.h>
 #endif
+
+#include <TreeWrapper.h>
 
 // No other choices, as ROOT strips the 'std' namespace from types...
 using namespace std;

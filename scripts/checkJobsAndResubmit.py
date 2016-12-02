@@ -1,43 +1,47 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
-import os, sys
+import os
+import argparse
 
-# Usage: resubmit.py 'yourCondorDir' [submit]
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--directory', help='Condor output directory', required=True)
+parser.add_argument('-s', '--submit', action='store_true', required=False)
 
-condorDir = sys.argv[1]
-logDir = condorDir+"/logs/"
+args = parser.parse_args()
+
+condorDir = args.directory
+logDir = os.path.join(condorDir, "logs")
 failedJobIDs = []
 
-for file in os.listdir(logDir) : 
-    if ".err" in file and os.stat(logDir+file).st_size != 0 :
-        failedJobID =  file.split(".err")[0].split("_")[1]
+for file in os.listdir(logDir):
+    if ".err" in file and os.stat(os.path.join(logDir, file)).st_size != 0:
+        failedJobID = file.split(".err")[0].split("_")[1]
         failedJobIDs.append(failedJobID)
 
-if failedJobIDs == [] :
-    print "All jobs succeeded ;-)"
-    sys.exit()
+if not len(failedJobIDs):
+    print("All jobs succeeded ;-)")
+    quit()
 
-print "Jobs ", failedJobIDs, " have failed."
-resubmitFileName = "%s/input/resubmit.cmd"%condorDir
-os.system("cp %s/input/condor.cmd %s"%(condorDir, resubmitFileName))
-cmdFile = open(resubmitFileName, "r")
-cmdFileText = cmdFile.read()
-lineToPaste = cmdFileText[cmdFileText.find("arguments"):]
+print("Jobs " + str(failedJobIDs) + " have failed.")
 
-cmdFile = open(resubmitFileName, "w")
-cmdFile.write(cmdFileText.replace(lineToPaste,""))
+with open(os.path.join(condorDir, "input", "condor.cmd"), "r") as cmdFile:
+    cmdFileText = cmdFile.read()
+    linesToPaste = cmdFileText[cmdFileText.find("arguments"):]
 
-for line in lineToPaste.split("\n") :
-    if ("queue" in line):
-        lineToPaste = lineToPaste.replace(line,"queue 1\n")
+resubmitFileName = os.path.join(condorDir, "input", "resubmit.cmd")
 
-for id in failedJobIDs : 
-    templineToPaste = lineToPaste.replace("$(Process)", id)
-    cmdFile.write(templineToPaste)
-cmdFile.close()
+with open(resubmitFileName, "w") as cmdFile:
+    cmdFile.write(cmdFileText.replace(linesToPaste, ""))
 
-if len(sys.argv) > 2 :
-    if sys.argv[2] == "submit":
-        os.system("condor_submit %s"%(resubmitFileName))
-else : 
-    print "If you want to submit the jobs type : python resubmit.py 'yourCondorDir' submit"
+    linesToPaste = "\n".join([ line for line in linesToPaste.split('\n') if "queue" not in line ])
+ 
+    for id in failedJobIDs:
+        newLines = linesToPaste.replace("$(Process)", id)
+        cmdFile.write(newLines)
+        cmdFile.write("\nqueue {}\n".format(id))
+ 
+if args.submit:
+    os.system("condor_submit " + resubmitFileName)
+else: 
+    print("If you want to submit the jobs type: python resubmit.py 'yourCondorDir' --submit")
+

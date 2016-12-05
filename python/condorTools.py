@@ -27,7 +27,7 @@ from SAMADhi import Sample, DbStore
 
 class condorSubmitter:
 
-    def __init__(self, sampleCfg, execPath, plotConfig, baseDir = ".", rescale = False):
+    def __init__(self, sampleCfg, execPath, plotConfig, baseDir = ".", rescale = False, weightFromFile = True):
 
         self.sampleCfg = sampleCfg
         self.baseDir = os.path.join(os.path.abspath(baseDir), "condor")
@@ -80,17 +80,24 @@ class condorSubmitter:
 
             sample["extras-event-weight-sum"] = {}
             if rescale_sample:
-                event_weights = [f[2] for f in files]
-                sample["event-weight-sum"] = sum (event_weights)
-                sample["cross-section"] = dbSample.source_dataset.xsection
-                if dbSample.extras_event_weight_sum:
-                    extras_event_weight_sum = {}
-                    for f in files:
-                        extras_event_weight_sum = { k: extras_event_weight_sum.get(k, 0) + f[3].get(k) for k in set(f[3]) }
-                    if json.loads(dbSample.extras_event_weight_sum).viewkeys() != extras_event_weight_sum.viewkeys():
-                        print("Error: all the files in %s do not have the same extras_event_weight_sum content!" % str(dbSample.source_dataset.name))
-                        sys.exit()
-                    sample["extras-event-weight-sum"] = extras_event_weight_sum
+                if weightFromFile :
+                    event_weights = [f[2] for f in files]
+                    sample["event-weight-sum"] = sum (event_weights)
+                    sample["cross-section"] = dbSample.source_dataset.xsection
+                    if dbSample.extras_event_weight_sum:
+                        extras_event_weight_sum = {}
+                        for f in files:
+                            extras_event_weight_sum = { k: extras_event_weight_sum.get(k, 0) + f[3].get(k) for k in set(f[3]) }
+                        if json.loads(dbSample.extras_event_weight_sum).viewkeys() != extras_event_weight_sum.viewkeys():
+                            print("Error: all the files in %s do not have the same extras_event_weight_sum content!" % str(dbSample.source_dataset.name))
+                            sys.exit()
+                        sample["extras-event-weight-sum"] = extras_event_weight_sum
+                else :
+                    sample["event-weight-sum"] = dbSample.event_weight_sum
+                    sample["cross-section"] = dbSample.source_dataset.xsection
+                    if dbSample.extras_event_weight_sum:
+                        sample["extras-event-weight-sum"] = json.loads(dbSample.extras_event_weight_sum.replace("'", "\""))
+
             else :
                 sample["event-weight-sum"] = 1.
                 sample["cross-section"] = 1.

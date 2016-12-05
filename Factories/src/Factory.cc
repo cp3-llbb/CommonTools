@@ -434,6 +434,9 @@ bool Factory::run() {
     out << cmakelists_content;
     out.close();
 
+    std::cout << std::endl;
+    std::cout << "All done. Generated code available in " << m_output_dir.native() << std::endl;
+
     return true;
 }
 

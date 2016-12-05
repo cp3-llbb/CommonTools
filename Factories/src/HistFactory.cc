@@ -169,6 +169,8 @@ bool HistFactory::create_templates(std::set<std::string>& identifiers, std::stri
         ctemplate::ExpandTemplate(get_template("Plot"), ctemplate::DO_NOT_STRIP, &plot, &inLoop);
     }
 
+    std::cout << "Done." << std::endl;
+
     // Open output file, after the loop
     beforeLoop += R"(
     std::unique_ptr<TFile> outfile(TFile::Open(output_file.c_str(), "recreate"));

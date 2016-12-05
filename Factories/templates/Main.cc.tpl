@@ -21,6 +21,7 @@
 
 #include <json/json.h>
 #include <tclap/CmdLine.h>
+#include <math.h>
 
 {{USER_INCLUDES}}
 
@@ -37,7 +38,7 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
     {{USER_CODE_BEFORE_LOOP}}
 
     uint64_t entries = m_dataset.event_end - m_dataset.event_start + 1;
-    uint64_t report_fraction = entries * 0.05;
+    uint64_t report_fraction = ceil(entries * 0.05);
     size_t index = 1;
     while (tree.next({{TREE_READ_ALL}})) {
 

@@ -37,12 +37,18 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
     {{USER_CODE_BEFORE_LOOP}}
 
     uint64_t entries = m_dataset.event_end - m_dataset.event_start + 1;
+    uint64_t report_fraction = entries * 0.05;
     size_t index = 1;
     while (tree.next({{TREE_READ_ALL}})) {
 
         if (MUST_STOP) {
             break;
         }
+
+        if ((index - 1) % report_fraction == 0)
+            std::cout << "Processing entry " << index << " of " << entries << std::endl;
+
+        index++;
 
         if (m_sample_cut){
           if( !m_sample_cut->EvalInstance() )
@@ -56,9 +62,6 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
         bool runOnElMu = m_dataset.is_data && (runOnMuEl);
         bool runOnMC = !m_dataset.is_data;
 
-        if ((index - 1) % 100000 == 0)
-            std::cout << "Processing entry " << index << " of " << entries << std::endl;
-
         double __sample_weight = 1.;
         if (!m_dataset.is_data)
             __sample_weight = getSampleWeight();
@@ -69,8 +72,6 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
     {{USER_CODE_IN_LOOP}}
 
 {{CODE_IN_LOOP}}
-
-        index++;
     }
 
     {{USER_CODE_AFTER_LOOP}}

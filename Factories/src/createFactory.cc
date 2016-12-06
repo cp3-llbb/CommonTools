@@ -29,6 +29,7 @@ int main( int argc, char* argv[]) {
          * [2] https://github.com/root-mirror/root/blob/0a62e34aa86b812651cfcf9526ba03b975adaa5c/bindings/pyroot/src/TPyROOTApplication.cxx#L117
          */
 
+        gROOT->SetBatch(true);
         std::unique_ptr<TApplication> app(new TApplication("dummy", 0, NULL));
 
         std::string executable = argv[0];

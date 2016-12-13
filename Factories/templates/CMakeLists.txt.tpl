@@ -26,6 +26,21 @@ find_library(ROOT_GENVECTOR_LIB GenVector PATHS ${ROOT_LIBRARY_DIR}
 find_library(ROOT_TREEPLAYER_LIB TreePlayer PATHS ${ROOT_LIBRARY_DIR}
     NO_DEFAULT_PATH)
 
+# Find Python
+if(NOT IN_CMSSW)
+    execute_process(COMMAND python-config --prefix OUTPUT_VARIABLE
+        PYTHON_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(APPEND CMAKE_LIBRARY_PATH "${PYTHON_PREFIX}/lib")
+    list(APPEND CMAKE_INCLUDE_PATH "${PYTHON_PREFIX}/include")
+endif()
+
+set(Boost_NO_BOOST_CMAKE ON)
+find_package(Boost REQUIRED COMPONENTS python)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
+find_package(PythonLibs REQUIRED)
+include_directories(SYSTEM ${PYTHON_INCLUDE_PATH})
+
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(common/include)
@@ -82,6 +97,9 @@ target_link_libraries(generated ${TREEWRAPPER_LIB})
 if(NOT IN_CMSSW)
     target_include_directories(generated PRIVATE ${TREEWRAPPER_INCLUDE_DIR})
 endif()
+
+target_link_libraries(generated ${PYTHON_LIBRARY})
+target_link_libraries(generated ${Boost_PYTHON_LIBRARY})
 
 # Find libraries requested by the user, if any
 {{#HAS_LIBRARY_DIRECTORIES}}

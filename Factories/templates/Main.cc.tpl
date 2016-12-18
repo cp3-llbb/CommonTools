@@ -82,8 +82,8 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
 
     // Merge mode: use first value
     TParameter<double> cross_section("cross_section", m_dataset.cross_section, 'f');
-    // Merge mode: addition
-    TParameter<double> event_weight_sum("event_weight_sum", m_dataset.event_weight_sum, '+');
+    // Merge mode: use first value
+    TParameter<double> event_weight_sum("event_weight_sum", m_dataset.event_weight_sum, 'f');
 
     cross_section.Write();
     event_weight_sum.Write();

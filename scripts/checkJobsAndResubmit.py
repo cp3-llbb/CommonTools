@@ -38,7 +38,7 @@ with open(resubmitFileName, "w") as cmdFile:
     for id in failedJobIDs:
         newLines = linesToPaste.replace("$(Process)", id)
         cmdFile.write(newLines)
-        cmdFile.write("\nqueue {}\n".format(id))
+        cmdFile.write("\nqueue 1\n")
  
 if args.submit:
     os.system("condor_submit " + resubmitFileName)

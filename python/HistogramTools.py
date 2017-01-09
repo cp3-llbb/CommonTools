@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import ROOT
+import re
 
 def getEnvelopHistograms(nominal, variations):
     """
@@ -42,3 +43,52 @@ def getEnvelopHistograms(nominal, variations):
         down.SetBinContent(i, minimum)
 
     return (up, down)
+
+def getHistogramsFromFileRegex(file, regex, veto=None):
+    """
+    Return all histograms found in a file whose name matches a regexp.
+
+    Arguments:
+
+    file: Path to the considered file
+    regex: Regexp to match the histogram names
+    veto: Also a regexp. If specified, will not consider histograms matching the veto.
+
+    Returns: Dictionary with (key, value) = (name, histogram)
+    """
+
+    myRe = re.compile(regex)
+    try:
+        myReVeto = re.compile(veto)
+    except TypeError:
+        myReVeto = None
+
+    foundHistos = {}
+
+    r_file = ROOT.TFile.Open(file)
+    if not r_file or not r_file.IsOpen():
+        raise Exception("Could not open file {}".format(file))
+
+    content = r_file.GetListOfKeys()
+    
+    for key in content:
+        name = key.GetName()
+
+        if myRe.match(name) is not None:
+            if myReVeto is not None:
+                if myReVeto.match(name) is not None:
+                    continue
+            
+            item = key.ReadObj()
+            
+            if not item.InheritsFrom("TH1"):
+                continue
+            
+            item.SetDirectory(0)
+            foundHistos[name] = item
+
+    r_file.Close()
+
+    return foundHistos
+
+

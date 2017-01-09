@@ -14,6 +14,8 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     static PyObject* PY_X_AXIS = PyString_FromString("x-axis");
     static PyObject* PY_Y_AXIS = PyString_FromString("y-axis");
     static PyObject* PY_Z_AXIS = PyString_FromString("z-axis");
+    
+    static PyObject* PY_WEIGHT_DATA = PyString_FromString("allow-weighted-data");
 
     if (! PyDict_Check(value)) {
         std::cerr << "Error: plots dictionnary value must be a dictionnary" << std::endl;
@@ -39,6 +41,9 @@ bool plot_from_PyObject(PyObject* value, Plot& plot) {
     GET(plot.x_axis, PY_X_AXIS);
     GET(plot.y_axis, PY_Y_AXIS);
     GET(plot.z_axis, PY_Z_AXIS);
+
+    plot.allow_weight_on_data = false;
+    GET_BOOL(plot.allow_weight_on_data, PY_WEIGHT_DATA);
 
     return true;
 }
@@ -166,7 +171,10 @@ bool HistFactory::create_templates(std::set<std::string>& identifiers, std::stri
         plot.SetValue("VAR", variable_string);
         plot.SetValue("HIST", p.unique_name);
 
-        ctemplate::ExpandTemplate(get_template("Plot"), ctemplate::DO_NOT_STRIP, &plot, &inLoop);
+        if (p.allow_weight_on_data)
+            ctemplate::ExpandTemplate(get_template("PlotNoCheckData"), ctemplate::DO_NOT_STRIP, &plot, &inLoop);
+        else
+            ctemplate::ExpandTemplate(get_template("Plot"), ctemplate::DO_NOT_STRIP, &plot, &inLoop);
     }
 
     std::cout << "Done." << std::endl;

@@ -80,6 +80,7 @@ struct Dataset {
     std::map<std::string, double> extras_event_weight_sum;
     bool is_data;
     std::string sample_weight_key;
+    std::vector<std::string> sample_weight_args;
     uint64_t event_start = 0;
     uint64_t event_end;
     bool event_end_filled = false;
@@ -125,7 +126,7 @@ class {{CLASS_NAME}} {
             h->Fill(value_x, value_y, value_z, weight);
         }
 
-        double getSampleWeight();
+        double getSampleWeight(const std::vector<std::string>& sample_weight_args);
 
         Dataset m_dataset;
         ROOT::TreeWrapper tree;

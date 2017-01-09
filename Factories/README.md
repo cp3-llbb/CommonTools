@@ -94,7 +94,7 @@ The following variables can be defined, and are not mandatory:
  - `code_after_loop`: (string) Code inserted after the loop over the events.
 Specified paths cans be absolute, relative from the current directory, or relative from the directory where the python script is stored.
 
-In case a single sample is to be reweighted to produce different outputs, another dictionary can be defined: `sample_weights`. Each key is the name of the resulting reweighting, and the corresponding entry gives the weight to be used (any valid C++ code).
+In case a single sample is to be reweighted to produce different outputs, another dictionary can be defined: `sample_weights`. Each key is the name of the resulting reweighting, and the corresponding entry gives the weight to be used (any valid C++ code). Some arguments can be passed from the dataset JSONs (see below) to the code evaluated here, as a (const) vector of strings called `sample_weight_args`.
 
 #### Generating histograms
 
@@ -106,6 +106,7 @@ An example of a valid python script is given in `test/plots.py`. The script need
  - `binning` (mandatory): String defining the binning to be used for each dimension. Each dimension can use fixed or variable-sized binning, for instance: `(10, 0, 5, 3, { 0, 2, 2.5, 3 })` defines 10 fixed-sized bins from `x=0` to `x=5` and 3 variable-size bins over `y`, where the bin edges are defined in the array `{}`.
  - `folder` (optional): Folder inside the output file where the histogram is to be saved.
  - `normalize-to`: Name of an alternate normalisation constant to be used (given in the input JSON)
+ - `allow-weighted-data`: (optional, default to False) Boolean; if true, do NOT force weights to 1 for data.
 
 
 #### Generating a tree
@@ -137,6 +138,7 @@ The entries in the JSON file passed to either `plotter.exe` or `skimmer.exe` can
  - `event-weight-sum` (default to `1`): stored as TParameter in the output file. In HistFactory, histograms are scaled by `cross-section/event-weight-sum`
  - `extras-event-weight-sum` (optional): Dictionary of extra event weight sums to use (for systematics, for instance). By default the only key is `"nominal"`, with value `event-weight-sum`
  - `sample-weight` (optional): Name of the special per-event sample weight to be used (see above, Python file format)
+ - `sample-weight-args` (optional): Arguments made available to the function returning the sample weight. Should be a list of strings.
  - `files`: List of files as input, or:
  - `path`: Take all `.root` files in this directory
  - `event-start` (default `0`): first event to be read

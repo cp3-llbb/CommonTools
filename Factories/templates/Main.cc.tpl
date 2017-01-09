@@ -27,7 +27,7 @@
 
 volatile bool MUST_STOP = false;
 
-double {{CLASS_NAME}}::getSampleWeight() {
+double {{CLASS_NAME}}::getSampleWeight(const std::vector<std::string>& sample_weight_args) {
 {{SAMPLE_WEIGHT_IMPL}}
 }
 
@@ -65,7 +65,7 @@ void {{CLASS_NAME}}::work(const std::string& output_file) {
 
         double __sample_weight = 1.;
         if (!m_dataset.is_data)
-            __sample_weight = getSampleWeight();
+            __sample_weight = getSampleWeight(m_dataset.sample_weight_args);
 
         bool __cut = false;
         double __weight = 0;
@@ -155,6 +155,11 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         // Sample weights
         if (sample.isMember("sample-weight")) {
             dataset.sample_weight_key = sample["sample-weight"].asString();
+            if (sample.isMember("sample-weight-args")) {
+                Json::Value args = sample["sample-weight-args"];
+                for (auto it: args)
+                    dataset.sample_weight_args.push_back(it.asString());
+            }
         } else {
             dataset.sample_weight_key = "";
         }
@@ -163,7 +168,7 @@ bool parse_datasets(const std::string& json_file, std::vector<Dataset>& datasets
         if (sample.isMember("files")) {
             Json::Value files = sample["files"];
 
-            for(auto it = files.begin(); it != files.end(); ++it) {
+            for (auto it = files.begin(); it != files.end(); ++it) {
                 dataset.files.push_back((*it).asString());
             }
         } else if (sample.isMember("path")) {

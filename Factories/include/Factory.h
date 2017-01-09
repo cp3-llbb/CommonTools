@@ -36,6 +36,15 @@
     var = PyString_AsString(item); \
 }
 
+#define GET_BOOL(var, obj) if (PyDict_Contains(value, obj) == 1) { \
+    PyObject* item = PyDict_GetItem(value, obj); \
+    if (! PyBool_Check(item)) {\
+        std::cerr << "Error: the '" << PyString_AsString(obj) << "' value must be a boolean" << std::endl; \
+        return false; \
+    } \
+    var = PyObject_IsTrue(item); \
+}
+
 struct BuildCustomization {
     std::set<boost::filesystem::path> include_directories;
     std::set<std::string> headers;

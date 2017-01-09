@@ -18,6 +18,8 @@ struct Plot {
     std::string x_axis;
     std::string y_axis;
     std::string z_axis;
+
+    bool allow_weight_on_data;
 };
 
 class HistFactory: public Factory {

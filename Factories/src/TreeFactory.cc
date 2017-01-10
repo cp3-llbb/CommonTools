@@ -123,7 +123,7 @@ bool TreeFactory::create_templates(std::set<std::string>& identifiers, std::stri
         inLoop += "        " + b.unique_name + " = (" + b.variable + ");\n";
     }
 
-    inLoop += R"(        sample_weight_branch = getSampleWeight();
+    inLoop += R"(        sample_weight_branch = getSampleWeight(m_dataset.sample_weight_args);
 
         output_tree.fill();
     )";

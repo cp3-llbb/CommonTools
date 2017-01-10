@@ -375,8 +375,7 @@ function move_files {
         # Generate a command to hadd all the files when the jobs are done
         haddFile = os.path.join(self.baseDir, "hadd_histos.sh")
         with open(haddFile, "w") as f:
-            cmd = """
-#!/usr/bin/bash
+            cmd = """#!/usr/bin/env bash
 
 function check_success {
   should_exit=false
@@ -401,7 +400,13 @@ function check_success {
 
 function do_hadd {
  if [ ! -z "$1" ]; then
-  hadd $1.root $1_*.root && if [ "$2" == "-r" ]; then rm $1_*.root; fi
+  to_add=( $(ls $1_*.root) )
+  # If there is only one file to hadd, do not do it but simply rename the file (faster)
+  if [[ ${#to_add} == 1 ]]; then
+    mv ${to_add[1]} $1.root
+  else
+    hadd $1.root $1_*.root && if [ "$2" == "-r" ]; then rm $1_*.root; fi
+  fi
  fi
 }
 

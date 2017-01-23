@@ -11,7 +11,7 @@ include(CMSSW)
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O2")
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
@@ -69,6 +69,9 @@ set(SOURCES
         common/src/scale_factors.cpp
         {{USER_SOURCES}}
     )
+
+# Disable optimization for the main source file only: compile time explode if we enable compile optimizations
+set_source_files_properties({{NAME}}.cc PROPERTIES COMPILE_FLAGS -O0)
 
 if(IN_CMSSW)
     include(CP3Dictionaries)

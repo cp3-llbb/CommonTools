@@ -108,6 +108,10 @@ An example of a valid python script is given in `test/plots.py`. The script need
  - `normalize-to`: Name of an alternate normalisation constant to be used (given in the input JSON)
  - `allow-weighted-data`: (optional, default to False) Boolean; if true, do NOT force weights to 1 for data.
 
+##### Automatic optimization
+
+If you set the `optimize_plots` global variable to `True`, and automatic optimization will be performed. All the plots sharing the *exact* same cut and weights expressions will be grouped together into a single `if` block. This allows to reduce the quantity of code processed and to evaluate only once the cut and the weight expression.
+
 
 #### Generating a tree
 

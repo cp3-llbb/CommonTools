@@ -22,6 +22,15 @@ struct Plot {
     bool allow_weight_on_data;
 };
 
+// A collection of Plots sharing the same weight and cut
+struct Group {
+    std::string cut;
+    std::string weight;
+    bool allow_weight_on_data;
+
+    std::vector<Plot> plots;
+};
+
 class HistFactory: public Factory {
 using Factory::Factory;
 
@@ -38,5 +47,9 @@ protected:
     virtual bool create_templates(std::set<std::string>& identifiers, std::string& beforeLoop, std::string& inLoop, std::string& afterLoop) override;
 
 private:
+    bool m_optimize = false;
     std::vector<Plot> m_plots;
+    std::vector<Group> m_groups;
+
+    void render_plot(const Plot& p, std::set<std::string>& identifiers, std::string& beforeLoop, std::string& inLoop, std::string& afterLoop);
 };

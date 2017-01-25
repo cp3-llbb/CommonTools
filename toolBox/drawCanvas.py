@@ -110,7 +110,18 @@ def drawTGraph(graphs, name, xLabel="", yLabel="", legend=None, leftText="", rig
     Tright.SetTextFont(font) 
 
     mg = ROOT.TMultiGraph()
-    colors = [ ROOT.kRed, ROOT.kBlue, ROOT.kMagenta, ROOT.kCyan+1, ROOT.kGreen+2, ROOT.kOrange+1 ]
+    colors = [ ROOT.TColor.GetColor(hex) for hex in [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+            "#bcbd22",
+            "#17becf",
+        ] ]
     markers = [20, 21, 22, 23, 29, 33, 34]
     
     for i, graph in enumerate(graphs):

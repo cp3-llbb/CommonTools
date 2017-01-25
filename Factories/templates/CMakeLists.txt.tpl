@@ -34,6 +34,13 @@ if(NOT IN_CMSSW)
     list(APPEND CMAKE_INCLUDE_PATH "${PYTHON_PREFIX}/include")
 endif()
 
+# Find GSL
+if(IN_CMSSW)
+    execute_process(COMMAND scram tool tag gsl GSL_BASE OUTPUT_VARIABLE GSL_ROOT_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+find_package(GSL REQUIRED)
+include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
+
 set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED COMPONENTS python)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -103,6 +110,7 @@ endif()
 
 target_link_libraries(generated ${PYTHON_LIBRARY})
 target_link_libraries(generated ${Boost_PYTHON_LIBRARY})
+target_link_libraries(generated ${GSL_LIBRARIES})
 
 # Find libraries requested by the user, if any
 {{#HAS_LIBRARY_DIRECTORIES}}

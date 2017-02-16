@@ -402,8 +402,9 @@ function do_hadd {
  if [ ! -z "$1" ]; then
   to_add=( $(ls $1_*.root) )
   # If there is only one file to hadd, do not do it but simply rename the file (faster)
-  if [[ ${#to_add} == 1 ]]; then
-    mv ${to_add[1]} $1.root
+  if [[ ${#to_add[*]} == 1 ]]; then
+    echo "Renaming ${to_add[0]} -> $1.root"
+    mv ${to_add[0]} $1.root
   else
     hadd $1.root $1_*.root && if [ "$2" == "-r" ]; then rm $1_*.root; fi
   fi

@@ -277,10 +277,10 @@ int main(int argc, char** argv) {
 
             std::string output_file = output_dir + "/" + d.output_name + ".root";
 
-            // Set cache size to 10 MB
-            t->SetCacheSize(10 * 1024 * 1024);
-            // Learn tree structure from the first 10 entries
-            t->SetCacheLearnEntries(10);
+            // Set cache size to 250 MB
+            t->SetCacheSize(250 * 1024 * 1024);
+            // Learn tree structure from the first 20 entries
+            t->SetCacheLearnEntries(20);
 
             if (!d.event_end_filled) {
                 // Process everything

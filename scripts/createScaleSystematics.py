@@ -4,7 +4,7 @@ import argparse
 import re
 import sys
 
-from cp3_llbb.CommonTools.HistogramTools import getEnvelopHistograms
+from cp3_llbb.CommonTools.HistogramTools import getEnvelopHistograms, TFileWrapper
 
 parser = argparse.ArgumentParser(description='Create scale variation systematics histograms.')
 
@@ -18,7 +18,7 @@ import ROOT
 for input in args.inputs:
 
     print("Working on %r...") % input
-    f = ROOT.TFile.Open(input)
+    f = TFileWrapper.Open(input)
     if not f or f.IsZombie():
         continue
 
@@ -42,6 +42,10 @@ for input in args.inputs:
 
         for n in to_remove:
             del variations[n]
+
+        if len(variations) == 0:
+            print("Warning: no variation found for systematic {}!".format(syst))
+            continue
 
         envelop = {}
         for key, var in variations.items():

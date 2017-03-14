@@ -3,7 +3,7 @@ from array import array
 import sys
 import os
 
-def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectatorVariables = [], label = "BDT", sigWeightExpr=None, bkgWeightExpr=None):
+def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectatorVariables = [], label = "BDT", sigWeightExpr=None, bkgWeightExpr=None, nSignal=0, nBkg=0):
     ''' Train a MVA and write xml files for possibly different MVA methods (kBDT etc)'''
 
     MVA_fileName = "TMVA_"+label+".root"
@@ -38,7 +38,7 @@ def trainMVA(bkgs, sigs, discriList, trainCut, weightExpr, MVAmethods, spectator
     if sigWeightExpr is not None:
         factory.SetSignalWeightExpression("(({})*({}))".format(weightExpr, sigWeightExpr))
 
-    factory.PrepareTrainingAndTestTree(R.TCut(trainCut), "")
+    factory.PrepareTrainingAndTestTree(R.TCut(trainCut), "nTrain_Signal={0}:nTest_Signal={0}:nTrain_Background={1}:nTest_Background={1}".format(nSignal, nBkg))
     for MVAmethod in MVAmethods:
         factory.BookMethod(getattr(R.TMVA.Types, MVAmethod), MVAmethod, "")
 

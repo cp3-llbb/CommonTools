@@ -10,15 +10,17 @@ parser.add_argument('inputs', metavar='input', nargs='+', help='The ROOT input f
 parser.add_argument('-r', '--regex', metavar='myHist_.*', nargs='+', help='Regexp to search histos to be flattened', required=True)
 parser.add_argument('-a', '--axis', metavar='x', choices = ['x', 'y'], help='Remove x or y axis', required=True)
 parser.add_argument('-p', '--prefix', metavar='flat_', default="flat_", help='Prefix to the name of the histogram')
+parser.add_argument('-d', '--drop', type=int, default=0, help='Drop bins along y axis')
 
 args = parser.parse_args()
 
 import ROOT
+from cp3_llbb.CommonTools.HistogramTools import TFileWrapper
 
 for input in args.inputs:
     
     print("Working on %r...") % input
-    f = ROOT.TFile.Open(input)
+    f = TFileWrapper.Open(input)
     if not f or f.IsZombie():
         continue
 
@@ -54,12 +56,12 @@ for input in args.inputs:
             m_otherAxis = m_th2.GetXaxis()
         if args.axis == 'y':
             m_axis = m_th2.GetXaxis()
-            m_otherAaxis = m_th2.GetYaxis()
+            m_otherAxis = m_th2.GetYaxis()
         
         nBinsX = m_th2.GetXaxis().GetNbins()
-        nBinsY = m_th2.GetYaxis().GetNbins()
+        nBinsY = m_th2.GetYaxis().GetNbins() - args.drop
         nBins = nBinsX * nBinsY 
-        start = m_axis.GetXmin()
+        start = m_axis.GetBinLowEdge(1 + args.drop)
         end = m_otherAxis.GetNbins() * (m_axis.GetXmax() - start) + start
         
         m_th1 = ROOT.TH1F(args.prefix + m_th2.GetName(), args.prefix + m_th2.GetTitle(), nBins, start, end)
@@ -67,14 +69,14 @@ for input in args.inputs:
         m_th1.SetDirectory(0)
 
         for x in range(1, m_th2.GetXaxis().GetNbins() + 1):
-            for y in range(1, m_th2.GetYaxis().GetNbins() + 1):
+            for y in range(1 + args.drop, m_th2.GetYaxis().GetNbins() + 1):
                 
                 content = m_th2.GetBinContent(x, y)
                 error = m_th2.GetBinError(x, y)
                 
                 if args.axis == 'x':
-                    m_th1.SetBinContent(y + (x - 1)*nBinsY, content)
-                    m_th1.SetBinError(y + (x - 1)*nBinsY, error)
+                    m_th1.SetBinContent(y - args.drop + (x - 1)*nBinsY, content)
+                    m_th1.SetBinError(y - args.drop + (x - 1)*nBinsY, error)
                 
                 if args.axis == 'y':
                     m_th1.SetBinContent(x + (y - 1)*nBinsX, content)

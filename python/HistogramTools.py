@@ -2,6 +2,36 @@
 
 import ROOT
 import re
+from types import MethodType
+
+class TFileWrapper(ROOT.TFile):
+    """Act as a wrapper around TFile, to make the 'Get' operation faster by keeping an internal dictionary of the file's keys."""
+
+    def __init__(self, *args, **kwargs):
+        ROOT.TFile.__init__(self, *args, **kwargs)
+        self.keys = { key.GetName(): key for key in self.GetListOfKeys() }
+
+    def Get(self, name):
+        key = self.keys.get(name, None)
+        if key:
+            return key.ReadObj()
+        else:
+            raise Exception("Could not read object {} from file.".format(name))
+
+    @staticmethod
+    def GetStatic(self, name):
+        key = self.keys.get(name, None)
+        if key:
+            return key.ReadObj()
+        else:
+            raise Exception("Could not read object {} from file.".format(name))
+    
+    @staticmethod
+    def Open(*args):
+        _file = ROOT.TFile.Open(*args)
+        _file.keys = { key.GetName(): key for key in _file.GetListOfKeys() }
+        _file.Get = MethodType(TFileWrapper.GetStatic, _file)
+        return _file
 
 def getEnvelopHistograms(nominal, variations):
     """
@@ -16,10 +46,11 @@ def getEnvelopHistograms(nominal, variations):
 
     if len(variations) < 2:
         raise TypeError("At least two variations histograms must be provided")
-
-    n_bins = nominal.GetNbinsX()
+    
+    # Use GetNcells() so that it works also for 2D histograms
+    n_bins = nominal.GetNcells()
     for v in variations:
-        if v.GetNbinsX() != n_bins:
+        if v.GetNcells() != n_bins:
             raise RuntimeError("Variation histograms do not have the same binning as the nominal histogram")
 
     up = nominal.Clone()
@@ -30,7 +61,7 @@ def getEnvelopHistograms(nominal, variations):
     down.SetDirectory(ROOT.nullptr)
     down.Reset()
 
-    for i in range(1, n_bins + 1):
+    for i in range(0, n_bins):
         minimum = float("inf")
         maximum = float("-inf")
 

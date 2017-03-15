@@ -8,7 +8,7 @@ def changeFont():
     rc('font', **{'family': 'sans-serif', 'sans-serif':['Arial', 'Helvetica', 'Nimbus Sans L', 'Liberation Sans']})
     rc('mathtext', default='regular')
 
-def applyStyle(fig, ax, lumi, extra='Preliminary', pos='out'):
+def applyStyle(fig, ax, lumi, extra='Preliminary', pos='out', figures=1):
     """
     Apply CMS style to a matplotlib figure
 
@@ -100,7 +100,7 @@ def applyStyle(fig, ax, lumi, extra='Preliminary', pos='out'):
     if not lumi:
         fmt = "(13 TeV)"
     else:
-        fmt = "%.2f $fb^{-1}$ (13 TeV)" % (lumi / 1000.)
+        fmt = "{lumi:.{figures}f} $fb^{{-1}}$ (13 TeV)".format(lumi=(lumi / 1000.), figures=figures)
 
     ax.text(lumi_text_x, lumi_text_y, fmt, transform=fig.transFigure, fontsize='large', va='baseline', ha='right')
 

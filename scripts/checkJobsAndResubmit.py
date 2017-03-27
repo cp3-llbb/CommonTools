@@ -5,6 +5,20 @@ import argparse
 import re
 import shutil
 
+def grep(filename, *args):
+    """
+    Return True if any args is found somewhere in filename content
+    """
+
+    with open(filename) as f:
+        for line in f.readlines():
+            line = line.lower()
+            for pattern in args:
+                if pattern.lower() in line:
+                    return True
+
+    return False
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--directory', nargs='+', help='Condor output directory')
 parser.add_argument('-f', '--finished', action='store_true', help='Check if every job has an output ROOT file. Only call this when the task is finished!')
@@ -31,6 +45,10 @@ for condorDir in args.directory:
     for file in os.listdir(logDir):
         if ".err" in file and os.stat(os.path.join(logDir, file)).st_size != 0:
             failedJobID = file.split(".err")[0].split("_")[1]
+            failedJobIDs.append(failedJobID)
+
+        if ".out" in file and grep(os.path.join(logDir, file), "warning", "error", "fail"):
+            failedJobID = file.split(".out")[0].split("_")[1]
             failedJobIDs.append(failedJobID)
     
     if len(failedJobIDs):

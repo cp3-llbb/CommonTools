@@ -7,11 +7,19 @@ import json
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
 sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/MySQL_python-1.2.3-py2.7-linux-x86_64.egg')
 
-CMSSW_BASE = os.environ['CMSSW_BASE']
-SCRAM_ARCH = os.environ['SCRAM_ARCH']
-sys.path.append(os.path.join(CMSSW_BASE,'bin', SCRAM_ARCH))
+try:
+    CMSSW_BASE = os.environ['CMSSW_BASE']
+    SCRAM_ARCH = os.environ['SCRAM_ARCH']
+    sys.path.append(os.path.join(CMSSW_BASE,'bin', SCRAM_ARCH))
+except KeyError, e:
+    print "This script needs the CMSSW environment to run, please run `cmsenv` first (error when getting CMSSW environment variable {0})".format(str(e))
+    sys.exit(1)
 
-from SAMADhi import Dataset, Sample, DbStore
+try:
+    from SAMADhi import Dataset, Sample, DbStore
+except ImportError, e:
+    print "Could not import the necessary symbols from the SAMADhi package ({0})".format(str(e))
+    sys.exit(1)
 
 import argparse
 

@@ -1,17 +1,13 @@
-#!/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/bin/python
+#!/usr/bin/env python2
 
-import os, sys
+import sys
+try:
+    from cp3_llbb.CommonTools.samadhi_imports import DbStore, Sample
+except ImportError, e:
+    print "Problem importing necessary symbols (needs CMSSW environment, set up with `cmsenv`): {0}".format(str(e))
+    sys.exit(1)
+
 import json
-
-# Add default ingrid storm package
-sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/storm-0.20-py2.7-linux-x86_64.egg')
-sys.path.append('/nfs/soft/python/python-2.7.5-sl6_amd64_gcc44/lib/python2.7/site-packages/MySQL_python-1.2.3-py2.7-linux-x86_64.egg')
-
-CMSSW_BASE = os.environ['CMSSW_BASE']
-SCRAM_ARCH = os.environ['SCRAM_ARCH']
-sys.path.append(os.path.join(CMSSW_BASE,'bin', SCRAM_ARCH))
-
-from SAMADhi import Dataset, Sample, DbStore
 
 import argparse
 

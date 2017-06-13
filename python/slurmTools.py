@@ -19,7 +19,7 @@ except ImportError, e:
 
 class slurmSubmitter:
 
-    def __init__(self, sampleCfg, execPath, baseDir=".", rescale=False, runtime=None, memory=None):
+    def __init__(self, sampleCfg, execPath, baseDir=".", rescale=False, runtime=None, memory=None, weightFromFile=True):
 
         """
         Create a new slurm submitter helper
@@ -90,18 +90,24 @@ class slurmSubmitter:
 
             sample["extras-event-weight-sum"] = {}
             if rescale_sample:
-                event_weights = [f[2] for f in files]
-                sample["event-weight-sum"] = sum (event_weights)
-                sample["cross-section"] = dbSample.source_dataset.xsection
-                if dbSample.extras_event_weight_sum:
-                    extras_event_weight_sum = {}
-                    for f in files:
-                        extras_event_weight_sum = { k: extras_event_weight_sum.get(k, 0) + f[3].get(k) for k in set(f[3]) }
-                    if json.loads(dbSample.extras_event_weight_sum).viewkeys() != extras_event_weight_sum.viewkeys():
-                        print("Error: all the files in %s do not have the same extras_event_weight_sum content!" % str(dbSample.source_dataset.name))
-                        sys.exit()
-                    sample["extras-event-weight-sum"] = extras_event_weight_sum
-            else :
+                if weightFromFile:
+                    event_weights = [f[2] for f in files]
+                    sample["event-weight-sum"] = sum (event_weights)
+                    sample["cross-section"] = dbSample.source_dataset.xsection
+                    if dbSample.extras_event_weight_sum:
+                        extras_event_weight_sum = {}
+                        for f in files:
+                            extras_event_weight_sum = { k: extras_event_weight_sum.get(k, 0) + f[3].get(k) for k in set(f[3]) }
+                        if json.loads(dbSample.extras_event_weight_sum).viewkeys() != extras_event_weight_sum.viewkeys():
+                            print("Error: all the files in %s do not have the same extras_event_weight_sum content!" % str(dbSample.source_dataset.name))
+                            sys.exit()
+                        sample["extras-event-weight-sum"] = extras_event_weight_sum
+                else:
+                    sample["event-weight-sum"] = dbSample.event_weight_sum
+                    sample["cross-section"] = dbSample.source_dataset.xsection
+                    if dbSample.extras_event_weight_sum:
+                        sample["extras-event-weight-sum"] = json.loads(dbSample.extras_event_weight_sum.replace("'", "\""))
+            else:
                 sample["event-weight-sum"] = 1.
                 sample["cross-section"] = 1.
 
@@ -137,13 +143,18 @@ class slurmSubmitter:
 #ADDITIONAL_SBATCH_COMMANDS#
 #SBATCH --array 0-#N_JOBS#
 
+function move_files {
+   mv *_${SLURM_ARRAY_TASK_ID}.root #OUTDIR_PATH#
+}
+
 # Setup our CMS environment
 pushd #CMS_PATH#
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 eval `scram runtime --sh`
 popd
+cd ${LOCALSCRATCH}
 
-srun "#EXEC_PATH#" -d "#INDIR_PATH#/samples_${SLURM_ARRAY_TASK_ID}.json" -o output
+srun "#EXEC_PATH#" -d "#INDIR_PATH#/samples_${SLURM_ARRAY_TASK_ID}.json" -o . && move_files
 """
 
     def getSample(self, iSample):

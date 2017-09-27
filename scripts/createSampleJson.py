@@ -2,7 +2,7 @@
 
 import sys
 try:
-    from cp3_llbb.CommonTools.samadhi_imports import DbStore, Sample
+    from cp3_llbb.SAMADhi.SAMADhi import DbStore, sample
 except ImportError, e:
     print "Problem importing necessary symbols (needs CMSSW environment, set up with `cmsenv`): {0}".format(str(e))
     sys.exit(1)

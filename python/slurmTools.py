@@ -11,8 +11,8 @@ import subprocess
 import math
 
 try:
-    from .samadhi_imports import CMSSW_BASE, DbStore, Sample
-    sys.path.append(os.path.join(CMSSW_BASE, "cp3_llbb", "CommonTool", "histFactory"))
+    from cp3_llbb.SAMADhi.SAMADhi import DbStore, Sample
+    CMSSW_BASE = os.environ["CMSSW_BASE"]
 except ImportError, e:
     print "Problem importing necessary symbols (needs CMSSW environment, set up with `cmsenv`): {0}".format(str(e))
     sys.exit(1)

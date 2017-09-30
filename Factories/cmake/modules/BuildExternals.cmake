@@ -30,7 +30,7 @@ if (NOT EXTERNAL_BUILT)
     MESSAGE(STATUS "Building ctemplate")
     execute_process(COMMAND curl -L "https://github.com/OlafvdSpek/ctemplate/archive/ctemplate-${CTEMPLATE_VERSION}.tar.gz" -o "${CTEMPLATE_TAR}" WORKING_DIRECTORY ${EXTERNAL_DIR})
     execute_process(COMMAND tar xf ${CTEMPLATE_TAR} WORKING_DIRECTORY ${EXTERNAL_DIR})
-    execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} --enable-shared=false WORKING_DIRECTORY ${CTEMPLATE_DIR})
+    execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} --enable-shared=false WORKING_DIRECTORY ${CTEMPLATE_DIR} ERROR_QUIET)
     execute_process(COMMAND make install -j10 WORKING_DIRECTORY ${CTEMPLATE_DIR})
 
     message(STATUS "Building TreeWrapper")

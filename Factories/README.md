@@ -22,7 +22,7 @@ mkdir build
 cd build
 
 # This step takes a bit of time as the externals will be built.
-cmake ..
+cmake -DBOOST_ROOT=$(scram tool tag boost BOOST_BASE) ..
 
 make
 ```

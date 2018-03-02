@@ -146,8 +146,28 @@ class ObjectStub(PODStub):
             return GetDataMember(self, name).result
     def __repr__(self):
         return "ObjectStub({0!r}, {1!r})".format(self._parent, self._typeName)
+    ## for mappable types: operator[] and valueType
+    def __getitem__(self, ky):
+        if self._get("__getitem__"):
+            return GetItem(self, ky, indexType=self.indexType).result
+        else:
+            return NotImplemented
+    @property
+    def valueType(self):
+        if self._typ.__name__.startswith("map<"):
+            return self._typ.__name__[4:-1].split(",")[-1].strip()
+        else:
+            print "Name: ", self._typ.__name__
+            return NotImplemented
+    @property
+    def indexType(self):
+        if self._typ.__name__.startswith("map<"):
+            return self._typ.__name__[4:-1].split(",")[0].strip()
+        else:
+            print "Name: ", self._typ.__name__
+            return NotImplemented
 
-    ## TODO operators as well, provided that they are supported by the underlying class - need to figure out how to do that efficiently
+    ## TODO implement more operators, if they are supported by the underlying class
 
 class ArrayStub(TupleStub): ## different from an array result of a calculation or not? Not really, in fact...
     """
@@ -178,7 +198,7 @@ class VectorStub(ObjectStub):
     def __init__(self, parent, typeName):
         self._parent = parent
         ##self.valueType = getattr(ROOT, typeName).value_type ## usable from 6.04.something on
-        self.valueType = ">".join("<".join(next(mem for mem in dir(getattr(ROOT, typeName)) if mem.startswith("_vector<") and mem.endswith("___M_range_check")).split("<")[1:]).split(">")[:-1])
+        self.valueType = ">".join(tk.strip() for tk in "<".join(tok.strip() for tok in next(mem for mem in dir(getattr(ROOT, typeName)) if mem.startswith("_vector<") and mem.endswith("___M_range_check")).split("<")[1:]).split(">")[:-1])
         super(VectorStub, self).__init__(parent, typeName)
     @property
     def op(self):
@@ -191,7 +211,7 @@ class VectorStub(ObjectStub):
         return "VectorStub({0!r}, {1!r})".format(self._parent, self._typeName)
 
 import re
-vecPat = re.compile("vector\<(?P<item>[a-zA-Z_0-9\<\>\: ]+)\>")
+vecPat = re.compile("vector\<(?P<item>[a-zA-Z_0-9\<\>,\: ]+)\>")
 
 def makeStubForType(typeName, parent, length=None):
     if length is not None:
@@ -211,7 +231,10 @@ def adaptArg(arg, typeHint=None):
     elif isinstance(arg, TupleOp):
         return arg
     elif typeHint is not None:
-        return Const(typeHint, arg)
+        if str(arg) == arg: ## string, needs quote
+            return Const(typeHint, '"{}"'.format(arg))
+        else:
+            return Const(typeHint, arg)
     else:
         raise ValueError("Should get some kind of type hint")
 
@@ -775,7 +798,7 @@ class GetItem(TupleOp):
     Get item from array (from function call or from array leaf)
     """
     __slots__ = ("arg", "typeName", "index")
-    def __init__(self, arg, index):
+    def __init__(self, arg, index, indexType=SizeType):
         self.arg = adaptArg(arg)
         self.typeName = arg.valueType
         self.index = adaptArg(index, typeHint=SizeType)

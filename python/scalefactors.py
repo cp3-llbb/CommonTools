@@ -3,7 +3,7 @@ Helpers for configuring scale factors, fake rates etc.
 
 The basic configuration parameter is the json file path for a set of factors.
 There two basic types are
-- lepton scale factors (dependent on a number of object variables, e.g. PT and ETA), 
+- lepton scale factors (dependent on a number of object variables, e.g. PT and ETA),
 - jet (b-tagging) scale factors (grouped set for different flavours, for convenience)
 
 Different values (depending on the data-taking period)

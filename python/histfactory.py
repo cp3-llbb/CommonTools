@@ -559,7 +559,7 @@ import os, os.path
 def createPlotter(plots, skeleton, outdir=None, **kwargs):
     """
     Turned the config into the main script
-    
+
     this is only a helper method that deals with creating a C++ plotter from it
     """
     if not outdir:

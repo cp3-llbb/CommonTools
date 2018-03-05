@@ -27,7 +27,7 @@ CondorJobStatus = [
 class CommandListCondorJob(CommandListJob):
     """
     Helper class to create a condor master job from a list of commands (each becoming one subjob)
-    
+
     Default work directory will be $(pwd)/condor_work, default output pattern is "*.root"
     """
     def __init__(self, commandList, workDir=None, envSetupLines=None, outputPatterns=None):
@@ -56,7 +56,7 @@ class CommandListCondorJob(CommandListJob):
         "\n"
         "{indir}/condor_$1.sh\n"
         )
-    
+
     JobShell = (
         "#!/usr/bin/env bash\n"
         "\n"

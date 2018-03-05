@@ -793,7 +793,7 @@ class GetArrayLeaf(TupleOp):
     def _get_TTreeDrawStr(self):
         return self.name
 
-class GetItem(TupleOp): 
+class GetItem(TupleOp):
     """
     Get item from array (from function call or from array leaf)
     """

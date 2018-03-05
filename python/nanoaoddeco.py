@@ -3,7 +3,7 @@ from .treedecorators import levelsAbove, addIntoHierarchy, TreeStub, BranchGroup
 def decoratedNanoAOD(nnAODTree):
     allLvs = dict((lv.GetName(), lv) for lv in nnAODTree.GetListOfLeaves())
     noCountLvs = set()
-    collectionLvs = dict() 
+    collectionLvs = dict()
     for lvNm, lv in allLvs.iteritems():
         cntLv = lv.GetLeafCount()
         if cntLv:

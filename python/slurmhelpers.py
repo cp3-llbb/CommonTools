@@ -28,7 +28,7 @@ def redirect_stdout(whereto=None):
 class CommandListSlurmJob(CommandListJob):
     """
     Helper class to create a slurm job array from a list of commands (each becoming a task in the array)
-    
+
     Default work directory will be $(pwd)/slurm_work, default output pattern is "*.root"
     """
     default_cfg_opts = {
@@ -114,7 +114,7 @@ class CommandListSlurmJob(CommandListJob):
             , self.slurmScript])
 
         self.clusterId = next(tok for tok in reversed(result.split()) if tok.isdigit())
-        
+
         ## save to file in case
         with open(os.path.join(self.workDirs["in"], "cluster_id"), "w") as f:
             f.write(self.clusterId)

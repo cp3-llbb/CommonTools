@@ -236,6 +236,7 @@ def makeControlPlots(record, hza):
     flavCats_ll = dict((fc, getattr(llCand, "is{0}".format(fc))) for fc in allFlavCats)
     flavCats_lljj = dict((fc, getattr(lljjCand, "is{0}".format(fc))) for fc in allFlavCats)
 
+    from itertools import izip, count, chain
     ## Define plots
     plots = []
     for psName, presel in selDict.iteritems():
@@ -249,6 +250,34 @@ def makeControlPlots(record, hza):
                     , op.invariant_mass(cand.l1.L.p4, cand.l2.L.p4), presel
                     , EquidistantBinning(50, 0., 200.), categories=flavCats
                     , title="Dilepton invariant mass", xTitle="Invariant Mass (GeV/c^{2})")
+
+        plots += chain.from_iterable(make1DPlot("{0}_L{1:d}_{2}".format(psName, iL, varName)
+                      , fun(lep.L), presel, binning
+                      , title=title, xTitle=xTitle)
+                    for varName, (fun, binning, title, xTitle) in lepVars.iteritems()
+                    for iL, lep in izip(count(1), (cand.l1, cand.l2)))
+
+        plots += chain(
+                  chain.from_iterable(make1DPlot("{0}_L{1:d}_mu_{2}".format(psName, iL, varName)
+                      , onlyMuon(fun, electronValue=elVal)(lep), presel, binning
+                      , title=title, xTitle=xTitle)
+                    for varName, (fun, elVal, binning, title, xTitle) in lepVars_split.iteritems()
+                    for iL, lep in izip(count(1), (cand.l1, cand.l2)))
+                , chain.from_iterable(make1DPlot("{0}_L{1:d}_el_{2}".format(psName, iL, varName)
+                      , onlyElectron(fun, muonValue=muVal)(lep), presel, binning
+                      , title=title, xTitle=xTitle)
+                    for varName, (fun, muVal, binning, title, xTitle) in lepVars_split.iteritems()
+                    for iL, lep in izip(count(1), (cand.l1, cand.l2)))
+                )
+
+        if psName.startswith("lljj"):
+            plots += chain.from_iterable(
+                    make1DPlot("{0}_J{1:d}_{2}".format(psName, iJ, varName)
+                        , fun(jet), presel, binning
+                        , title=title, xTitle=xTitle)
+                      for varName, (fun, binning, title, xTitle) in jetVars.iteritems()
+                      for iJ, jet in izip(count(1), (cand.J1, cand.J2))
+                    )
 
     return plots
 
@@ -284,7 +313,7 @@ if __name__ == "__main__":
 
         from cp3_llbb.CommonTools.histfactory import createPlotter, compilePlotter, runPlotterOnSamples, prepareWorkdir
         import os
-        workdir = os.path.join(os.getcwd(), "latest_ratechecks")
+        workdir = os.path.join(os.getcwd(), "latest_zaplots")
         if not args.reusehistos:
             if not args.reuseplotter:
                 plotterdir, histosdir, plotsdir = prepareWorkdir(workdir)

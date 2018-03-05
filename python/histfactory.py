@@ -580,6 +580,7 @@ def createPlotter(plots, skeleton, outdir=None, **kwargs):
     from .factoryhelpers import COMMON_INCLUDE_DIR
     include_dirs.append(os.path.join(COMMON_INCLUDE_DIR))
     includes.append("kinematics.h")
+    includes.append("IndexRangeIterator.h")
 
     if kwargs.get("addScaleFactorsLib", False):
         from . import pathCommonTools

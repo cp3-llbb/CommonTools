@@ -298,6 +298,7 @@ def createSkimmer(selection, branchVars, skeleton, outdir=None, treeName="t", **
     from .factoryhelpers import COMMON_INCLUDE_DIR
     include_dirs.append(os.path.join(COMMON_INCLUDE_DIR))
     includes.append("kinematics.h")
+    includes.append("IndexRangeIterator.h")
     # add jsoncpp (from external)
     from . import pathCommonTools
     external_dir = os.path.join(os.path.abspath(pathCommonTools), "external")

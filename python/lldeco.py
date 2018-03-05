@@ -67,7 +67,7 @@ def prodIfIterable(sfArg, **kwargs):
               if hasattr(sfArg, "__iter__") else
             ( lambda x : sfArg(x, **kwargs) ))
 
-from .treedecorators import op, boolType
+from .treedecorators import op, boolType, makeConst
 class LeptonScaleFactor(object):
     def __init__(self, elSF, muSF, cache=True):
         self.elSF = elSF

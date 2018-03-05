@@ -428,7 +428,7 @@ class SmartTupleStub(TupleStub):
             return self[-1]._availLeafs()
         @property
         def _leafDeps(self):
-            return self._base.leafDeps
+            return self._base._parent.leafDeps
 
     class _BoolTestableFromLeaf(_SmartLeafDecoration):
         __slots__ = ("_bool",)

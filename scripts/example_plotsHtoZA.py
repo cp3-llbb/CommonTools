@@ -297,7 +297,14 @@ if __name__ == "__main__":
         skelF = ROOT.TFile.Open("/storage/data/cms/store/user/asaggio/DYToLL_2J_13TeV-amcatnloFXFX-pythia8/DYToLL_2J_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16MiniAODv2/180219_144051/0000/output_mc_271.root")
         tup = decoratedZATree(skelF.Get("t"))
 
+        from itertools import chain
         controlPlots = makeControlPlots(tup, tup.hZA)
+        controlPlots_systVariations = []
+        for svNm in ("jecup", "jecdown", "jerup", "jerdown"):
+            plots_sv = makeControlPlots(tup, getattr(tup.hZA, svNm))
+            for ap in plots_sv:
+                ap.name = "{0}__{1}".format(ap.name, svNm)
+            controlPlots_systVariations += plots_sv
 
         import os.path
         from cp3_llbb.SAMADhi.SAMADhi import DbStore, Sample
@@ -319,10 +326,9 @@ if __name__ == "__main__":
                 plotterdir, histosdir, plotsdir = prepareWorkdir(workdir)
 
                 includes = [ "Math/VectorUtil.h", "ScaleFactors.h" ]
-                from itertools import chain
                 sf_init_lines = list(chain.from_iterable(sf.cpp_initCode for sf in scale_factors))
 
-                createPlotter(controlPlots, tup, includes=includes, outdir=plotterdir,
+                createPlotter(controlPlots+controlPlots_systVariations, tup, includes=includes, outdir=plotterdir,
                         user_initialisation=sf_init_lines, addScaleFactorsLib=True)
                 plotterName = compilePlotter(plotterdir)
             else:

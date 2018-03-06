@@ -18,7 +18,7 @@ from cp3_llbb.CommonTools.treedecorators import levelsAbove, addIntoHierarchy, T
 
 import ROOT
 ## Load the library
-ROOT.gSystem.Load("libcp3_llbbZAAnalysis.so")
+ROOT.gROOT.ProcessLine('#include "cp3_llbb/ZAAnalysis/interface/Types.h"')
 
 hZAObjectStubMap = SmartObjectStub.Map({
       "HtoZA::Lepton" : [

@@ -9,5 +9,5 @@ pathCMS = _pathCMS_paths
 if _pathCMS_env == "":
     print("Warning: Could not get CMSSW_BASE variable from the environment")
 elif _pathCMS_env != _pathCMS_paths:
-    print("Warning: CommonTools is not using the CMSSW release version from $CMSSW_BASE ({0} versus {1}), using the latter".format(_pathCMS_paths, _pathCMS_env))
+    print("Warning: CommonTools is not using the CMSSW release version from $CMSSW_BASE ({0} versus {1}), using the former".format(_pathCMS_paths, _pathCMS_env))
     pathCMS = _pathCMS_paths

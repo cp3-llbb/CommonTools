@@ -35,6 +35,8 @@ if (NOT EXTERNAL_BUILT)
 
     message(STATUS "Building TreeWrapper")
     execute_process(COMMAND git clone https://github.com/blinkseb/TreeWrapper.git WORKING_DIRECTORY ${EXTERNAL_DIR})
+    execute_process(COMMAND git fetch origin refs/pull/2/head:PR2 WORKING_DIRECTORY ${TREEWRAPPER_DIR})
+    execute_process(COMMAND git checkout PR2 WORKING_DIRECTORY ${TREEWRAPPER_DIR})
     execute_process(COMMAND ./autogen.sh WORKING_DIRECTORY ${TREEWRAPPER_DIR})
     execute_process(COMMAND ./configure --prefix=${EXTERNAL_DIR} --with-boost=${Boost_INCLUDE_DIRS} --enable-shared=false WORKING_DIRECTORY ${TREEWRAPPER_DIR})
     execute_process(COMMAND make install -j10 WORKING_DIRECTORY ${TREEWRAPPER_DIR})

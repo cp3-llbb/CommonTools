@@ -16,3 +16,5 @@ git clone -o upstream git@github.com:cp3-llbb/CommonTools.git CommonTools
 # setup git and its remote
 source setup.sh
 ```
+
+test

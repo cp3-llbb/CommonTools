@@ -91,7 +91,7 @@ if(IN_CMSSW)
     list(APPEND SOURCES classes.h)
 endif()
 
-find_library(TREEWRAPPER_LIB "libTreeWrapper.a" PATHS ${EXTERNAL_LIB_DIR})
+find_library(TREEWRAPPER_LIB "libTreeWrapper.so" PATHS ${EXTERNAL_LIB_DIR})
 find_path(TREEWRAPPER_INCLUDE_DIR TreeWrapper.h PATHS ${EXTERNAL_INCLUDE_DIR})
 
 add_executable(generated ${SOURCES})
